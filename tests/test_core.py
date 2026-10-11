@@ -146,10 +146,10 @@ def test_oracle_beats_ecmp_on_max_util(topo):
 
 
 def test_oracle_headroom_gate1():
-    """Gate 1 smoke check. Headroom exists on heterogeneous synthetic graphs
-    but is small on Abilene (see experiments/gate1_headroom)."""
+    """Gate 1 smoke check. Headroom exists on some graphs and is ~0 on others
+    (Abilene), see experiments/gate1_headroom."""
     cfg = EnvCfg(load=0.9, horizon=20)
     syn = evaluate(synthetic("ba", 12, 1), cfg, LPOracle(), [0])
     assert syn["improvement_vs_ecmp"] > 0.10
     ab = evaluate(abilene(), cfg, LPOracle(), [0])
-    assert 0.0 <= ab["improvement_vs_ecmp"] < 0.10
+    assert -1e-6 <= ab["improvement_vs_ecmp"] < 0.05

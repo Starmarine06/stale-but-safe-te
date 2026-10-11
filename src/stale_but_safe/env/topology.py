@@ -73,9 +73,16 @@ def from_graph(g: nx.Graph, k: int = 4, name: str = "graph",
 
 
 # ---------------------------------------------------------------- generators
-def synthetic(kind: str, n: int, seed: int, k: int = 4,
-              caps=(1.0, 2.5, 10.0)) -> Topology:
-    """Random connected topology with heterogeneous capacities (units: Gbps)."""
+def degree_capacities(g: nx.Graph, base: float = 2.5) -> None:
+    """Capacity-aware design rule: well-connected (core) links are fatter.
+    cap = base * sqrt(deg_u * deg_v) / sqrt(2*2), rounded to a 0.5 grid."""
+    for u, v in g.edges:
+        c = base * np.sqrt(g.degree[u] * g.degree[v]) / 2.0
+        g.edges[u, v]["cap"] = max(0.5, round(c * 2) / 2)
+
+
+def synthetic(kind: str, n: int, seed: int, k: int = 4) -> Topology:
+    """Random connected topology; degree-based capacities, random propagation delays."""
     rng = np.random.default_rng(seed)
     for attempt in range(100):
         s = int(rng.integers(1 << 30))
@@ -91,8 +98,8 @@ def synthetic(kind: str, n: int, seed: int, k: int = 4,
             break
     else:
         raise RuntimeError("could not generate a connected graph")
+    degree_capacities(g)
     for u, v in g.edges:
-        g.edges[u, v]["cap"] = float(rng.choice(caps))
         g.edges[u, v]["prop"] = float(rng.uniform(0.5, 5.0))
     return from_graph(g, k=k, name=f"{kind}{n}-s{seed}")
 
