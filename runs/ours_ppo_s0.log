@@ -1,0 +1,347 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1192)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 18, in <module>
+    import torch
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 285, in <module>
+    _load_dll_libraries()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 268, in _load_dll_libraries
+    raise err
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\lib\shm.dll" or one of its dependencies.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1248)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 18, in <module>
+    import torch
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 285, in <module>
+    _load_dll_libraries()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 268, in _load_dll_libraries
+    raise err
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\lib\shm.dll" or one of its dependencies.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1296)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 18, in <module>
+    import torch
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 285, in <module>
+    _load_dll_libraries()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 268, in _load_dll_libraries
+    raise err
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\lib\shm.dll" or one of its dependencies.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1260)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 18, in <module>
+    import torch
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 285, in <module>
+    _load_dll_libraries()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 268, in _load_dll_libraries
+    raise err
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\lib\shm.dll" or one of its dependencies.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1276)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 18, in <module>
+    import torch
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 285, in <module>
+    _load_dll_libraries()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\__init__.py", line 268, in _load_dll_libraries
+    raise err
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\lib\shm.dll" or one of its dependencies.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1296)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 22, in <module>
+    from ..models.learned import ModelCfg, build, graph_static, load, save
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\models\learned.py", line 8, in <module>
+    from ..baselines.heuristics import Policy
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\baselines\heuristics.py", line 6, in <module>
+    from scipy.optimize import linprog
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\__init__.py", line 422, in <module>
+    from ._optimize import *
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\_optimize.py", line 34, in <module>
+    from scipy.linalg import cholesky, issymmetric, LinAlgError
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\linalg\__init__.py", line 204, in <module>
+    from ._cythonized_array_utils import *
+  File "scipy/linalg/_cythonized_array_utils.pyx", line 11, in init scipy.linalg._cythonized_array_utils
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_util.py", line 14, in <module>
+    from scipy._lib._array_api import (Array, array_namespace, is_lazy_array,
+                                       is_numpy, is_marray, xp_result_device,
+                                       xp_size, xp_result_type)
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_array_api.py", line 25, in <module>
+    from scipy._lib.array_api_compat import (
+    ...<11 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\array_api_compat\numpy\__init__.py", line 4, in <module>
+    from numpy import *  # noqa: F403  # pyright: ignore[reportWildcardImportFromLibrary]
+    ^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1410, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 1412, in _handle_fromlist
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\__init__.py", line 752, in __getattr__
+    import numpy.f2py as f2py
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\__init__.py", line 19, in <module>
+    from . import diagnose, f2py2e
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\f2py2e.py", line 21, in <module>
+    from . import (
+    ...<8 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\auxfuncs.py", line 17, in <module>
+    from . import __version__, cfuncs
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1022, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1118, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1218, in get_data
+MemoryError
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1276)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 22, in <module>
+    from ..models.learned import ModelCfg, build, graph_static, load, save
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\models\learned.py", line 8, in <module>
+    from ..baselines.heuristics import Policy
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\baselines\heuristics.py", line 6, in <module>
+    from scipy.optimize import linprog
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\__init__.py", line 422, in <module>
+    from ._optimize import *
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\_optimize.py", line 34, in <module>
+    from scipy.linalg import cholesky, issymmetric, LinAlgError
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\linalg\__init__.py", line 204, in <module>
+    from ._cythonized_array_utils import *
+  File "scipy/linalg/_cythonized_array_utils.pyx", line 11, in init scipy.linalg._cythonized_array_utils
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_util.py", line 14, in <module>
+    from scipy._lib._array_api import (Array, array_namespace, is_lazy_array,
+                                       is_numpy, is_marray, xp_result_device,
+                                       xp_size, xp_result_type)
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_array_api.py", line 25, in <module>
+    from scipy._lib.array_api_compat import (
+    ...<11 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\array_api_compat\numpy\__init__.py", line 4, in <module>
+    from numpy import *  # noqa: F403  # pyright: ignore[reportWildcardImportFromLibrary]
+    ^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1410, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 1412, in _handle_fromlist
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\__init__.py", line 752, in __getattr__
+    import numpy.f2py as f2py
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\__init__.py", line 19, in <module>
+    from . import diagnose, f2py2e
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\f2py2e.py", line 21, in <module>
+    from . import (
+    ...<8 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\capi_maps.py", line 24, in <module>
+    from .crackfortran import markoutercomma
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\crackfortran.py", line 150, in <module>
+    import charset_normalizer
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1322, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1262, in _find_spec
+  File "<frozen importlib._bootstrap_external>", line 1559, in find_spec
+  File "<frozen importlib._bootstrap_external>", line 1533, in _get_spec
+  File "<frozen importlib._bootstrap_external>", line 1651, in find_spec
+  File "<frozen importlib._bootstrap_external>", line 166, in _path_isfile
+  File "<frozen importlib._bootstrap_external>", line 158, in _path_is_mode_type
+MemoryError
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=14412, pipe_handle=1124)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 131, in _main
+    prepare(preparation_data)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 244, in prepare
+    _fixup_main_from_name(data['init_main_from_name'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 268, in _fixup_main_from_name
+    main_content = runpy.run_module(mod_name,
+                                    run_name="__mp_main__",
+                                    alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py", line 22, in <module>
+    from ..models.learned import ModelCfg, build, graph_static, load, save
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\models\learned.py", line 8, in <module>
+    from ..baselines.heuristics import Policy
+  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\baselines\heuristics.py", line 6, in <module>
+    from scipy.optimize import linprog
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\__init__.py", line 422, in <module>
+    from ._optimize import *
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\optimize\_optimize.py", line 34, in <module>
+    from scipy.linalg import cholesky, issymmetric, LinAlgError
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\linalg\__init__.py", line 204, in <module>
+    from ._cythonized_array_utils import *
+  File "scipy/linalg/_cythonized_array_utils.pyx", line 11, in init scipy.linalg._cythonized_array_utils
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_util.py", line 14, in <module>
+    from scipy._lib._array_api import (Array, array_namespace, is_lazy_array,
+                                       is_numpy, is_marray, xp_result_device,
+                                       xp_size, xp_result_type)
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\_array_api.py", line 25, in <module>
+    from scipy._lib.array_api_compat import (
+    ...<11 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\scipy\_lib\array_api_compat\numpy\__init__.py", line 4, in <module>
+    from numpy import *  # noqa: F403  # pyright: ignore[reportWildcardImportFromLibrary]
+    ^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1410, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 1412, in _handle_fromlist
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\__init__.py", line 752, in __getattr__
+    import numpy.f2py as f2py
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\__init__.py", line 19, in <module>
+    from . import diagnose, f2py2e
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\f2py2e.py", line 21, in <module>
+    from . import (
+    ...<8 lines>...
+    )
+  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\numpy\f2py\auxfuncs.py", line 913, in <module>
+    _f2py_module_name_match = re.compile(r'\s*python\s*module\s*(?P<name>[\w_]+)',
+                              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                         re.I).match
+                                         ^^^^^
+  File "C:\Python313\Lib\re\__init__.py", line 289, in compile
+    return _compile(pattern, flags)
+  File "C:\Python313\Lib\re\__init__.py", line 350, in _compile
+    p = _compiler.compile(pattern, flags)
+  File "C:\Python313\Lib\re\_compiler.py", line 748, in compile
+    p = _parser.parse(p, flags)
+  File "C:\Python313\Lib\re\_parser.py", line 980, in parse
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+  File "C:\Python313\Lib\re\_parser.py", line 459, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       not nested and not items))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\re\_parser.py", line 863, in _parse
+    p = _parse_sub(source, state, sub_verbose, nested + 1)
+  File "C:\Python313\Lib\re\_parser.py", line 459, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       not nested and not items))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\re\_parser.py", line 529, in _parse
+    sourceget()
+    ~~~~~~~~~^^
+MemoryError
+iter 0 mean_r=0.0443 pg=0.2950 vl=0.0439 |ratio-1|=0.2674 sigma=0.368 t=117s
+iter 1 mean_r=0.0084 pg=-0.0804 vl=0.0858 |ratio-1|=0.0714 sigma=0.368 t=228s

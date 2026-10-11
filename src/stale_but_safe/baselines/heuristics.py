@@ -104,27 +104,37 @@ class TunedHeuristic(Policy):
         return new
 
 
-def solve_min_maxutil(topo, demand, valid, cap_scale=None):
-    """LP: minimise z s.t. link load <= z * cap. Returns (splits, z)."""
+def solve_min_maxutil(topo, demand, valid, two_phase=False, slack=1e-3):
+    """LP: minimise z s.t. link load <= z * cap. Returns (splits, z).
+    two_phase: second LP keeps the bottleneck within (1+slack)*z and minimises
+    total hop-weighted load, giving a deterministic, low-churn-ish teacher."""
     D, k, E = topo.D, topo.k, topo.E
     nv = D * k
     c = np.zeros(nv + 1)
     c[-1] = 1.0
-    A_ub = np.hstack([topo.inc * np.tile(np.repeat(demand, k), 1)[None, :],
-                      -topo.cap[:, None]])
+    A_ub = np.hstack([topo.inc * np.repeat(demand, k)[None, :], -topo.cap[:, None]])
     b_ub = np.zeros(E)
-    vmask = valid.ravel()
     A_eq = np.zeros((D, nv + 1))
     for d in range(D):
         A_eq[d, d * k:(d + 1) * k] = 1.0
-    has = valid.any(1)
-    b_eq = has.astype(float)
+    b_eq = valid.any(1).astype(float)
+    vmask = valid.ravel()
     bounds = [(0, 1 if vmask[i] else 0) for i in range(nv)] + [(0, None)]
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq,
                   bounds=bounds, method="highs")
     if not res.success:
         return ecmp_splits(topo, valid), float("nan")
-    return res.x[:nv].reshape(D, k), float(res.x[-1])
+    z = float(res.x[-1])
+    if not two_phase:
+        return res.x[:nv].reshape(D, k), z
+    # phase 2: all links <= (1+slack) z cap; minimise sum_e load_e / cap_e
+    A2 = topo.inc * np.repeat(demand, k)[None, :]
+    c2 = (topo.inc / topo.cap[:, None] * np.repeat(demand, k)[None, :]).sum(0)
+    res2 = linprog(c2, A_ub=A2, b_ub=(1 + slack) * z * topo.cap + 1e-9, A_eq=A_eq[:, :nv],
+                   b_eq=b_eq, bounds=bounds[:nv], method="highs")
+    if not res2.success:
+        return res.x[:nv].reshape(D, k), z
+    return res2.x.reshape(D, k), z
 
 
 class LPOracle(Policy):

@@ -6,8 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "stale-but-safe-te"
 version = "0.0.1"
 description = "Delay-robust and safety-guarded graph RL for traffic engineering in SDN"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = ["numpy", "scipy", "networkx", "pyyaml"]
+
+[project.scripts]
+stale-but-safe = "stale_but_safe.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest"]

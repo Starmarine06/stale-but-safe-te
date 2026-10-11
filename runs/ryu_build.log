@@ -1,0 +1,11 @@
+ryu.Dockerfile:5
+--------------------
+   3 |         pip install --no-cache-dir ryu==4.34 eventlet==0.30.2 "dnspython<2" \
+   4 |             numpy scipy networkx pyyaml
+   5 | >>> RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+   6 |     WORKDIR /app
+   7 |     COPY pyproject.toml /app/
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/m3apw5ntz9wexeayeyl1htl52

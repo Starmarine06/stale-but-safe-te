@@ -1,0 +1,10 @@
+iter 0 beta=1.00 samples=4000 loss=0.3658 t=122s
+iter 1 beta=0.50 samples=8000 loss=0.3055 t=242s
+iter 2 beta=0.35 samples=10000 loss=0.3328 t=352s
+iter 3 beta=0.20 samples=10000 loss=0.3448 t=464s
+iter 4 beta=0.05 samples=10000 loss=0.3477 t=594s
+iter 5 beta=0.00 samples=10000 loss=0.3465 t=858s
+iter 6 beta=0.00 samples=10000 loss=0.3375 t=954s
+iter 7 beta=0.00 samples=10000 loss=0.3314 t=1076s
+iter 8 beta=0.00 samples=10000 loss=0.3364 t=1173s
+iter 9 beta=0.00 samples=10000 loss=0.3155 t=1272s

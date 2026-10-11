@@ -63,7 +63,16 @@ class TEEnv:
         m = self._evaluate(self._next, ecmp)
         self.ch_util.push(m["util"])
         self.ch_dem.push(self._next)
+        self._maybe_fail()
         return self.observe()
+
+    def _maybe_fail(self):
+        """Port-status events are visible to the controller immediately."""
+        c = self.cfg
+        if c.fail_at is not None and self.t == c.fail_at:
+            idx = self.fail_rng.choice(self.topo.E // 2, c.n_fail, replace=False) * 2
+            self.link_up[idx] = False
+            self.link_up[idx + 1] = False  # both directions
 
     def peek_demand(self) -> np.ndarray:
         """True demand of the interval about to be decided (oracle use only)."""
@@ -107,10 +116,6 @@ class TEEnv:
 
     def step(self, splits: np.ndarray):
         c, topo = self.cfg, self.topo
-        if c.fail_at is not None and self.t == c.fail_at:
-            idx = self.fail_rng.choice(topo.E // 2, c.n_fail, replace=False) * 2
-            self.link_up[idx] = False
-            self.link_up[idx + 1] = False  # both directions
         proposed = self.sanitize(splits)
         if c.L > 0:
             self.pending.append(proposed)
@@ -130,6 +135,7 @@ class TEEnv:
         self.ch_dem.push(demand)
         self.t += 1
         self._next = self.traffic.next()
+        self._maybe_fail()
         info = {**{k: v for k, v in m.items() if k != "util"}, "churn": churn,
                 "ecmp_max_util": base["max_util"], "ecmp_loss": base["loss"],
                 "ecmp_delay": base["delay"], "util": m["util"]}

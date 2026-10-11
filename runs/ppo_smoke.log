@@ -1,0 +1,4 @@
+X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\ppo.py:112: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\torch\csrc\autograd\generated\python_variable_methods.cpp:837.)
+  stats.append((pg.item(), vl.item(), float((ratio - 1).abs().mean())))
+iter 0 mean_r=-0.0114 pg=0.0930 vl=0.0166 |ratio-1|=0.6283 sigma=0.368 t=18s
