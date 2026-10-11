@@ -1,0 +1,641 @@
+seed: 12345
+val:
+- Aarnet
+- Abvt
+- Ans
+- Compuserve
+- Eunetworks
+- HiberniaCanada
+- HiberniaNireland
+- Nsfnet
+- Pacificwave
+- Savvis
+- Spiralight
+- Uninet
+test:
+- Abilene
+- Aconet
+- Agis
+- Airtel
+- Arnes
+- Arpanet19719
+- Arpanet19723
+- Arpanet19728
+- Atmnet
+- AttMpls
+- Bandcon
+- Bbnplanet
+- Bellcanada
+- Belnet2003
+- Belnet2004
+- Belnet2005
+- Belnet2006
+- Belnet2007
+- Belnet2008
+- Belnet2009
+- Belnet2010
+- Bics
+- Biznet
+- Bren
+- BsonetEurope
+- BtAsiaPac
+- BtEurope
+- BtLatinAmerica
+- BtNorthAmerica
+- Canerie
+- Cernet
+- Cesnet2001
+- Cesnet200304
+- Cesnet200511
+- Cesnet200603
+- Cesnet200706
+- Chinanet
+- Claranet
+- CrlNetworkServices
+- Cwix
+- Darkstrand
+- DeutscheTelekom
+- Digex
+- Easynet
+- Eenet
+- EliBackbone
+- Ernet
+- Evolink
+- Fatman
+- Fccn
+- Funet
+- Gambia
+- Garr199901
+- Garr199904
+- Garr199905
+- Garr200109
+- Garr200112
+- Garr200212
+- Garr200404
+- Geant2001
+- Geant2009
+- Geant2010
+- Geant2012
+- Goodnet
+- Grnet
+- GtsCzechRepublic
+- GtsHungary
+- GtsPoland
+- GtsRomania
+- GtsSlovakia
+- Harnet
+- HiberniaUk
+- HiberniaUs
+- Highwinds
+- HostwayInternational
+- HurricaneElectric
+- Ibm
+- Iij
+- Iinet
+- Ilan
+- Integra
+- Internetmci
+- Intranetwork
+- IowaStatewideFiberMap
+- Istar
+- Janetbackbone
+- Janetlense
+- Karen
+- KentmanApr2007
+- KentmanAug2005
+- KentmanFeb2008
+- KentmanJan2011
+- KentmanJul2005
+- LambdaNet
+- Litnet
+- Marnet
+- Marwan
+- Myren
+- Navigata
+- NetworkUsa
+- Nextgen
+- Niif
+- Noel
+- Nordu2010
+- Ntelos
+- Ntt
+- Oxford
+- Packetexchange
+- Palmetto
+- Peer1
+- PionierL1
+- PionierL3
+- Psinet
+- Quest
+- Rediris
+- Renater2001
+- Renater2004
+- Renater2006
+- Renater2008
+- Renater2010
+- Restena
+- Rhnet
+- Rnp
+- Roedunet
+- RoedunetFibre
+- Sanet
+- Shentel
+- Sprint
+- Sunet
+- Surfnet
+- SwitchL3
+- TLex
+- Twaren
+- UniC
+- Uran
+- Uunet
+- Vinaren
+- WideJpn
+- Xeex
+- Xspedius
+- York
+test_subset:
+- Abilene
+- Aconet
+- Agis
+- Bandcon
+- BtNorthAmerica
+- Cesnet200304
+- Cesnet200511
+- Cesnet200706
+- Claranet
+- Fccn
+- Garr200112
+- Geant2010
+- Internetmci
+- Janetlense
+- KentmanAug2005
+- KentmanFeb2008
+- KentmanJul2005
+- LambdaNet
+- Nextgen
+- Ntt
+- Packetexchange
+- Renater2008
+- Surfnet
+- WideJpn
+sizes:
+  Aarnet:
+  - 19
+  - 24
+  Abvt:
+  - 23
+  - 31
+  Ans:
+  - 18
+  - 25
+  Compuserve:
+  - 14
+  - 17
+  Eunetworks:
+  - 14
+  - 16
+  HiberniaCanada:
+  - 13
+  - 14
+  HiberniaNireland:
+  - 18
+  - 21
+  Nsfnet:
+  - 13
+  - 15
+  Pacificwave:
+  - 18
+  - 22
+  Savvis:
+  - 19
+  - 20
+  Spiralight:
+  - 15
+  - 16
+  Uninet:
+  - 13
+  - 18
+  Abilene:
+  - 11
+  - 14
+  Aconet:
+  - 23
+  - 31
+  Agis:
+  - 25
+  - 30
+  Airtel:
+  - 16
+  - 26
+  Arnes:
+  - 34
+  - 46
+  Arpanet19719:
+  - 18
+  - 22
+  Arpanet19723:
+  - 25
+  - 28
+  Arpanet19728:
+  - 29
+  - 32
+  Atmnet:
+  - 21
+  - 22
+  AttMpls:
+  - 25
+  - 56
+  Bandcon:
+  - 21
+  - 28
+  Bbnplanet:
+  - 27
+  - 28
+  Bellcanada:
+  - 48
+  - 64
+  Belnet2003:
+  - 23
+  - 39
+  Belnet2004:
+  - 23
+  - 39
+  Belnet2005:
+  - 23
+  - 41
+  Belnet2006:
+  - 23
+  - 41
+  Belnet2007:
+  - 21
+  - 24
+  Belnet2008:
+  - 21
+  - 24
+  Belnet2009:
+  - 21
+  - 24
+  Belnet2010:
+  - 22
+  - 25
+  Bics:
+  - 33
+  - 48
+  Biznet:
+  - 29
+  - 33
+  Bren:
+  - 37
+  - 38
+  BsonetEurope:
+  - 18
+  - 23
+  BtAsiaPac:
+  - 20
+  - 31
+  BtEurope:
+  - 24
+  - 37
+  BtLatinAmerica:
+  - 45
+  - 50
+  BtNorthAmerica:
+  - 36
+  - 76
+  Canerie:
+  - 32
+  - 41
+  Cernet:
+  - 41
+  - 58
+  Cesnet2001:
+  - 23
+  - 23
+  Cesnet200304:
+  - 29
+  - 33
+  Cesnet200511:
+  - 39
+  - 44
+  Cesnet200603:
+  - 39
+  - 44
+  Cesnet200706:
+  - 44
+  - 51
+  Chinanet:
+  - 42
+  - 66
+  Claranet:
+  - 15
+  - 18
+  CrlNetworkServices:
+  - 33
+  - 38
+  Cwix:
+  - 36
+  - 41
+  Darkstrand:
+  - 28
+  - 31
+  DeutscheTelekom:
+  - 30
+  - 55
+  Digex:
+  - 31
+  - 35
+  Easynet:
+  - 19
+  - 26
+  Eenet:
+  - 13
+  - 13
+  EliBackbone:
+  - 20
+  - 30
+  Ernet:
+  - 30
+  - 32
+  Evolink:
+  - 37
+  - 45
+  Fatman:
+  - 17
+  - 21
+  Fccn:
+  - 23
+  - 25
+  Funet:
+  - 26
+  - 30
+  Gambia:
+  - 28
+  - 28
+  Garr199901:
+  - 16
+  - 18
+  Garr199904:
+  - 23
+  - 25
+  Garr199905:
+  - 23
+  - 25
+  Garr200109:
+  - 22
+  - 24
+  Garr200112:
+  - 24
+  - 26
+  Garr200212:
+  - 27
+  - 28
+  Garr200404:
+  - 22
+  - 24
+  Geant2001:
+  - 27
+  - 38
+  Geant2009:
+  - 34
+  - 52
+  Geant2010:
+  - 37
+  - 56
+  Geant2012:
+  - 40
+  - 61
+  Goodnet:
+  - 17
+  - 31
+  Grnet:
+  - 37
+  - 42
+  GtsCzechRepublic:
+  - 32
+  - 33
+  GtsHungary:
+  - 30
+  - 31
+  GtsPoland:
+  - 33
+  - 37
+  GtsRomania:
+  - 21
+  - 24
+  GtsSlovakia:
+  - 35
+  - 37
+  Harnet:
+  - 21
+  - 23
+  HiberniaUk:
+  - 15
+  - 15
+  HiberniaUs:
+  - 22
+  - 29
+  Highwinds:
+  - 18
+  - 31
+  HostwayInternational:
+  - 16
+  - 21
+  HurricaneElectric:
+  - 24
+  - 37
+  Ibm:
+  - 18
+  - 24
+  Iij:
+  - 37
+  - 65
+  Iinet:
+  - 31
+  - 35
+  Ilan:
+  - 14
+  - 15
+  Integra:
+  - 27
+  - 36
+  Internetmci:
+  - 19
+  - 33
+  Intranetwork:
+  - 39
+  - 51
+  IowaStatewideFiberMap:
+  - 33
+  - 41
+  Istar:
+  - 23
+  - 23
+  Janetbackbone:
+  - 29
+  - 45
+  Janetlense:
+  - 20
+  - 34
+  Karen:
+  - 25
+  - 28
+  KentmanApr2007:
+  - 22
+  - 23
+  KentmanAug2005:
+  - 27
+  - 29
+  KentmanFeb2008:
+  - 26
+  - 27
+  KentmanJan2011:
+  - 38
+  - 38
+  KentmanJul2005:
+  - 16
+  - 17
+  LambdaNet:
+  - 42
+  - 46
+  Litnet:
+  - 43
+  - 43
+  Marnet:
+  - 20
+  - 27
+  Marwan:
+  - 16
+  - 17
+  Myren:
+  - 37
+  - 39
+  Navigata:
+  - 13
+  - 17
+  NetworkUsa:
+  - 35
+  - 39
+  Nextgen:
+  - 17
+  - 19
+  Niif:
+  - 36
+  - 41
+  Noel:
+  - 19
+  - 25
+  Nordu2010:
+  - 15
+  - 15
+  Ntelos:
+  - 47
+  - 58
+  Ntt:
+  - 32
+  - 63
+  Oxford:
+  - 20
+  - 26
+  Packetexchange:
+  - 21
+  - 27
+  Palmetto:
+  - 45
+  - 64
+  Peer1:
+  - 16
+  - 20
+  PionierL1:
+  - 36
+  - 41
+  PionierL3:
+  - 38
+  - 45
+  Psinet:
+  - 24
+  - 25
+  Quest:
+  - 20
+  - 31
+  Rediris:
+  - 19
+  - 31
+  Renater2001:
+  - 24
+  - 27
+  Renater2004:
+  - 30
+  - 36
+  Renater2006:
+  - 33
+  - 43
+  Renater2008:
+  - 33
+  - 43
+  Renater2010:
+  - 43
+  - 56
+  Restena:
+  - 19
+  - 21
+  Rhnet:
+  - 16
+  - 18
+  Rnp:
+  - 31
+  - 34
+  Roedunet:
+  - 42
+  - 46
+  RoedunetFibre:
+  - 48
+  - 52
+  Sanet:
+  - 43
+  - 45
+  Shentel:
+  - 28
+  - 35
+  Sprint:
+  - 11
+  - 18
+  Sunet:
+  - 26
+  - 32
+  Surfnet:
+  - 50
+  - 68
+  SwitchL3:
+  - 42
+  - 63
+  TLex:
+  - 12
+  - 13
+  Twaren:
+  - 20
+  - 20
+  UniC:
+  - 25
+  - 27
+  Uran:
+  - 24
+  - 24
+  Uunet:
+  - 49
+  - 84
+  Vinaren:
+  - 25
+  - 26
+  WideJpn:
+  - 30
+  - 33
+  Xeex:
+  - 24
+  - 34
+  Xspedius:
+  - 34
+  - 49
+  York:
+  - 23
+  - 24

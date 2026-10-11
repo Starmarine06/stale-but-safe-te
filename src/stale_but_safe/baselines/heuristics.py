@@ -42,10 +42,7 @@ def _path_cost(topo, util, valid, agg="max"):
     """(D, k) path cost from per-link util; invalid paths = inf."""
     u = np.asarray(util)
     if agg == "max":
-        cost = np.zeros((topo.D, topo.k))
-        for d in range(topo.D):
-            for p, ls in enumerate(topo.path_links[d]):
-                cost[d, p] = u[ls].max()
+        cost = (u[:, None] * topo.inc).max(0).reshape(topo.D, topo.k)
     else:
         cost = (topo.inc.T @ u).reshape(topo.D, topo.k)
     return np.where(valid, cost, np.inf)
