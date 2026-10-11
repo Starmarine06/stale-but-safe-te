@@ -29,7 +29,7 @@ class TrafficGen:
                  burst_sigma: float = 0.25, hotspot_prob: float = 0.02,
                  hotspot_mult: float = 4.0, shift_at: int | None = None,
                  flash_at: int | None = None, flash_len: int = 20,
-                 flash_mult: float = 5.0):
+                 flash_mult: float = 5.0, active=None):
         """`load` = ECMP max link utilisation of the *base* matrix."""
         self.topo, self.rng = topo, rng
         self.amp, self.period, self.bsig = diurnal_amp, diurnal_period, burst_sigma
@@ -39,12 +39,15 @@ class TrafficGen:
         self.phase = rng.uniform(0, 2 * np.pi)
         self.load, self.t, self._hot = load, 0, np.ones(topo.D)
         self.flash_node = int(rng.integers(topo.n))
+        self.active = None if active is None else np.asarray(active, bool)
         self._set_base()
 
     def _set_base(self):
         mass = self.rng.lognormal(0.0, 0.8, self.topo.n)
         s, t = np.array(self.topo.demands).T
         base = mass[s] * mass[t]
+        if self.active is not None:
+            base = base * self.active
         self.base = base * self.load / ecmp_max_util(self.topo, base)
 
     def next(self) -> np.ndarray:
