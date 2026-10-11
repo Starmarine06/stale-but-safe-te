@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stale-but-safe-te"
+version = "0.0.1"
+description = "Delay-robust and safety-guarded graph RL for traffic engineering in SDN"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy", "networkx", "pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+rl = ["torch", "gymnasium"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
