@@ -42,9 +42,10 @@ class Featurizer:
     """Stateful: keeps the last H observations (the history the agent sees) and the
     controller's own last installed splits (known to it, so not telemetry)."""
 
-    def __init__(self, topo: Topology, H: int = 3, use_age: bool = True, G: GraphStatic | None = None):
+    def __init__(self, topo: Topology, H: int = 3, use_age: bool = True, G: GraphStatic | None = None,
+                 use_model: bool = True):
         self.G = G or GraphStatic(topo)
-        self.topo, self.H, self.use_age = topo, H, use_age
+        self.topo, self.H, self.use_age, self.use_model = topo, H, use_age, use_model
         self.hist: deque = deque(maxlen=H)
         self.n_link, self.n_path = dims(H, use_age)
         self.prev = ecmp_splits(topo)
@@ -84,6 +85,9 @@ class Featurizer:
         prev = prev / np.maximum(prev.sum(1, keepdims=True), 1e-9)
         pred_e = np.clip(G.inc_np @ (dem[:, None] * ecmp).ravel() / topo.cap, 0, 5).astype(np.float32)
         pred_p = np.clip(G.inc_np @ (dem[:, None] * prev).ravel() / topo.cap, 0, 5).astype(np.float32)
+        if not self.use_model:   # ablation: hide all fluid-model-derived features
+            pred_e = np.zeros_like(pred_e)
+            pred_p = np.zeros_like(pred_p)
         us = [h[0] for h in self.hist]
         cols = us + ([h[1] for h in self.hist] if self.use_age else [])
         upf = up.astype(np.float32)
@@ -95,8 +99,11 @@ class Featurizer:
         pf = [pmax, pmean, dn, G.static_path[:, 0], G.static_path[:, 1], valid.ravel().astype(np.float32)]
         if self.use_age:
             pf.insert(3, np.repeat(np.clip(obs["demand_age"], 0, 20) / 10.0, topo.k))
-        wi_m = self._whatif(u * upf, dem, prev)
-        wi_p = self._whatif(pred_p * upf, dem, prev)
+        if self.use_model:
+            wi_m = self._whatif(u * upf, dem, prev)
+            wi_p = self._whatif(pred_p * upf, dem, prev)
+        else:
+            wi_m = wi_p = np.zeros(G.inc_np.shape[1])
         pf += [np.clip(wi_m, 0, 5), np.clip(wi_p, 0, 5)]
         xp = np.stack(pf, 1).astype(np.float32)
         return xl.astype(np.float32), xp, valid

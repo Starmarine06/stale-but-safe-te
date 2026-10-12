@@ -63,7 +63,7 @@ def episode(args):
         model = build(mc)
         model.load_state_dict(state)
         model.eval()
-    feat = Featurizer(topo, mc.H, mc.use_age, graph_static(topo))
+    feat = Featurizer(topo, mc.H, mc.use_age, graph_static(topo), mc.use_model)
     gen = torch.Generator().manual_seed(int(seed))
     XL, XP, V, DM, PV, EM = [], [], [], [], [], []
     done = False
@@ -117,6 +117,7 @@ def main():
     ap.add_argument("--H", type=int, default=3)
     ap.add_argument("--no-age", action="store_true")
     ap.add_argument("--no-gnn", action="store_true")
+    ap.add_argument("--no-model", action="store_true")
     ap.add_argument("--hid", type=int, default=64)
     ap.add_argument("--init")
     ap.add_argument("--iters", type=int, default=40)
@@ -133,18 +134,21 @@ def main():
     if a.init:
         model, mc = load(a.init)
     else:
-        mc = ModelCfg(H=a.H, use_age=not a.no_age, use_gnn=not a.no_gnn, hid=a.hid)
+        mc = ModelCfg(H=a.H, use_age=not a.no_age, use_gnn=not a.no_gnn, hid=a.hid,
+                      use_model=not a.no_model)
         torch.manual_seed(a.seed)
         model = build(mc)
     rng = np.random.default_rng(a.seed + 7)
     data: dict = {}
     t0 = time.time()
-    with mp.get_context("spawn").Pool(a.workers) as pool:
+    pool_cm = mp.get_context("spawn").Pool(a.workers) if a.workers > 0 else None
+    run_eps = (lambda jobs: pool_cm.imap_unordered(episode, jobs)) if pool_cm else (lambda jobs: map(episode, jobs))
+    try:
         for it in range(a.iters):
             state = None if (it == 0 and not a.init) else {k: v.clone() for k, v in model.state_dict().items()}
             jobs = [(int(rng.integers(N_TRAIN_TOPOS)), int(rng.integers(1 << 30)), a.mode,
                      dict(mc.__dict__), state, a.sigma) for _ in range(a.eps_per_iter)]
-            for tid, chunk in pool.imap_unordered(episode, jobs):
+            for tid, chunk in run_eps(jobs):
                 data.setdefault(tid, []).append(chunk)
             total = sum(len(c[0]) for ch in data.values() for c in ch)
             while total > a.max_samples:
@@ -155,6 +159,9 @@ def main():
             print(f"iter {it} samples={total} loss={loss:.4f} mu={mu:.3f} fluid_loss={ls:.4f} lr={lr:.2e} "
                   f"t={time.time()-t0:.0f}s", flush=True)
             save(model, mc, a.out, extra={"args": vars(a), "iter": it})
+    finally:
+        if pool_cm:
+            pool_cm.terminate()
 
 
 if __name__ == "__main__":

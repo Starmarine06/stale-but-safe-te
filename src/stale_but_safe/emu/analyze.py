@@ -38,10 +38,10 @@ def load_emulation(run_dir: Path, tag: str, sc: dict) -> dict:
             "changed": np.array([r["changed"] for r in rows])}
 
 
-def sim_trace(sc: dict, spec: str, profile: str, make_policy) -> dict:
+def sim_trace(sc: dict, spec: str, profile: str, make_policy, carried: bool = True) -> dict:
     from ..env.te_env import TEEnv
     topo = S.topo_from_dict(sc["topo"])
-    cfg = S.sim_cfg(sc, PROFILES[profile])
+    cfg = S.sim_cfg(sc, PROFILES[profile], carried=carried)
     env = TEEnv(topo, cfg, sc["seed"])
     obs = env.reset(sc["seed"])
     pol = make_policy(spec, profile)
@@ -50,7 +50,7 @@ def sim_trace(sc: dict, spec: str, profile: str, make_policy) -> dict:
     done = False
     while not done:
         obs, _, done, info = env.step(pol.act(obs, env))
-        mu.append(info["max_util"]); ecmp_mu.append(info["ecmp_max_util"]); loss.append(info["loss"])
+        mu.append(min(info["max_util"], 1.0)); ecmp_mu.append(info["ecmp_max_util"]); loss.append(info["loss"])
     return {"max_util": np.array(mu), "ecmp_max_util": np.array(ecmp_mu), "loss": np.array(loss)}
 
 

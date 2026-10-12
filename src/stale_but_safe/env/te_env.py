@@ -32,6 +32,7 @@ class EnvCfg:
     gamma: float = 5.0              # loss
     delta: float = 0.0              # util variance
     lam: float = 0.05               # churn
+    carried_obs: bool = False       # telemetry shows carried (<=1) not offered utilisation, like real counters
     fail_at: int | None = None      # step at which random links fail
     n_fail: int = 1
 
@@ -61,7 +62,7 @@ class TEEnv:
         self.pending = deque([ecmp] * c.L)
         # prime telemetry with one ECMP interval so observe() is defined
         m = self._evaluate(self._next, ecmp)
-        self.ch_util.push(m["util"])
+        self.ch_util.push(np.minimum(m["util"], 1.0) if c.carried_obs else m["util"])
         self.ch_dem.push(self._next)
         self._maybe_fail()
         return self.observe()
@@ -131,7 +132,7 @@ class TEEnv:
         self.applied = eff
         reward = -(c.alpha * m["max_util"] + c.beta * m["delay"] + c.gamma * m["loss"]
                    + c.delta * m["util_var"]) - c.lam * churn
-        self.ch_util.push(m["util"])
+        self.ch_util.push(np.minimum(m["util"], 1.0) if c.carried_obs else m["util"])
         self.ch_dem.push(demand)
         self.t += 1
         self._next = self.traffic.next()

@@ -15,6 +15,7 @@ class ModelCfg:
     H: int = 3
     use_age: bool = True
     use_gnn: bool = True
+    use_model: bool = True
     hid: int = 64
     layers: int = 3
     k: int = 4
@@ -55,7 +56,7 @@ class LearnedPolicy(Policy):
 
     def reset(self, env):
         super().reset(env)
-        self.feat = Featurizer(env.topo, self.cfg.H, self.cfg.use_age, graph_static(env.topo))
+        self.feat = Featurizer(env.topo, self.cfg.H, self.cfg.use_age, graph_static(env.topo), self.cfg.use_model)
 
     @torch.no_grad()
     def act(self, obs, env):

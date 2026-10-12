@@ -32,6 +32,7 @@ ap.add_argument("--load", type=float, default=0.8)
 ap.add_argument("--eps", type=float, default=0.0)
 ap.add_argument("--profiles", default="ideal,rich,snmp,degraded")
 ap.add_argument("--oracle-max-n", type=int, default=25)
+ap.add_argument("--only-models", action="store_true", help="skip ecmp/tuned/oracle (already run)")
 ap.add_argument("--scenario", default="gravity", choices=["gravity", "hotspot", "shift", "flash", "fail"])
 a = ap.parse_args()
 
@@ -73,8 +74,8 @@ for t in topos:
     for pn in a.profiles.split(","):
         cfg = EnvCfg(load=a.load, horizon=a.horizon, telemetry=PROFILES[pn], traffic=traffic_cfg(a.horizon),
                      fail_at=int(a.horizon * 0.4) if a.scenario == "fail" else None)
-        todo = dict(methods)
-        if t.n <= a.oracle_max_n:
+        todo = {k: v for k, v in methods.items() if not a.only_models or k.startswith("gnn")}
+        if t.n <= a.oracle_max_n and not a.only_models:
             todo["oracle"] = lambda p: LPOracle()
         for mname, mk in todo.items():
             pol = mk(pn)
