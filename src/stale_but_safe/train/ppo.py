@@ -159,7 +159,7 @@ def main():
             st = update(model, opt, batches, a.epochs)
             print(f"iter {it} mean_r={np.mean(rets):.4f} pg={st[0]:.4f} vl={st[1]:.4f} |ratio-1|={st[2]:.4f} "
                   f"sigma={model.log_std.exp().item():.3f} t={time.time()-t0:.0f}s", flush=True)
-            if (it + 1) % 5 == 0 or it == a.iters - 1:
+            if True:
                 save(model, mc, a.out, extra={"args": vars(a), "iter": it})
 
 

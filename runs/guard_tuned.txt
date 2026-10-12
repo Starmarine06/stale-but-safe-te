@@ -1,0 +1,19 @@
+profile   variant            dScore   gain%   p99reg   cvar95
+snmp      raw                -0.060     4.0    0.184    0.126
+snmp      L123 eps=0.05      -0.072     3.9    0.112    0.077
+snmp      L123 eps=0.0       -0.064     3.6    0.105    0.076
+snmp      L123 eps=-0.03     -0.058     3.2    0.068    0.050
+snmp      L3 tau=0.02        -0.067     3.6    0.105    0.069
+snmp      L3 tau=0.05        -0.070     3.8    0.140    0.099
+snmp      L3 tau=0.1         -0.070     4.0    0.175    0.113
+snmp      L1 only            -0.060     4.0    0.184    0.126
+snmp      L2 only eps=0      -0.063     3.6    0.111    0.082
+degraded  raw                 0.204    -2.4    0.517    0.410
+degraded  L123 eps=0.05      -0.005     1.2    0.172    0.115
+degraded  L123 eps=0.0       -0.010     1.5    0.140    0.084
+degraded  L123 eps=-0.03     -0.009     1.1    0.118    0.072
+degraded  L3 tau=0.02         0.016     0.1    0.310    0.227
+degraded  L3 tau=0.05         0.014     0.4    0.307    0.224
+degraded  L3 tau=0.1          0.036    -0.1    0.383    0.285
+degraded  L1 only             0.201    -2.4    0.517    0.410
+degraded  L2 only eps=0      -0.007     1.8    0.164    0.124

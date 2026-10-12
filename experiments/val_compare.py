@@ -30,5 +30,5 @@ policies = {
     "ideal+guard": lambda p, t: Guard(LearnedPolicy(mi, ci, "gnn-ideal"), GuardCfg(eps=eps)),
     "oracle": lambda p, t: LPOracle(),
 }
-res = table(topos, policies, PROFILES, seeds=[5000, 5001], horizon=60)
+res = table(topos, policies, PROFILES, seeds=[5000], horizon=60)
 print_table(summarize(res))
