@@ -90,11 +90,11 @@ def make_scenario(topo: Topology, cfg: EnvCfg, seed: int, steps: int, active_n: 
             "load": cfg.load, "traffic": {k: v for k, v in cfg.traffic.items()}}
 
 
-def sim_cfg(sc: dict, telemetry, L: int = 0) -> EnvCfg:
+def sim_cfg(sc: dict, telemetry, L: int = 0, carried: bool = False) -> EnvCfg:
     """Simulator config that reproduces the scenario's traffic exactly."""
     active = np.zeros(len(sc["topo"]["demands"]), bool)
     active[sc["active"]] = True
-    return EnvCfg(load=sc["load"], horizon=sc["steps"], telemetry=telemetry, L=L,
+    return EnvCfg(load=sc["load"], horizon=sc["steps"], telemetry=telemetry, L=L, carried_obs=carried,
                   traffic={**sc["traffic"], "active": active})
 
 

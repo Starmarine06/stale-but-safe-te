@@ -1,20 +1,4 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\dfm.py", line 161, in <module>
-    main()
-    ~~~~^^
-  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\train\dfm.py", line 134, in main
-    model, mc = load(a.init)
-                ~~~~^^^^^^^^
-  File "X:\CN Project\stale-but-safe-te\src\stale_but_safe\models\learned.py", line 33, in load
-    d = torch.load(path, map_location="cpu", weights_only=False)
-  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\serialization.py", line 1530, in load
-    with _open_file_like(f, "rb") as opened_file:
-         ~~~~~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\serialization.py", line 795, in _open_file_like
-    return _open_file(name_or_buffer, mode)
-  File "C:\Users\flame\AppData\Roaming\Python\Python313\site-packages\torch\serialization.py", line 776, in __init__
-    super().__init__(open(name, mode))  # noqa: SIM115
-                     ~~~~^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'runs/ideal_dfm_s0.pt'
+iter 0 samples=4000 loss=1.0704 mu=1.044 fluid_loss=0.0311 lr=2.00e-04 t=40s
+iter 1 samples=8000 loss=1.0885 mu=1.055 fluid_loss=0.0344 lr=1.74e-04 t=92s
+iter 2 samples=12000 loss=1.0903 mu=1.038 fluid_loss=0.0354 lr=1.10e-04 t=155s
+iter 3 samples=12000 loss=1.0980 mu=1.078 fluid_loss=0.0374 lr=4.64e-05 t=216s
