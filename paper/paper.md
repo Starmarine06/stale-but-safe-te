@@ -1,30 +1,23 @@
-# Telemetry Quality Determines When Learned Traffic Engineering Outperforms Reactive Heuristics
+# The Cost of Stale Telemetry in Traffic Engineering: Learned Policies, Re-Tuned Heuristics and ECMP
 
-*Draft v2. All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
+*Draft v3. All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
 **[PENDING]** depend on experiments still running when this draft was written. Protocol deviations are tabulated in
 `docs/eval_protocol.md`; claims and their status are in Section 8.*
 
 ## Abstract
 
-Learned traffic-engineering (TE) policies are usually evaluated with accurate, timely link counters, whereas
-operational controllers see counters that are polled every few minutes, delayed, noisy and sometimes missing. We ask
-how telemetry quality changes which method is worth deploying. We define a shared impairment model (polling period,
-delay, noise, missing counters, rule-install latency) used by a fluid simulator and an SDN controller (Ryu with Open
-vSwitch in Mininet), and compare ECMP, a tuned reactive heuristic (re-tuned for each telemetry profile), static and
-per-network learned (DOTE-style) baselines, an LP oracle, and a policy trained only on small synthetic graphs. On 24
-held-out Topology Zoo graphs the tuned heuristic is better with clean telemetry, while the learned policy is better
-with degraded telemetry (21-23 of 24 graphs over four training seeds), where the heuristic's average score falls to
-ECMP level. On replayed SNDlib traces from four networks with traffic-engineering headroom, scaled to controlled loads,
-the learned policy is never behind the heuristic under non-clean telemetry (ten fresh trace windows per cell on three
-networks, four on the fourth), and the heuristic falls below ECMP on two of the four networks. The picture is conditional: a DOTE-style model
-trained on a network's own history beats the zero-shot policy (48-49% versus 22-25% gain on Abilene), fine-tuning on
-history closes most of that gap, an ablation shows that model-based fluid features rather than graph message passing
-carry the result, and in overloaded trace windows the heuristic beats the learned policy. Controlled sweeps show that staleness (delay, polling period) drives the flip while noise and missing
-counters hardly matter, and that a heuristic re-tuned for each delay matches the learned policy up to about three intervals of
-delay and falls 10-20 points behind beyond that. A runtime ECMP-fallback guard reduces tail regret in
-some regimes (link failures) and little in others; a hysteresis rate limiter removes 90-99% of flow updates in simulation
-with no measured loss of gain, and 77% in emulation for a small loss. Telemetry faults are modelled, not measured, and traffic is scaled to a target
-load, so the results do not establish performance in a production network.
+Which traffic-engineering controller should an operator run when the telemetry it relies on is stale? We compare ECMP, a
+reactive heuristic re-tuned for each telemetry condition, and a learned split-ratio policy trained only on small synthetic
+graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
+held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
+we identify. With clean telemetry the heuristic is competitive and sometimes better. As telemetry delay and polling period grow,
+a heuristic re-tuned for each delay keeps pace up to about three intervals of delay and then falls 10-20 points of gain behind,
+while the learned policy's gain does not change; measurement noise and missing counters hardly matter. Other conditions
+change the picture: a model trained on a network's own history does substantially better than the zero-shot policy, the
+heuristic wins in rare overloaded windows, and on some networks ECMP is sufficient. Ablations show that model-based fluid
+features, not graph message passing, carry the learned policy. Operationally the learned policy reprograms about ten times more
+flows than the heuristic, but a hysteresis threshold removes most of them. Telemetry faults are modelled rather than measured and
+traffic is scaled to target loads, so the results are not a validation in a production network.
 
 ## 1 Introduction
 
