@@ -42,10 +42,13 @@ class _Shim:
 
 def build_policy(spec: str, topo, shim):
     from stale_but_safe.baselines.heuristics import ECMP, SPF, TunedHeuristic
-    guard_eps = None
+    guard_eps, guard_layers = None, (True, True, True)
     if spec.startswith("guard"):
         head, spec = spec.split("@", 1)
-        guard_eps = float(head[5:] or 0.05)
+        if head.startswith("guardL2"):                      # e.g. guardL2-0.06@model:...  (pre-action check only)
+            guard_eps, guard_layers = float(head[7:] or -0.06), (True, True, False)
+        else:
+            guard_eps = float(head[5:] or 0.05)
     if spec == "ecmp":
         pol = ECMP()
     elif spec == "spf":
@@ -63,7 +66,7 @@ def build_policy(spec: str, topo, shim):
         raise ValueError(spec)
     if guard_eps is not None:
         from stale_but_safe.guard.guard import Guard, GuardCfg
-        pol = Guard(pol, GuardCfg(eps=guard_eps))
+        pol = Guard(pol, GuardCfg(eps=guard_eps, layers=guard_layers))
     pol.reset(shim)
     return pol
 
