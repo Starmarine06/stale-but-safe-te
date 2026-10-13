@@ -176,6 +176,18 @@ networks with headroom (Abilene, GEANT, Germany17, Germany50 in the first run; f
   learned policy gained 20.9%, so benefits are confined to rare windows.
 * The oracle gain (n <= 25) is 47-58% on Abilene and 37% on Germany17; the zero-shot policy captures roughly half.
 
+**Window-level intervals (primary real-trace evidence).** To report uncertainty consistently we re-ran the real-trace comparison with
+12 further independent windows per cell, keeping per-window gains (`table_realci.md`; Abilene, GEANT, Germany17; 36 cells; zero-traffic
+windows skipped). For each cell we bootstrap the paired difference (learned, mean of four training seeds, minus tuned heuristic) over
+windows. The 95% interval excludes zero in favour of the learned policy in 32 of 36 cells, in favour of the tuned heuristic in 2
+(clean telemetry on Germany17 at loads 0.8 and 1.0, by 2.0 and 4.9 points) and includes zero in 2 (Abilene at load 1.0, clean and
+SNMP-like telemetry). By telemetry: rich 9/9, degraded 9/9 and SNMP-like 8/9 cells favour the learned policy (rest ties); clean
+telemetry 6 learned, 2 tuned, 1 tie. Typical differences are +4 to +23 points of gain; under degraded telemetry the heuristic's gain
+is 13.6-29.3% on Abilene/GEANT and negative (-5.3 to -6.8%) on Germany17 while the learned policy stays at 12-45%. The count for
+clean telemetry changed between window samples (4/3/2 in the previous run, 6/2/1 here), so clean-telemetry rankings should be read as
+network- and load-dependent, not as a stable ordering; the non-clean-telemetry result was stable across all three real-trace runs.
+These windows contain no overloaded windows in the sense of Section 6.4, which are rare.
+
 ### 6.2a Which impairment drives the ranking
 
 One parameter at a time, all others ideal (`experiments/final/table_telemetry_sweep.md`; tuned heuristic uses the parameters
