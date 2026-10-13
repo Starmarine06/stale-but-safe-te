@@ -1,0 +1,4 @@
+== germany50: nodes=50 links=176 demands=2450 T=288
+ideal ecmp:0.0% p99=+0.000 tuned:24.3% p99=-0.038 gnn:32.9% p99=-0.074
+snmp ecmp:0.0% p99=+0.000 tuned:16.5% p99=-0.020 gnn:33.9% p99=-0.082
+degraded ecmp:0.0% p99=+0.000 tuned:24.2% p99=-0.048 gnn:33.9% p99=-0.082

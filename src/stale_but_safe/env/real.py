@@ -20,7 +20,10 @@ NETS = {   # name -> (network file, trace directory glob)
     "abilene": ("abilene", "abilene"),
     "geant": ("geant", "geant"),
     "germany17": ("nobel-germany", "nobel"),
+    "germany50": ("germany50", "germany50"),
+    "brain": ("brain", "brain"),      # 161 nodes: only the heaviest TOP_DEMANDS pairs are kept
 }
+TOP_DEMANDS = {"brain": 600}
 _LINK = re.compile(r"^\s*(\S+)\s*\(\s*(\S+)\s+(\S+)\s*\)\s+([\d.]+)")
 _DEM = re.compile(r"^\s*\S+\s*\(\s*(\S+)\s+(\S+)\s*\)\s+\d+\s+([\d.eE+-]+)")
 
@@ -67,46 +70,73 @@ def parse_tm(path: Path) -> dict[tuple[str, str], float]:
     return out
 
 
-def build_topology(name: str, k: int = 4) -> tuple[Topology, list[str]]:
+def build_topology(name: str, k: int = 4, demands=None) -> tuple[Topology, list[str]]:
     net, _ = NETS[name]
+    if demands is None and (ROOT / f"{name}.npz").exists():
+        z = np.load(ROOT / f"{name}.npz")
+        if "demands" in z.files:
+            demands = z["demands"].tolist()
     nodes, links = parse_network(ROOT / "nets" / f"{net}.txt")
     g = nx.Graph()
     g.add_nodes_from(nodes)
     for u, v, c in links:
         g.add_edge(u, v, cap=c, prop=1.0)
-    topo = from_graph(g, k=k, name=name)
+    topo = from_graph(g, k=k, name=name, demands=demands)
     return topo, nodes
 
 
-def prepare(name: str, limit: int | None = None) -> Path:
-    """Stream the demand matrices straight out of the downloaded .tgz (no extraction needed)."""
+def _matrices(archive, nodes, every: int = 1):
+    """Yield (file name, {(src_idx, dst_idx): value}) straight from the .tgz."""
     import tarfile
-    topo, nodes = build_topology(name)
-    _, tdir = NETS[name]
-    archive = next(ROOT.glob(f"directed-{tdir}*-native.tgz"))
     idx = {n: i for i, n in enumerate(nodes)}
-    pos = {(s, t): j for j, (s, t) in enumerate(topo.demands)}
-    rows, names = [], []
     with tarfile.open(archive, "r:gz") as tf:
-        for m in tf:
-            if not (m.isfile() and "demandMatrix-" in m.name):
+        for k, m in enumerate(tf):
+            if not (m.isfile() and "demandMatrix-" in m.name) or (k % every):
                 continue
-            row = np.zeros(topo.D, np.float32)
             text = tf.extractfile(m).read().decode("utf-8", "ignore")
+            out = {}
             for ln in _section(text, "DEMANDS"):
                 mm = _DEM.match(ln)
                 if mm and mm.group(1) in idx and mm.group(2) in idx and mm.group(1) != mm.group(2):
-                    row[pos[(idx[mm.group(1)], idx[mm.group(2)])]] = float(mm.group(3))
-            rows.append(row)
-            names.append(m.name)
-            if len(rows) % 5000 == 0:
-                print(name, len(rows), flush=True)
-            if limit and len(rows) >= limit:
-                break
+                    out[(idx[mm.group(1)], idx[mm.group(2)])] = float(mm.group(3))
+            yield m.name, out
+
+
+def prepare(name: str, limit: int | None = None) -> Path:
+    """Stream the demand matrices straight out of the downloaded .tgz (no extraction needed).
+    Big networks keep only the TOP_DEMANDS heaviest pairs (by mean volume, chosen on a 1-in-20 sample)."""
+    _, tdir = NETS[name]
+    archive = next(ROOT.glob(f"directed-{tdir}*-native.tgz"))
+    _, nodes = build_topology(name, demands=[])      # node order only
+    demands = None
+    if name in TOP_DEMANDS:
+        acc = {}
+        for i, (_, tm) in enumerate(_matrices(archive, nodes, every=20)):
+            for k, v in tm.items():
+                acc[k] = acc.get(k, 0.0) + v
+        demands = [list(k) for k, _ in sorted(acc.items(), key=lambda kv: -kv[1])[:TOP_DEMANDS[name]]]
+        share = sum(acc[tuple(d)] for d in demands) / sum(acc.values())
+        print(f"{name}: kept {len(demands)} heaviest demands = {100 * share:.1f}% of sampled traffic", flush=True)
+    topo, _ = build_topology(name, demands=demands)
+    pos = {(s, t): j for j, (s, t) in enumerate(topo.demands)}
+    rows, names = [], []
+    for fname, tm in _matrices(archive, nodes):
+        row = np.zeros(topo.D, np.float32)
+        for k, v in tm.items():
+            j = pos.get(k)
+            if j is not None:
+                row[j] = v
+        rows.append(row)
+        names.append(fname)
+        if len(rows) % 2000 == 0:
+            print(name, len(rows), flush=True)
+        if limit and len(rows) >= limit:
+            break
     order = np.argsort(names)                      # file names are timestamps
     trace = np.stack(rows)[order]
     out = ROOT / f"{name}.npz"
-    np.savez_compressed(out, trace=trace, nodes=np.array(nodes), cap=topo.cap)
+    extra = {"demands": np.array(topo.demands)} if demands is not None else {}
+    np.savez_compressed(out, trace=trace, nodes=np.array(nodes), cap=topo.cap, **extra)
     return out
 
 

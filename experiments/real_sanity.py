@@ -20,7 +20,7 @@ for n in names:
     for prof in ("ideal", "snmp", "degraded"):
         cfg = EnvCfg(load=load_lvl, horizon=100, telemetry=PROFILES[prof], trace=trace)
         pols = {"ecmp": ECMP(), "tuned": TunedHeuristic(**tuned[prof]["params"]), "gnn": LearnedPolicy(m, c, "gnn")}
-        if prof == "ideal":
+        if prof == "ideal" and topo.n <= 25:
             pols["oracle"] = LPOracle()
         res = {k: evaluate(topo, cfg, p, range(3)) for k, p in pols.items()}
         print(prof, " ".join(f"{k}:{100 * r['improvement_vs_ecmp']:.1f}% p99={r['regret_p99']:+.3f}" for k, r in res.items()), flush=True)
