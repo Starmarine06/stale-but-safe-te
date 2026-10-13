@@ -92,8 +92,19 @@ def _summ(r):
     lo, hi = _ci(g)
     pos = np.clip(g, 0, None)
     return {"gain_pct": 100 * r["improvement_vs_ecmp"], "gain_ci_pct": [100 * lo, 100 * hi], "windows": int(len(g)),
+            "window_gains_pct": [round(100 * float(x), 3) for x in g],
             "top_window_share": float(pos.max() / pos.sum()) if pos.sum() > 1e-9 else 0.0,
             "p99_regret": r["regret_p99"], "worse_than_ecmp_pct": 100 * float((reg > 0.01).mean()), "loss": r["mean_loss"]}
+
+
+def _paired_tie(a: dict, b: dict) -> bool:
+    """True when the paired difference of per-window gains (a - b) has a 95% bootstrap interval that includes 0."""
+    ga, gb = a.get("window_gains_pct"), b.get("window_gains_pct")
+    if not ga or not gb or len(ga) != len(gb) or len(ga) < 2:
+        return False
+    d = np.array(ga) - np.array(gb)
+    lo, hi = _ci(d)
+    return lo <= 0.0 <= hi
 
 
 OOD = {"P": 10, "d": 5, "sigma": 0.3, "p": 0.2}      # largest values covered by the training/evaluation grid
@@ -174,6 +185,10 @@ def verdict(o: dict) -> dict:
             f"The best method tested gains {bi['gain_pct']:.1f}% with perfect telemetry (exact optimum not computed above 25 nodes)")
     pl, ph = pool[pick]["gain_ci_pct"]
     lines.append(f"{what}; with your telemetry {pick} captures {pool[pick]['gain_pct']:.1f}% (95% interval [{pl:.1f}, {ph:.1f}]).")
+    ties = [k for k in pool if k != pick and _paired_tie(pool[pick], pool[k])]
+    if ties:
+        lines.append(f"Not distinguishable from {', '.join(ties)} (paired 95% interval over {pool[pick]['windows']} windows includes 0); "
+                     "prefer the simplest of these that meets your tail-risk needs.")
     t = yours["tuned"]
     if t["p99_regret"] > 0.05 or t["worse_than_ecmp_pct"] > 15:
         lines.append(f"The tuned heuristic is fragile under your telemetry: it is worse than ECMP in "
