@@ -47,19 +47,28 @@ these measurements to a user's network. Negative results (LP-teacher distillatio
 
 *Learned TE.* DOTE (Perry et al., NSDI 2023) trains a network on recent demand matrices to output split ratios over
 candidate paths by directly minimising maximum link utilisation; our training method is of this family, and we add a
-differentiable fluid model with packet-loss term and training under impaired observations. Teal (Xu et al., SIGCOMM
-2023), CFR-RL (Zhang et al., IEEE JSAC 2020), FlexDATE and Roracle target scalability or rerouting; they assume accurate
-inputs. DOTE tests demand noise up to +-35% only; Teal's delay is solver latency. *Delay and telemetry.* LOGGIA
-(Boltres et al., TMLR 2026, arXiv 2604.02927) models communication and inference delay for neural link-weight routing
-in a packet-level simulator and reports that neural baselines stop beating static shortest-path routing under delay; it
-compares with default shortest-path protocols, studies one impairment axis, and has no safety mechanism. This is the
-closest prior result and partially anticipates our central claim. EnvelopeTC (Jia et al., IEEE JCC 2026) bounds agent
-actions and disables reroutes after a staleness limit in a hierarchical data-centre setting. RedTE (Gui et al., SIGCOMM
-2024) addresses centralised control-loop latency by moving decisions to routers. *Safe fallback.* Training Wheels (Mao
-et al., NeurIPS 2019) falls back to a simple policy in unsafe states; our guard applies this idea. In a literature search
-we found no study that varies polling period, noise, missing counters and install latency together for centralised
-split-ratio TE and compares learned policies against heuristics re-tuned per telemetry profile; the search was not
-exhaustive. FlexDATE, Roracle and FIGRET were read at abstract level only (`docs/related_work.md`).
+differentiable fluid model with a packet-loss term and training under impaired observations. FIGRET (Liu et al., SIGCOMM 2024)
+adds burst robustness to this family; FlexDATE (Ye et al., IEEE/ACM ToN 2023) and its predecessor DATE (IWQoS 2021) choose
+critical flows with RL and reroute them by LP, with INT/SNMP telemetry assumed timely; Teal (Xu et al., SIGCOMM 2023) and
+CFR-RL (Zhang et al., IEEE JSAC 2020) target scale or rerouting. None of these treats telemetry staleness, noise or missing
+counters as an experimental variable (full texts read; DOTE tests demand noise up to +-35% only; Teal's delay is solver
+latency). *Staleness.* Roracle (Ye et al., ICNP 2023) is the closest in spirit: it shows that LP-optimal routing computed on
+the current matrix degrades as it ages (about 20% in MLU over a five-step horizon) and that a learned lookahead resists this;
+the staleness there is routing-computation delay and traffic drift, there is no telemetry-impairment sweep and no tuned reactive
+baseline, and it evaluates on Abilene, GEANT and Brain among others. LOGGIA (Boltres et al., TMLR 2026, arXiv 2604.02927) models
+communication and inference delay for neural link-weight routing in a packet-level simulator and reports that neural baselines
+stop beating static shortest-path routing under delay; it compares with default shortest-path protocols, studies one impairment
+axis and has no safety mechanism. EnvelopeTC (Jia et al., IEEE JCC 2026) bounds agent actions and disables reroutes after a
+staleness limit in a hierarchical data-centre setting. RedTE (Gui et al., SIGCOMM 2024) removes centralised control-loop latency
+by moving decisions to routers. *Safe fallback.* Training Wheels (Mao et al., NeurIPS 2019) falls back to a simple policy in
+unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing (arXiv 2410.16846) pursue related goals
+by different means. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
+staleness). What we add is an empirical result: in a controlled impairment sweep that holds all other factors fixed and compares
+against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
+reactive heuristic or a learned policy is the better choice, on real topologies and traces. In our literature search (a few query
+variants plus full-text reading of the papers above) we found no paper that sweeps polling period, delay, noise, missing
+counters and install latency together for centralised split-ratio TE; this is a search result, not proof of absence, and a
+Scholar check on "measurement staleness SDN TE" should precede submission (`docs/related_work.md`).
 
 ## 3 Setting
 
