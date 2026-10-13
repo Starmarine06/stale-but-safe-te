@@ -1,0 +1,3 @@
+abilene: train 33667 intervals, test 14429 intervals
+  dote[ideal] epoch 0 loss 0.8827
+  dote[ideal] epoch 5 loss 0.6983

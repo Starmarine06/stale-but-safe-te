@@ -1,0 +1,12 @@
+germany50 load=0.6 ideal    done t=373s
+germany50 load=0.6 rich     done t=715s
+germany50 load=0.6 snmp     done t=1052s
+germany50 load=0.6 degraded done t=1392s
+germany50 load=0.8 ideal    done t=1756s
+germany50 load=0.8 rich     done t=2107s
+germany50 load=0.8 snmp     done t=2439s
+germany50 load=0.8 degraded done t=2733s
+germany50 load=1.0 ideal    done t=3021s
+germany50 load=1.0 rich     done t=3313s
+germany50 load=1.0 snmp     done t=3605s
+germany50 load=1.0 degraded done t=3903s

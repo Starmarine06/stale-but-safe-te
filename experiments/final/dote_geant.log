@@ -1,0 +1,3 @@
+geant: train 8021 intervals, test 3439 intervals
+  dote[ideal] epoch 0 loss 0.7335
+  dote[ideal] epoch 5 loss 0.6857

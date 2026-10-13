@@ -27,6 +27,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("network")
 ap.add_argument("--out", required=True)
 ap.add_argument("--seeds", type=int, default=4)
+ap.add_argument("--seed0", type=int, default=5000, help="first evaluation seed (each seed = one random trace window)")
 ap.add_argument("--horizon", type=int, default=100)
 ap.add_argument("--loads", default="0.6,0.8,1.0")
 ap.add_argument("--profiles", default="ideal,rich,snmp,degraded")
@@ -43,7 +44,7 @@ pol_gnn = lambda k: LearnedPolicy(*models[k], k)
 
 topo, trace = real.load(a.network)
 out = {"args": vars(a), "results": []}
-seeds = [5000 + i for i in range(a.seeds)]
+seeds = [a.seed0 + i for i in range(a.seeds)]
 t0 = time.time()
 for ld in [float(x) for x in a.loads.split(",")]:
     oracle_rec = None

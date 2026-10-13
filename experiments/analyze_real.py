@@ -11,7 +11,8 @@ from collections import defaultdict
 import numpy as np
 
 rows = []
-for p in sorted(glob.glob("experiments/final/real_*.json")):
+pat = sys.argv[sys.argv.index("--glob") + 1] if "--glob" in sys.argv else "experiments/final/real_*.json"
+for p in sorted(glob.glob(pat)):
     rows += json.load(open(p))["results"]
 by = defaultdict(dict)
 for r in rows:
