@@ -1,0 +1,99 @@
+[
+ {
+  "spec": "ecmp",
+  "profile": "ideal",
+  "emu_mu": 0.924776405332293,
+  "sim_mu": 0.9212243975319043,
+  "pearson": 0.9569106533407743,
+  "spearman": 0.8509531099273437,
+  "emu_loss": 0.03340562692170915,
+  "sim_loss": 0.03641186726870262,
+  "latency_ms": 17.63733839377379,
+  "flowmods_per_min": 0.0,
+  "guard": {}
+ },
+ {
+  "spec": "tuned:snmp",
+  "profile": "snmp",
+  "emu_mu": 0.8747160044416962,
+  "sim_mu": 0.873316047186777,
+  "pearson": 0.980704062043542,
+  "spearman": 0.8901765199640632,
+  "emu_loss": 0.021937635736038588,
+  "sim_loss": 0.02545941638481226,
+  "latency_ms": 17.00136600396572,
+  "flowmods_per_min": 25.5,
+  "guard": {}
+ },
+ {
+  "spec": "tuned:degraded",
+  "profile": "degraded",
+  "emu_mu": 0.8938832494947501,
+  "sim_mu": 0.9137014963538074,
+  "pearson": 0.9290662122400465,
+  "spearman": 0.7643531746620332,
+  "emu_loss": 0.020266236235105397,
+  "sim_loss": 0.028270829491796545,
+  "latency_ms": 15.578263845199194,
+  "flowmods_per_min": 27.0,
+  "guard": {}
+ },
+ {
+  "spec": "model:runs/ours_dfm_final.pt",
+  "profile": "snmp",
+  "emu_mu": 0.9012180357760018,
+  "sim_mu": 0.8812010314098709,
+  "pearson": 0.9308163672080695,
+  "spearman": 0.860937404529164,
+  "emu_loss": 0.020192908681045497,
+  "sim_loss": 0.023571954949009395,
+  "latency_ms": 32.23578746502216,
+  "flowmods_per_min": 265.5,
+  "guard": {}
+ },
+ {
+  "spec": "model:runs/ours_dfm_final.pt",
+  "profile": "degraded",
+  "emu_mu": 0.8801819277255316,
+  "sim_mu": 0.8885260900036439,
+  "pearson": 0.9530695382747413,
+  "spearman": 0.901001298436551,
+  "emu_loss": 0.01794094068487937,
+  "sim_loss": 0.02495040177277108,
+  "latency_ms": 25.681715745192307,
+  "flowmods_per_min": 330.0,
+  "guard": {}
+ },
+ {
+  "spec": "model:runs/ideal_dfm_final.pt",
+  "profile": "degraded",
+  "emu_mu": 0.8846914510213655,
+  "sim_mu": 0.8896151016215331,
+  "pearson": 0.9427973952212784,
+  "spearman": 0.9134749564627317,
+  "emu_loss": 0.020139560686736623,
+  "sim_loss": 0.02632081746112932,
+  "latency_ms": 27.60956837580754,
+  "flowmods_per_min": 408.0,
+  "guard": {}
+ },
+ {
+  "spec": "guard0.05@model:runs/ours_dfm_final.pt",
+  "profile": "degraded",
+  "emu_mu": 0.9100282909365316,
+  "sim_mu": 0.8906895199542828,
+  "pearson": 0.8961983683033744,
+  "spearman": 0.8358610842998293,
+  "emu_loss": 0.024046138581662487,
+  "sim_loss": 0.026332324183518305,
+  "latency_ms": 26.95173483628493,
+  "flowmods_per_min": 376.5,
+  "guard": {
+   "steps": 39,
+   "fallback": 16,
+   "L1": 0,
+   "L2": 1,
+   "L3": 15
+  }
+ }
+]
