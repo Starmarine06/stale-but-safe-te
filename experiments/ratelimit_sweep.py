@@ -16,6 +16,9 @@ m, c = load("runs/ours_dfm_final.pt")
 zoo = [t for t in (zoo_topology(n) for n in load_split("test_subset")) if t.n <= 25][:10]
 abil, atr = real.load("abilene"); gea, gtr = real.load("geant")
 cases = [("Zoo (10 graphs)", zoo, None), ("Abilene real", [abil], atr), ("GEANT real", [gea], gtr)]
+import sys
+if len(sys.argv) > 1:   # e.g. "real" -> only the real-trace cases
+    cases = [c for c in cases if (("real" in c[0]) == (sys.argv[1] == "real"))]
 H = (0.0, 0.05, 0.1, 0.2, 0.3, 0.5)
 print("| case | telemetry | method | threshold | gain % | updates / demand / interval | p99 regret |")
 print("|---|---|---|---|---|---|---|")

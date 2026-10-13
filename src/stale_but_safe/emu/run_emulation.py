@@ -26,7 +26,7 @@ def tag_of(spec: str, profile: str) -> str:
             + "__" + profile)
 
 
-def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, net="sbsnet", timeout=400):
+def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, net="sbsnet", timeout=400, hyst=0.05):
     tag = tag_of(spec, profile)
     shared = outdir / tag
     if shared.exists():
@@ -41,7 +41,7 @@ def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, n
         head, path = spec.split("model:", 1)
         model_spec = head + "model:/models/" + Path(path).name
     env = {"SBS_SCENARIO": "/shared/scenario.json", "SBS_SHARED": "/shared", "SBS_POLICY": model_spec,
-           "SBS_PROFILE": profile, "SBS_TAG": tag, "PYTHONPATH": "/app/src"}
+           "SBS_PROFILE": profile, "SBS_TAG": tag, "SBS_HYST": str(hyst), "PYTHONPATH": "/app/src"}
     ea = [x for k, v in env.items() for x in ("-e", f"{k}={v}")]
     sh("docker", "rm", "-f", ryu_name, check=False)
     sh("docker", "run", "-d", "--rm", "--name", ryu_name, "--network", net, "-v", f"{shared}:/shared",
@@ -72,6 +72,7 @@ def main():
     ap.add_argument("--scenario", required=True)
     ap.add_argument("--run", action="append", required=True)
     ap.add_argument("--out", default="runs/emu")
+    ap.add_argument("--hyst", type=float, default=0.05, help="controller per-demand update threshold")
     a = ap.parse_args()
     root = Path.cwd()
     out = Path(a.out).resolve()
@@ -79,7 +80,7 @@ def main():
     sh("docker", "network", "create", "sbsnet", check=False)
     for r in a.run:
         spec, profile = r.rsplit(":", 1)
-        run_one(root, Path(a.scenario).resolve(), spec, profile, out)
+        run_one(root, Path(a.scenario).resolve(), spec, profile, out, hyst=a.hyst)
 
 
 if __name__ == "__main__":
