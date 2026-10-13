@@ -185,6 +185,11 @@ while the learned policy's gain does not change. Polling period matters next; no
 and on the real traces the heuristic even gains from moderate noise (smoothing; its parameters switch to the SNMP/rich
 profile settings at those points). The ranking flip is therefore mainly a staleness effect.
 
+Rule-install latency L (0 -> 8 intervals, `table_install_latency.md`, same setup, tuned / learned gain %): Zoo 3.8 -> 1.9 / 3.5 -> 3.0;
+Abilene 40.8 -> 37.1 / 33.6 -> 32.1 (tuned p99 regret -0.03 -> +0.84); GEANT 33.0 -> 31.2 / 34.8 -> 31.4.
+Install latency hurts the reactive heuristic's tail more than its mean, and matters much less than telemetry delay; on these Abilene
+windows the tuned heuristic with ideal telemetry is ahead of the learned policy, consistent with Section 6.2.
+
 ### 6.2b Sensitivity to the load-scaling rule
 
 Scaling each real trace so that the *mean* or the 95th percentile (instead of the median) of the ECMP max-utilisation
