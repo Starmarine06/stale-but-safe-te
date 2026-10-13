@@ -78,9 +78,9 @@ class TraceTraffic:
     `load=None` keeps the native units (Mbit/s demands over Mbit/s capacities)."""
 
     def __init__(self, topo: Topology, rng: np.random.Generator, trace: np.ndarray,
-                 load: float | None = 0.8, horizon: int = 200):
+                 load: float | None = 0.8, horizon: int = 200, stat: str = "median"):
         self.trace = trace
-        key = (id(trace), topo.name, load)
+        key = (id(trace), topo.name, load, stat)
         if key not in _SCALE_CACHE:
             if load is None:
                 _SCALE_CACHE[key] = 1.0
@@ -88,7 +88,8 @@ class TraceTraffic:
                 step = max(1, len(trace) // 2000)
                 x = trace[::step, :, None] * ecmp_splits(topo)[None]
                 u = (x.reshape(len(x), -1) @ topo.inc.T / topo.cap).max(1)
-                _SCALE_CACHE[key] = float(load / np.median(u))
+                ref = {"median": np.median(u), "mean": u.mean(), "p95": np.quantile(u, 0.95)}[stat]
+                _SCALE_CACHE[key] = float(load / ref)
         self.scale = _SCALE_CACHE[key]
         self.start = int(rng.integers(0, max(1, len(trace) - horizon)))
         self.t = 0

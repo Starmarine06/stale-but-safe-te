@@ -19,9 +19,10 @@ the learned policy is never behind the heuristic under non-clean telemetry acros
 cell, and the heuristic falls below ECMP on two of four networks. The picture is conditional: a DOTE-style model
 trained on a network's own history beats the zero-shot policy (48-49% versus 22-25% gain on Abilene), fine-tuning on
 history closes most of that gap, an ablation shows that model-based fluid features rather than graph message passing
-carry the result, and in overloaded trace windows the heuristic beats the learned policy. A runtime ECMP-fallback guard
-reduces tail regret in some regimes (link failures) and little in others; a hysteresis rate limiter removes most flow
-updates at no measured loss of gain. Telemetry faults are modelled, not measured, and traffic is scaled to a target
+carry the result, and in overloaded trace windows the heuristic beats the learned policy. One-at-a-time sweeps show that telemetry delay (and, less, polling period)
+drives the flip, while noise and missing counters hardly matter. A runtime ECMP-fallback guard reduces tail regret in
+some regimes (link failures) and little in others; a hysteresis rate limiter removes 90-99% of flow updates in simulation
+with no measured loss of gain, and 76% in emulation for a small loss. Telemetry faults are modelled, not measured, and traffic is scaled to a target
 load, so the results do not establish performance in a production network.
 
 ## 1 Introduction
@@ -160,6 +161,32 @@ networks with headroom (Abilene, GEANT, Germany17, Germany50 in the first run; f
   learned policy gained 20.9%, so benefits are confined to rare windows.
 * The oracle gain (n <= 25) is 47-58% on Abilene and 37% on Germany17; the zero-shot policy captures roughly half.
 
+### 6.2a Which impairment drives the ranking
+
+One parameter at a time, all others ideal (`experiments/final/table_telemetry_sweep.md`; tuned heuristic uses the parameters
+tuned for the nearest standard profile, not re-tuned per point; 10 Zoo graphs with n <= 25, Abilene and GEANT traces at load
+0.8, mean gain %, tuned / learned):
+
+| parameter (range) | Zoo | Abilene | GEANT |
+|---|---|---|---|
+| delay d: 0 -> 10 intervals | 5.2 -> 0.0 / 4.6 -> 4.0 | 35.0 -> 0.3 / 29.7 -> 31.7 | 23.5 -> 0.0 / 25.4 -> 26.2 |
+| polling period P: 1 -> 20 | 5.2 -> -2.2 / 4.6 -> 4.2 | 35.0 -> 22.1 (17.8 at P=10) / 29.7 -> 27.7 | 23.5 -> 16.1 / 25.4 -> 25.8 |
+| noise sigma: 0 -> 0.4 | 5.2 -> 1.6 / 4.6 -> 4.2 | 35.0 -> 29.1 / 29.7 -> 29.0 | 23.5 -> 30.0 / 25.4 -> 22.2 |
+| missing counters p: 0 -> 0.4 | 5.2 -> 3.9 / 4.6 -> 4.6 | 35.0 -> 35.9 / 29.7 -> 27.5 | 23.5 -> 24.1 / 25.4 -> 25.4 |
+
+Telemetry *delay* is the dominant driver: the reactive heuristic's gain collapses to about zero at a delay of 5-10 intervals,
+while the learned policy's gain does not change. Polling period matters next; noise and missing counters have little effect,
+and on the real traces the heuristic even gains from moderate noise (smoothing; its parameters switch to the SNMP/rich
+profile settings at those points). The ranking flip is therefore mainly a staleness effect.
+
+### 6.2b Sensitivity to the load-scaling rule
+
+Scaling each real trace so that the *mean* or the 95th percentile (instead of the median) of the ECMP max-utilisation
+equals 0.8 (`table_scaling.md`; Abilene, GEANT, Germany17; ideal and degraded telemetry; 6 windows; 18 cells): learned ahead
+in 12, tuned ahead in 4 (clean telemetry on Abilene and Germany17, and Abilene at the 95th percentile with degraded
+telemetry), 2 ties; under degraded telemetry the learned policy is ahead in 8 of 9 cells. The conclusion does not depend on
+the scaling rule; the absolute numbers do.
+
 ### 6.3 What carries the result: baselines and ablations
 
 Held-out windows (last 30% of the trace), gain % (`experiments/final/table_ft.md`; seed-0 GNN):
@@ -217,7 +244,10 @@ from 0.198 to 0.074; the validation-chosen guard barely affects the learned poli
 
 Without a rate limiter the learned policy updates 91% of demands every interval in simulation (Zoo, ideal telemetry); a
 5% threshold cuts this to 8% and a 10% threshold to 2.4% with unchanged gain (3.1%) (`table_ratelimit.md`); the tuned
-heuristic already updates about 2.5% of demands. **[PENDING: rate-limit sweep on Abilene and GEANT.]**
+heuristic already updates about 2.5% of demands. On the real traces (`table_ratelimit_real.md`, degraded telemetry) the learned policy updates 98.5% (Abilene) and 100% (GEANT)
+of demands per interval without a limiter; thresholds of 5%, 10% and 20% cut this to 5.1/1.7/0.9% (Abilene) and 6.3/1.9/0.8%
+(GEANT) while the gain stays or rises (Abilene 26.4 -> 27.6/32.4/36.8%, GEANT 37.9 -> 38.2/38.5/37.7%; thresholds of 0.5 lose gain).
+The threshold also damps oscillation, so the update-rate cost is largely avoidable in simulation.
 
 Emulation: Mininet with Open vSwitch and a Ryu controller reading real OpenFlow counters, 24 flows, four scenarios
 (three traffic seeds on a 10-node graph, one 12-node random graph), six policy/telemetry runs each plus a run with a 20%
@@ -259,8 +289,8 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 
 * Fluid model: no TCP, queueing or packet dynamics. The guard offers no formal guarantee; it is an empirically evaluated filter
   and misses most harmful proposals under degraded telemetry on Zoo graphs.
-* Real traffic but scaled to a target load; sensitivity to the scaling rule is **not tested**. Capacities are the networks'
-  published module sizes where available.
+* Real traffic but scaled to a target load; the conclusion is insensitive to the scaling rule (6.2b), the absolute numbers are not.
+  Capacities are the networks' published module sizes where available.
 * Telemetry faults are modelled, not measured on a deployed network.
 * Four training seeds (not ten); ablations, DOTE-style and fine-tuned models have one seed; evaluation seeds 4-12 (not 20).
 * DOTE-style and fine-tuned models need per-network history; only Abilene and GEANT have enough.

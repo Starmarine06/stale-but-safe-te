@@ -36,6 +36,7 @@ class EnvCfg:
     fail_at: int | None = None      # step at which random links fail
     n_fail: int = 1
     trace: object = None            # real demand trace (T, D); replaces the synthetic generator
+    trace_stat: str = "median"      # load scaling reference: median | mean | p95 of the ECMP max-util over the trace
 
 
 class TEEnv:
@@ -52,7 +53,7 @@ class TEEnv:
         r_traffic, r_tele, r_fail = (np.random.default_rng(s) for s in ss.spawn(3))
         c, topo = self.cfg, self.topo
         if c.trace is not None:
-            self.traffic = TraceTraffic(topo, r_traffic, c.trace, load=c.load, horizon=c.horizon)
+            self.traffic = TraceTraffic(topo, r_traffic, c.trace, load=c.load, horizon=c.horizon, stat=c.trace_stat)
         else:
             self.traffic = TrafficGen(topo, r_traffic, load=c.load, **c.traffic)
         self.fail_rng = r_fail
