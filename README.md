@@ -27,22 +27,24 @@ stale-but-safe demo --topology abilene --mode shadow --model runs/ours_dfm_final
 ```
 
 ## Headline findings
-Real SNDlib traces (Abilene, GEANT, Germany17, Germany50, Brain), 3 loads x 4 telemetry qualities; the learned
-policy is trained only on small synthetic graphs (4 training seeds). Full table: `experiments/final/table_real.md`.
+Full write-up: `paper/paper.md`; protocol deviations: `docs/eval_protocol.md`. Real SNDlib traces (Abilene, GEANT,
+Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are modelled, not measured.
 
-* **Ranking depends on telemetry quality.** In the four networks with TE headroom the learned policy is ahead of the
-  tuned heuristic in 36 of 36 cells with rich / SNMP / degraded telemetry; with clean telemetry it is 7 ahead, 4 behind,
-  1 tie (the tuned heuristic wins on GEANT and Germany17 at loads 0.8-1.0, by 1.5-4.1 points).
-* **Tuned heuristics can fail badly under degraded telemetry.** Abilene at load 1.0: -4.0% vs ECMP (worst-case regret
-  +1.02) while the learned policy gains 29%; Germany17 -3%. Not universal: Germany50 and GEANT do not collapse.
-* **Held-out Topology Zoo (24 graphs, 4 seeds):** learned beats tuned on 21-23 of 24 graphs under degraded telemetry;
-  seed-to-seed spread 0.001-0.002 in score.
-* **Guard (validation-chosen, L2-only):** keeps ~82% of the learned gain on Zoo graphs and halves worst-case regret
-  (0.019 -> 0.008); costs under 1 point on real traces; rescues the tuned heuristic.
-* **Emulation (Mininet + OVS + Ryu):** time-series correlation with the simulator 0.90-0.98; costs: ~10x more
-  flow-mods than the heuristic.
-* **Honest limits:** the learned policy gets about half of the oracle headroom; traffic scaled to a target load;
-  telemetry faults modelled, not measured; Brain's benefit is confined to rare windows. See `paper/paper.md`.
+* **The ranking depends on telemetry quality.** 24 held-out Topology Zoo graphs, 4 training seeds: tuned heuristic better with
+  clean telemetry, learned policy better with degraded telemetry (21-23 of 24 graphs). Real traces, 10 fresh windows per cell:
+  learned never behind the heuristic under rich / SNMP / degraded telemetry; clean telemetry is mixed (4 / 3 / 2 of 9 cells).
+* **Telemetry delay is the driver** (then polling period); noise and missing counters hardly matter. At 10 intervals of delay the
+  heuristic's gain falls to ~0% on Abilene and GEANT while the learned policy's does not change.
+* **It is conditional.** A DOTE-style model trained on a network's own history beats the zero-shot policy (Abilene 48-49% vs
+  22-25%); fine-tuning on history recovers most of it. Fluid-model features carry the result, not graph message passing. In
+  overloaded trace windows the reactive heuristic wins (45-49% vs 9-21%).
+* **Guard:** strong for link failures (catches ~90% of harmful proposals), weak for degraded telemetry (~22%); no formal guarantee;
+  costs more in emulation than in simulation.
+* **Operational cost:** the learned policy reprograms ~10x more flows than the heuristic; a 5-20% update threshold removes 90-99%
+  of updates in simulation at no loss of gain (77% in emulation for 0.018 max-util). Decision time 2 ms (12 nodes) to 311 ms (80 nodes).
+* **Emulation (28 runs, 4 scenarios):** simulated vs emulated mean max-util correlation 0.99, mean abs difference 0.017.
+* **Audit tool:** `stale-but-safe audit` gives headroom, per-method gains with 95% intervals, and one of: stay on ECMP / use X /
+  insufficient evidence. An offline estimate, not a deployment recommendation.
 
 ## Reproduce
 | Step | Command |
