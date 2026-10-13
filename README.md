@@ -33,8 +33,9 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
 * **The ranking depends on telemetry quality.** 24 held-out Topology Zoo graphs, 4 training seeds: tuned heuristic better with
   clean telemetry, learned policy better with degraded telemetry (21-23 of 24 graphs). Real traces, 10 fresh windows per cell:
   learned never behind the heuristic under rich / SNMP / degraded telemetry; clean telemetry is mixed (4 / 3 / 2 of 9 cells).
-* **Telemetry delay is the driver** (then polling period); noise and missing counters hardly matter. At 10 intervals of delay the
-  heuristic's gain falls to ~0% on Abilene and GEANT while the learned policy's does not change.
+* **Staleness (delay, polling period) is the driver**; noise and missing counters hardly matter. A heuristic with frozen parameters
+  collapses with delay, but one re-tuned for each delay matches the learned policy up to ~3 intervals of delay and is 10-20 points
+  behind at 5-10 intervals (Abilene/GEANT).
 * **It is conditional.** A DOTE-style model trained on a network's own history beats the zero-shot policy (Abilene 48-49% vs
   22-25%); fine-tuning on history recovers most of it. Fluid-model features carry the result, not graph message passing. In
   overloaded trace windows the reactive heuristic wins (45-49% vs 9-21%).

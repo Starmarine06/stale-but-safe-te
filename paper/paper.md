@@ -19,8 +19,9 @@ the learned policy is never behind the heuristic under non-clean telemetry (ten 
 networks, four on the fourth), and the heuristic falls below ECMP on two of the four networks. The picture is conditional: a DOTE-style model
 trained on a network's own history beats the zero-shot policy (48-49% versus 22-25% gain on Abilene), fine-tuning on
 history closes most of that gap, an ablation shows that model-based fluid features rather than graph message passing
-carry the result, and in overloaded trace windows the heuristic beats the learned policy. One-at-a-time sweeps show that telemetry delay (and, less, polling period)
-drives the flip, while noise and missing counters hardly matter. A runtime ECMP-fallback guard reduces tail regret in
+carry the result, and in overloaded trace windows the heuristic beats the learned policy. Controlled sweeps show that staleness (delay, polling period) drives the flip while noise and missing
+counters hardly matter, and that a heuristic re-tuned for each delay matches the learned policy up to about three intervals of
+delay and falls 10-20 points behind beyond that. A runtime ECMP-fallback guard reduces tail regret in
 some regimes (link failures) and little in others; a hysteresis rate limiter removes 90-99% of flow updates in simulation
 with no measured loss of gain, and 77% in emulation for a small loss. Telemetry faults are modelled, not measured, and traffic is scaled to a target
 load, so the results do not establish performance in a production network.
@@ -188,11 +189,39 @@ clean telemetry changed between window samples (4/3/2 in the previous run, 6/2/1
 network- and load-dependent, not as a stable ordering; the non-clean-telemetry result was stable across all three real-trace runs.
 These windows contain no overloaded windows in the sense of Section 6.4, which are rare.
 
-### 6.2a Which impairment drives the ranking
+### 6.2a Which impairment drives the ranking, and is it a tuning artefact?
 
-One parameter at a time, all others ideal (`experiments/final/table_telemetry_sweep.md`; tuned heuristic uses the parameters
-tuned for the nearest standard profile, not re-tuned per point; 10 Zoo graphs with n <= 25, Abilene and GEANT traces at load
-0.8, mean gain %, tuned / learned):
+*Controlled delay experiment* (`experiments/delay_controlled.py`, `table_delay_part1.md`): only the delay d varies, everything else
+is ideal; the tuned heuristic is run with (i) parameters frozen at the values tuned for clean telemetry, (ii) parameters frozen
+at the values tuned for the degraded profile, and (iii) parameters re-tuned at each d (40-trial random search on four synthetic
+graphs); the learned policy is the mean of four training seeds. Mean gain %, load 0.8:
+
+| case | d | heuristic, frozen (clean-tuned) | heuristic, frozen (degraded-tuned) | heuristic, re-tuned at d | learned |
+|---|---|---|---|---|---|
+| Abilene | 0 | 34.0 | 16.4 | 41.9 | 34.5 |
+| Abilene | 3 | 6.4 | 20.7 | 34.7 | 34.2 |
+| Abilene | 5 | 0.0 | 22.5 | 23.2 | 34.5 |
+| Abilene | 10 | 0.0 | 0.0 | 21.0 | 34.7 |
+| GEANT | 0 | 37.6 | 38.2 | 45.6 | 42.6 |
+| GEANT | 3 | 1.9 | 31.9 | 43.6 | 42.5 |
+| GEANT | 5 | 0.0 | 24.2 | 23.2 | 42.5 |
+| GEANT | 10 | 0.0 | 0.0 | 24.9 | 41.8 |
+| Zoo (10 graphs) | 0 | 4.8 | 0.9 | 5.1 | 4.8 |
+| Zoo (10 graphs) | 3 | 0.7 | 0.5 | 3.2 | 4.3 |
+| Zoo (10 graphs) | 5 | 0.0 | 2.2 | 2.3 | 4.3 |
+| Zoo (10 graphs) | 10 | 0.0 | 0.0 | 2.8 | 4.2 |
+
+Two conclusions. First, a heuristic whose parameters are frozen collapses with delay (to about zero at d >= 5), but this is largely
+an artefact of mis-tuning: re-tuned at each delay it keeps most of its gain. Second, even a re-tuned heuristic falls behind the
+learned policy as delay grows: it matches it up to d = 3 intervals (Abilene 34.7 vs 34.2, GEANT 43.6 vs 42.5, Zoo 3.2 vs 4.3) and is
+10-20 points of gain behind at d = 5 and d = 10 (Abilene 23.2 and 21.0 vs about 34.6; GEANT 23.2 and 24.9 vs about 42). The learned
+policy's gain does not depend on d. The re-tuning budget is modest (40 trials, synthetic graphs, other impairments ideal), so a
+stronger tuned baseline might narrow the gap; this is not tested. The per-profile comparisons of Sections 6.1-6.2 use heuristics
+re-tuned for each profile, so they are not affected by the frozen-parameter artefact. **[PENDING: delay x polling interaction grid.]**
+
+*One-at-a-time sweep with frozen parameters* (`table_telemetry_sweep.md`; heuristic parameters are those tuned for the nearest
+standard profile, so the collapse is exaggerated as described above; 10 Zoo graphs with n <= 25, Abilene and GEANT at load 0.8;
+mean gain %, tuned / learned):
 
 | parameter (range) | Zoo | Abilene | GEANT |
 |---|---|---|---|
@@ -201,10 +230,9 @@ tuned for the nearest standard profile, not re-tuned per point; 10 Zoo graphs wi
 | noise sigma: 0 -> 0.4 | 5.2 -> 1.6 / 4.6 -> 4.2 | 35.0 -> 29.1 / 29.7 -> 29.0 | 23.5 -> 30.0 / 25.4 -> 22.2 |
 | missing counters p: 0 -> 0.4 | 5.2 -> 3.9 / 4.6 -> 4.6 | 35.0 -> 35.9 / 29.7 -> 27.5 | 23.5 -> 24.1 / 25.4 -> 25.4 |
 
-Telemetry *delay* is the dominant driver: the reactive heuristic's gain collapses to about zero at a delay of 5-10 intervals,
-while the learned policy's gain does not change. Polling period matters next; noise and missing counters have little effect,
-and on the real traces the heuristic even gains from moderate noise (smoothing; its parameters switch to the SNMP/rich
-profile settings at those points). The ranking flip is therefore mainly a staleness effect.
+Delay and polling period (the staleness parameters) change the ranking most; noise and missing counters have little effect, and on
+the real traces the heuristic even gains from moderate noise (smoothing; its parameters switch to the SNMP/rich profile settings
+at those points). Read the delay row together with the controlled experiment above.
 
 Rule-install latency L (0 -> 8 intervals, `table_install_latency.md`, same setup, tuned / learned gain %): Zoo 3.8 -> 1.9 / 3.5 -> 3.0;
 Abilene 40.8 -> 37.1 / 33.6 -> 32.1 (tuned p99 regret -0.03 -> +0.84); GEANT 33.0 -> 31.2 / 34.8 -> 31.4.
