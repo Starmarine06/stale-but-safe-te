@@ -96,6 +96,10 @@ class TEApp(app_manager.RyuApp):
         self.shim = _Shim(self.topo)
         self.policy = build_policy(e.get("SBS_POLICY", "ecmp"), self.topo, self.shim)
         self.installed = ecmp_splits(self.topo)
+        self.last_util = np.zeros(self.topo.E)
+        self.missing = 0
+        self.errors = 0
+        self.prev_fb = 0
         self.log = []
         self.started = False
         self.loop_thread = hub.spawn(self._main)
@@ -202,7 +206,8 @@ class TEApp(app_manager.RyuApp):
                 continue
             dp.send_msg(ps.OFPGroupMod(datapath=dp, command=ofp.OFPGC_MODIFY, type_=ofp.OFPGT_SELECT,
                                        group_id=GROUP_BASE + d, buckets=b))
-            self.installed[d] = new
+            q = np.round(new * 100) / 100
+            self.installed[d] = q / q.sum() if q.sum() > 0 else new
             changed += 1
         return changed
 
@@ -224,7 +229,8 @@ class TEApp(app_manager.RyuApp):
 
     def _rates(self):
         topo = self.topo
-        util = np.zeros(topo.E)
+        util = self.last_util.copy()
+        self.missing = 0
         for l in range(topo.E):
             a, _ = topo.links[l]
             key = (a + 1, self.out_port[l])
@@ -232,15 +238,32 @@ class TEApp(app_manager.RyuApp):
                 (b1, t1), (b0, t0) = self.cur_tx[key], self.port_tx[key]
                 if t1 > t0:
                     util[l] = (b1 - b0) * 8 / (t1 - t0) / 1e6 / self.cap_mbps[l]
+                    continue
+            self.missing += 1
         dem = np.zeros(topo.D)
         for d, (b1, t1) in self.cur_flow.items():
             if d in self.flow_tx and t1 > self.flow_tx[d][1]:
                 b0, t0 = self.flow_tx[d]
                 dem[d] = (b1 - b0) * 8 / (t1 - t0) / 1e6 / self.sc["mbps_per_unit"]
         have_base = bool(self.port_tx)
+        self.last_util = util.copy()
         self.port_tx.update(self.cur_tx)
         self.flow_tx.update(self.cur_flow)
         return util, dem, have_base
+
+    def _safe_act(self, obs):
+        """Policy call that can never take the controller down: any exception, NaN or malformed
+        proposal becomes ECMP and is counted (this is the L1 'malformed action' rule at the edge)."""
+        ecmp = ecmp_splits(self.topo, self.topo.valid_paths(obs["link_up"]))
+        try:
+            out = np.asarray(self.policy.act(obs, self.shim), float)
+            if out.shape != ecmp.shape or not np.isfinite(out).all() or (out < -1e-9).any():
+                raise ValueError("malformed action")
+            return out, 0
+        except Exception as exc:                      # noqa: BLE001
+            self.errors += 1
+            self.get_logger().warning("policy error -> ECMP: %r", exc)
+            return ecmp, 1
 
     # ------------------------------------------------------------------ main loop
     def _main(self):
@@ -281,17 +304,23 @@ class TEApp(app_manager.RyuApp):
                 obs = {"util": u, "util_age": ua, "demand": d, "demand_age": da,
                        "link_up": self.shim.link_up.copy(), "t": t}
                 t1 = time.time()
-                splits = np.asarray(self.policy.act(obs, self.shim), float)
+                splits, err = self._safe_act(obs)
                 row["infer_ms"] = (time.time() - t1) * 1000
+                row["policy_error"] = err
                 row["obs_max_util"] = float(u.max())
                 row["mean_age"] = float(ua.mean())
-                prev_fb = getattr(self.policy, "stats", {}).get("fallback", 0)
-                row["fallback"] = int(prev_fb)
+                fb = int(getattr(self.policy, "stats", {}).get("fallback", 0))
+                row["fallback"] = int(fb > self.prev_fb or err)     # 1 when this tick ran ECMP
+                self.prev_fb = fb
                 row["changed"] = self._apply(splits)
+                row["missing_links"] = self.missing
+                inner = getattr(self.policy, "policy", self.policy)
+                if hasattr(inner, "feat"):
+                    inner.feat.note_action(self.installed.copy())    # what is really in the dataplane
                 row["latency_ms"] = (time.time() - tick0) * 1000
             rows.append(row)
         stats = getattr(self.policy, "stats", {})
-        out = {"tag": self.tag, "rows": rows, "guard": stats, "policy": os.environ.get("SBS_POLICY"),
+        out = {"tag": self.tag, "rows": rows, "guard": stats, "policy_errors": self.errors, "policy": os.environ.get("SBS_POLICY"),
                "profile": os.environ.get("SBS_PROFILE")}
         json.dump(out, open(os.path.join(self.shared, f"ctrl_{self.tag}.json"), "w"))
         hub.sleep(1.0)

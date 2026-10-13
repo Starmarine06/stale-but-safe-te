@@ -66,3 +66,34 @@ class TrafficGen:
             d = np.where(dst, d * self.flash_mult, d)
         self.t += 1
         return d
+
+
+_SCALE_CACHE: dict = {}
+
+
+class TraceTraffic:
+    """Replays a real demand trace (T, D). The trace is scaled by one constant so that the *median*
+    ECMP max-utilisation over the whole trace equals `load` (standard practice when public matrices
+    do not match the published capacities); the temporal structure and spatial mix stay real.
+    `load=None` keeps the native units (Mbit/s demands over Mbit/s capacities)."""
+
+    def __init__(self, topo: Topology, rng: np.random.Generator, trace: np.ndarray,
+                 load: float | None = 0.8, horizon: int = 200):
+        self.trace = trace
+        key = (id(trace), topo.name, load)
+        if key not in _SCALE_CACHE:
+            if load is None:
+                _SCALE_CACHE[key] = 1.0
+            else:
+                step = max(1, len(trace) // 2000)
+                x = trace[::step, :, None] * ecmp_splits(topo)[None]
+                u = (x.reshape(len(x), -1) @ topo.inc.T / topo.cap).max(1)
+                _SCALE_CACHE[key] = float(load / np.median(u))
+        self.scale = _SCALE_CACHE[key]
+        self.start = int(rng.integers(0, max(1, len(trace) - horizon)))
+        self.t = 0
+
+    def next(self) -> np.ndarray:
+        d = self.scale * self.trace[min(self.start + self.t, len(self.trace) - 1)]
+        self.t += 1
+        return d

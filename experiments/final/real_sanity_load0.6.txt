@@ -1,0 +1,12 @@
+== abilene: nodes=12 links=30 demands=132 T=48096
+ideal ecmp:0.0% p99=+0.000 tuned:27.5% p99=+0.000 gnn:28.0% p99=-0.030 oracle:56.8% p99=-0.134
+snmp ecmp:0.0% p99=+0.000 tuned:21.0% p99=+0.000 gnn:26.9% p99=-0.036
+degraded ecmp:0.0% p99=+0.000 tuned:30.5% p99=-0.024 gnn:27.6% p99=-0.038
+== geant: nodes=22 links=72 demands=462 T=11460
+ideal ecmp:0.0% p99=+0.000 tuned:33.2% p99=-0.018 gnn:39.2% p99=-0.024 oracle:58.1% p99=-0.091
+snmp ecmp:0.0% p99=+0.000 tuned:26.9% p99=+0.000 gnn:40.5% p99=-0.017
+degraded ecmp:0.0% p99=+0.000 tuned:31.5% p99=-0.001 gnn:40.1% p99=-0.013
+== germany17: nodes=17 links=52 demands=272 T=288
+ideal ecmp:0.0% p99=+0.000 tuned:13.8% p99=-0.021 gnn:13.7% p99=-0.010 oracle:36.9% p99=-0.112
+snmp ecmp:0.0% p99=+0.000 tuned:5.2% p99=+0.025 gnn:13.1% p99=+0.017
+degraded ecmp:0.0% p99=+0.000 tuned:-0.2% p99=+0.141 gnn:11.2% p99=+0.033

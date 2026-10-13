@@ -2,6 +2,7 @@
 
   stale-but-safe demo --topology abilene --mode shadow|active [--model runs/ours.pt] [--profile snmp]
   stale-but-safe scenario --out runs/emu/compose [--topology emu10] [--steps 60]
+  stale-but-safe audit --network abilene --polling 5 --delay 1 --loss 0.02 --out reports/abilene
 """
 from __future__ import annotations
 
@@ -124,6 +125,20 @@ def main(argv=None):
     s.add_argument("--load", type=float, default=0.8)
     s.add_argument("--seed", type=int, default=0)
     s.set_defaults(fn=cmd_scenario)
+    u = sub.add_parser("audit", help="is TE worth it on this network, and does it survive your telemetry?")
+    u.add_argument("--network", required=True)
+    u.add_argument("--traffic", help="trace .npz (T x D) or long CSV t,src,dst,value")
+    u.add_argument("--profile", choices=list(PROFILES), help="shortcut instead of --polling/--delay/--noise/--loss")
+    u.add_argument("--polling", type=int, default=5, help="telemetry polling period, in TE intervals")
+    u.add_argument("--delay", type=int, default=1, help="telemetry delay, in intervals")
+    u.add_argument("--noise", type=float, default=0.05, help="relative measurement noise")
+    u.add_argument("--loss", type=float, default=0.02, help="probability a counter is missing")
+    u.add_argument("--load", type=float, default=0.8, help="scale traffic so median ECMP max-util = load")
+    u.add_argument("--horizon", type=int, default=100)
+    u.add_argument("--seeds", type=int, default=3)
+    u.add_argument("--model", default=str(Path(__file__).resolve().parents[2] / "runs" / "ours_dfm_final.pt"))
+    u.add_argument("--out", default="reports/audit")
+    u.set_defaults(fn=lambda a: __import__("stale_but_safe.audit", fromlist=["main"]).main(a))
     a = ap.parse_args(argv)
     a.fn(a)
 
