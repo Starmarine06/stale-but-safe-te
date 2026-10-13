@@ -1,21 +1,40 @@
 # Stale-but-Safe TE
 
-Delay-robust and safety-guarded learned traffic engineering for SDN. A GNN policy picks split ratios over
-`k` candidate paths per demand from **impaired telemetry** (polling period, delay, noise, missing counters);
-a three-layer runtime **guard** falls back to ECMP. Everything is evaluated against tuned heuristics and an LP
-oracle in a fluid simulator, and re-validated in Mininet + Open vSwitch with a Ryu controller.
+**Is traffic engineering worth it on your network, and does it survive your telemetry?**
 
-> Status: research code. Numbers below are produced by the scripts in `experiments/`; see
-> `docs/eval_protocol.md` for the frozen protocol and `docs/related_work.md` for positioning
-> (notably LOGGIA, arXiv 2604.02927, which already shows neural routers degrade under delay).
+`stale-but-safe audit` answers that for a given topology, traffic and telemetry quality (polling period,
+delay, noise, missing counters). It measures the best-case headroom over ECMP (LP oracle), how a tuned
+heuristic, a learned GNN policy and a guarded version of each behave under *your* telemetry, and recommends
+what to run, in one self-contained HTML report. A shadow mode lets a policy propose routes while ECMP keeps
+running. Everything is evaluated in a fluid simulator on real SNDlib topologies and traffic traces
+(Abilene, GEANT, Germany17) plus 263 Topology Zoo graphs, and re-validated in Mininet + Open vSwitch with a
+Ryu controller.
+
+> Status: research code. Numbers come from the scripts in `experiments/`; see `docs/eval_protocol.md` for the
+> frozen protocol and `docs/related_work.md` for positioning (notably LOGGIA, arXiv 2604.02927, which already
+> shows neural routers degrade under delay).
 
 ## Quickstart
 ```bash
 pip install -e ".[dev]"          # core (numpy/scipy/networkx); add torch for the learned policy
-python -m pytest -q              # 33 tests
+python -m pytest -q              # 36 tests
+# real data (public SNDlib): download the three *-native.tgz and network .txt files into data/real/, then
+python -m stale_but_safe.env.real prepare
+stale-but-safe audit --network abilene --polling 5 --delay 3 --noise 0.2 --loss 0.1 --out reports/abilene
+stale-but-safe audit --network geant --profile snmp --out reports/geant
+stale-but-safe audit --network my_topology.graphml --traffic my_traffic.csv --out reports/mine   # CSV: t,src,dst,value
 stale-but-safe demo --topology abilene --mode shadow --model runs/ours_dfm_final.pt --profile snmp
-stale-but-safe demo --topology Geant2012 --mode active --model runs/ours_dfm_final.pt --profile degraded
 ```
+
+## Headline finding (real traces, load 0.8, learned model trained only on synthetic graphs)
+| network | oracle gain | learned | tuned heuristic | tuned under degraded telemetry |
+|---|---|---|---|---|
+| Abilene | 57% | 31% | 33% | p99 regret +0.35 (worse than ECMP) |
+| GEANT | 58% | 42% | 38% | no worse than ECMP |
+| Germany17 | 37% | 15% | 19% | -0.2%, p99 regret +0.14 |
+
+Gain = reduction of mean max-link-utilisation vs ECMP. The ranking between tuned and learned depends on the
+telemetry quality; see `experiments/final/real_sanity_load*.txt` and the paper draft for the full protocol.
 
 ## Reproduce
 | Step | Command |
