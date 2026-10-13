@@ -91,7 +91,7 @@ def _matrices(archive, nodes, every: int = 1):
     idx = {n: i for i, n in enumerate(nodes)}
     with tarfile.open(archive, "r:gz") as tf:
         for k, m in enumerate(tf):
-            if not (m.isfile() and "demandMatrix-" in m.name) or (k % every):
+            if not (m.isfile() and "demandMatrix" in m.name) or (k % every):
                 continue
             text = tf.extractfile(m).read().decode("utf-8", "ignore")
             out = {}

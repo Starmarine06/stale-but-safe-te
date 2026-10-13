@@ -1,0 +1,4 @@
+== brain: nodes=161 links=332 demands=600 T=9723
+ideal ecmp:0.0% p99=+0.000 tuned:0.0% p99=+0.000 gnn:0.1% p99=+0.000
+snmp ecmp:0.0% p99=+0.000 tuned:0.0% p99=+0.000 gnn:0.1% p99=+0.000
+degraded ecmp:0.0% p99=+0.000 tuned:0.1% p99=+0.000 gnn:0.1% p99=+0.000
