@@ -22,7 +22,7 @@ history closes most of that gap, an ablation shows that model-based fluid featur
 carry the result, and in overloaded trace windows the heuristic beats the learned policy. One-at-a-time sweeps show that telemetry delay (and, less, polling period)
 drives the flip, while noise and missing counters hardly matter. A runtime ECMP-fallback guard reduces tail regret in
 some regimes (link failures) and little in others; a hysteresis rate limiter removes 90-99% of flow updates in simulation
-with no measured loss of gain, and 76% in emulation for a small loss. Telemetry faults are modelled, not measured, and traffic is scaled to a target
+with no measured loss of gain, and 77% in emulation for a small loss. Telemetry faults are modelled, not measured, and traffic is scaled to a target
 load, so the results do not establish performance in a production network.
 
 ## 1 Introduction
@@ -271,6 +271,12 @@ update threshold cuts updates 4.4-fold (332 to 76 per minute) at a cost of 0.018
 heuristic under degraded telemetry (0.790 vs 0.808). In the emulator the guard costs more than in simulation (0.794 vs 0.772
 max-util, and packet loss 0.0143 vs 0.0080 against the unguarded policy). Loop times were measured with the host otherwise
 idle; capacities are scaled down and traffic is synthetic, so absolute rates do not transfer.
+
+Decision latency (single CPU thread, p50 / p99 over 100 intervals, `table_latency.md`): the learned policy takes 2.1 / 4.4 ms on
+a 12-node graph (132 demands), 11.8 / 19.7 ms at 25 nodes (600 demands), 84 / 114 ms at 50 nodes (2,450 demands) and
+311 / 412 ms at 80 nodes (6,320 demands), against 0.3 to 23 ms for the tuned heuristic; Brain (161 nodes, 600 demands) takes 31 ms.
+Cost grows roughly with links x demands, which is fine for minute-scale control intervals but not for sub-second loops on
+networks above about 50 nodes with all-pairs demands.
 
 ### 6.7 Audit tool
 
