@@ -33,10 +33,13 @@ ap.add_argument("--eps", type=float, default=0.0)
 ap.add_argument("--profiles", default="ideal,rich,snmp,degraded")
 ap.add_argument("--oracle-max-n", type=int, default=25)
 ap.add_argument("--only-models", action="store_true", help="skip ecmp/tuned/oracle (already run)")
+ap.add_argument("--guard-layers", default="123", help="subset of 1,2,3, e.g. 2 = pre-action check only")
+ap.add_argument("--include-tuned-guard", action="store_true")
 ap.add_argument("--scenario", default="gravity", choices=["gravity", "hotspot", "shift", "flash", "fail"])
 a = ap.parse_args()
 
 tuned = yaml.safe_load(open("configs/tuned_heuristic.yaml"))
+GC = lambda: GuardCfg(eps=a.eps, layers=tuple(str(i) in a.guard_layers for i in (1, 2, 3)))
 names = load_split("test_subset")
 topos = [zoo_topology(n) for n in names]
 if a.topos:
@@ -62,10 +65,10 @@ def learned(key):
 
 
 methods = {"ecmp": lambda p: ECMP(), "tuned": lambda p: TunedHeuristic(**tuned[p]["params"]),
-           "tuned+guard": lambda p: Guard(TunedHeuristic(**tuned[p]["params"]), GuardCfg(eps=a.eps))}
+           "tuned+guard": lambda p: Guard(TunedHeuristic(**tuned[p]["params"]), GC())}
 for key in models:
     methods[f"gnn-{key}"] = (lambda k: lambda p: learned(k))(key)
-    methods[f"gnn-{key}+guard"] = (lambda k: lambda p: Guard(learned(k), GuardCfg(eps=a.eps)))(key)
+    methods[f"gnn-{key}+guard"] = (lambda k: lambda p: Guard(learned(k), GC()))(key)
 
 out = {"args": vars(a), "results": []}
 t0 = time.time()
@@ -74,7 +77,7 @@ for t in topos:
     for pn in a.profiles.split(","):
         cfg = EnvCfg(load=a.load, horizon=a.horizon, telemetry=PROFILES[pn], traffic=traffic_cfg(a.horizon),
                      fail_at=int(a.horizon * 0.4) if a.scenario == "fail" else None)
-        todo = {k: v for k, v in methods.items() if not a.only_models or k.startswith("gnn")}
+        todo = {k: v for k, v in methods.items() if not a.only_models or k.startswith("gnn") or (a.include_tuned_guard and k == "tuned+guard")}
         if t.n <= a.oracle_max_n and not a.only_models:
             todo["oracle"] = lambda p: LPOracle()
         for mname, mk in todo.items():
