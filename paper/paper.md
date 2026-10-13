@@ -15,8 +15,8 @@ per-network learned (DOTE-style) baselines, an LP oracle, and a policy trained o
 held-out Topology Zoo graphs the tuned heuristic is better with clean telemetry, while the learned policy is better
 with degraded telemetry (21-23 of 24 graphs over four training seeds), where the heuristic's average score falls to
 ECMP level. On replayed SNDlib traces from four networks with traffic-engineering headroom, scaled to controlled loads,
-the learned policy is never behind the heuristic under non-clean telemetry across ten independent trace windows per
-cell, and the heuristic falls below ECMP on two of four networks. The picture is conditional: a DOTE-style model
+the learned policy is never behind the heuristic under non-clean telemetry (ten fresh trace windows per cell on three
+networks, four on the fourth), and the heuristic falls below ECMP on two of the four networks. The picture is conditional: a DOTE-style model
 trained on a network's own history beats the zero-shot policy (48-49% versus 22-25% gain on Abilene), fine-tuning on
 history closes most of that gap, an ablation shows that model-based fluid features rather than graph message passing
 carry the result, and in overloaded trace windows the heuristic beats the learned policy. One-at-a-time sweeps show that telemetry delay (and, less, polling period)
