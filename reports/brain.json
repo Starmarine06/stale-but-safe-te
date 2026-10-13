@@ -1,0 +1,180 @@
+{
+ "network": "brain",
+ "nodes": 161,
+ "links": 332,
+ "demands": 600,
+ "traffic": "real trace",
+ "load": 0.8,
+ "user_telemetry": {
+  "P": 5,
+  "d": 3,
+  "sigma": 0.2,
+  "p": 0.1
+ },
+ "results": {
+  "ideal": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   },
+   "tuned": {
+    "gain_pct": 0.011411469304711819,
+    "p99_regret": 2.220446049250313e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1428953462527506
+   },
+   "learned": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.903988657493735e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11896848952902477
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14499512022219813
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   }
+  },
+  "snmp": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   },
+   "tuned": {
+    "gain_pct": 0.009955410297357581,
+    "p99_regret": 4.440892098500626e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14009308719446073
+   },
+   "learned": {
+    "gain_pct": 0.13043393959383254,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11900935904088428
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 1.1102230246241468e-18,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   }
+  },
+  "degraded": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   },
+   "tuned": {
+    "gain_pct": 0.128468519073055,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1209586559553411
+   },
+   "learned": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11901737841056681
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1449166569995619
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14496417950399934
+   }
+  },
+  "yours": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14511210812382871
+   },
+   "tuned": {
+    "gain_pct": 0.128468519073055,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1209586559553411
+   },
+   "learned": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11901737841056681
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1449166569995619
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.14496417950399934
+   }
+  }
+ },
+ "headroom": null,
+ "polling_sweep": {
+  "method": "learned",
+  "rows": {
+   "1": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 1.1102230246251565e-15,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11898953005571575
+   },
+   "2": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.903988657493735e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11901394237810012
+   },
+   "5": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11901737841056681
+   },
+   "10": {
+    "gain_pct": 0.13043393959381033,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11901161612641256
+   }
+  }
+ },
+ "verdict": {
+  "action": "Stay on ECMP.",
+  "reasons": [
+   "No method we tested (the exact optimum is not computed above 25 nodes), even with perfect telemetry, gains only 0.1% max-utilisation here, so a TE controller is not worth its operational risk."
+  ]
+ }
+}

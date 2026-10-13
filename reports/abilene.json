@@ -1,0 +1,187 @@
+{
+ "network": "abilene",
+ "nodes": 12,
+ "links": 30,
+ "demands": 132,
+ "traffic": "real trace",
+ "load": 0.8,
+ "user_telemetry": {
+  "P": 5,
+  "d": 3,
+  "sigma": 0.2,
+  "p": 0.1
+ },
+ "results": {
+  "ideal": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0077574534329687495
+   },
+   "tuned": {
+    "gain_pct": 32.81317136678463,
+    "p99_regret": -0.024871960675458608,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00020320981256096864
+   },
+   "learned": {
+    "gain_pct": 31.50851107420445,
+    "p99_regret": -0.05966891547736307,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 5.42038785867649e-05
+   },
+   "learned+guard": {
+    "gain_pct": 31.50851107420445,
+    "p99_regret": -0.05966891547736307,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 5.42038785867649e-05
+   },
+   "tuned+guard": {
+    "gain_pct": 32.813940309848135,
+    "p99_regret": -0.03037396948449071,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0002032098125609716
+   }
+  },
+  "snmp": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0077574534329687495
+   },
+   "tuned": {
+    "gain_pct": 31.019190125689967,
+    "p99_regret": -0.014547886077244214,
+    "worse_than_ecmp_pct": 0.6666666666666667,
+    "loss": 0.00030707198203589543
+   },
+   "learned": {
+    "gain_pct": 29.081583664856847,
+    "p99_regret": -0.06653857366290894,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00020645027473499943
+   },
+   "learned+guard": {
+    "gain_pct": 29.081583664856847,
+    "p99_regret": -0.06653857366290894,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00020645027473499943
+   },
+   "tuned+guard": {
+    "gain_pct": 30.916657943719272,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.6666666666666667,
+    "loss": 0.00030707198203589435
+   }
+  },
+  "degraded": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0077574534329687495
+   },
+   "tuned": {
+    "gain_pct": 22.060871169376185,
+    "p99_regret": 0.3506654113497268,
+    "worse_than_ecmp_pct": 15.333333333333332,
+    "loss": 0.008715301727595628
+   },
+   "learned": {
+    "gain_pct": 29.191215025934426,
+    "p99_regret": -0.06419662035148838,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0002760868302968818
+   },
+   "learned+guard": {
+    "gain_pct": 28.713932568926694,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00039559252140887664
+   },
+   "tuned+guard": {
+    "gain_pct": 25.235102564860135,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.33333333333333337,
+    "loss": 0.005127448072781252
+   }
+  },
+  "yours": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0077574534329687495
+   },
+   "tuned": {
+    "gain_pct": 22.060871169376185,
+    "p99_regret": 0.3506654113497268,
+    "worse_than_ecmp_pct": 15.333333333333332,
+    "loss": 0.008715301727595628
+   },
+   "learned": {
+    "gain_pct": 29.191215025934426,
+    "p99_regret": -0.06419662035148838,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0002760868302968818
+   },
+   "learned+guard": {
+    "gain_pct": 28.713932568926694,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00039559252140887664
+   },
+   "tuned+guard": {
+    "gain_pct": 25.235102564860135,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.33333333333333337,
+    "loss": 0.005127448072781252
+   }
+  }
+ },
+ "headroom": {
+  "gain_pct": 56.792900221087336,
+  "p99_regret": -0.17889656848566432,
+  "worse_than_ecmp_pct": 0.0,
+  "loss": -2.3314683517128286e-17
+ },
+ "polling_sweep": {
+  "method": "learned",
+  "rows": {
+   "1": {
+    "gain_pct": 28.659978705929024,
+    "p99_regret": -0.05101993733465341,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00027865273211490684
+   },
+   "2": {
+    "gain_pct": 29.178359616953287,
+    "p99_regret": -0.057396713115530615,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00034526187387964055
+   },
+   "5": {
+    "gain_pct": 29.191215025934426,
+    "p99_regret": -0.06419662035148838,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0002760868302968818
+   },
+   "10": {
+    "gain_pct": 30.59023266537818,
+    "p99_regret": -0.06380303119383525,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.00031993407779261037
+   }
+  }
+ },
+ "verdict": {
+  "action": "Use learned.",
+  "reasons": [
+   "Best-case headroom (LP oracle) is 56.8%; with your telemetry learned captures 29.2%.",
+   "The tuned heuristic is fragile under your telemetry: it is worse than ECMP in 15% of intervals (p99 regret +0.35).",
+   "Polling rate barely matters for learned here (gain varies only 1.9 points between 1 and 10 intervals)."
+  ]
+ }
+}
