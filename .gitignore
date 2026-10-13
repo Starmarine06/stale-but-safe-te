@@ -3,3 +3,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 experiments/*/runs/
+data/real/*.tgz
+data/real/abilene/
+data/real/geant/
+data/real/nobel/
+data/real/*.npz
+bash.exe.stackdump

@@ -16,7 +16,7 @@ import numpy as np
 
 from .telemetry import Channel, TelemetryCfg
 from .topology import Topology
-from .traffic import TrafficGen, ecmp_splits
+from .traffic import TraceTraffic, TrafficGen, ecmp_splits
 
 
 @dataclass
@@ -35,6 +35,7 @@ class EnvCfg:
     carried_obs: bool = False       # telemetry shows carried (<=1) not offered utilisation, like real counters
     fail_at: int | None = None      # step at which random links fail
     n_fail: int = 1
+    trace: object = None            # real demand trace (T, D); replaces the synthetic generator
 
 
 class TEEnv:
@@ -50,7 +51,10 @@ class TEEnv:
         ss = np.random.SeedSequence(seed)
         r_traffic, r_tele, r_fail = (np.random.default_rng(s) for s in ss.spawn(3))
         c, topo = self.cfg, self.topo
-        self.traffic = TrafficGen(topo, r_traffic, load=c.load, **c.traffic)
+        if c.trace is not None:
+            self.traffic = TraceTraffic(topo, r_traffic, c.trace, load=c.load, horizon=c.horizon)
+        else:
+            self.traffic = TrafficGen(topo, r_traffic, load=c.load, **c.traffic)
         self.fail_rng = r_fail
         self.link_up = np.ones(topo.E, bool)
         self.ch_util = Channel(topo.E, c.telemetry, r_tele)
