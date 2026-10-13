@@ -217,11 +217,30 @@ from 0.198 to 0.074; the validation-chosen guard barely affects the learned poli
 
 Without a rate limiter the learned policy updates 91% of demands every interval in simulation (Zoo, ideal telemetry); a
 5% threshold cuts this to 8% and a 10% threshold to 2.4% with unchanged gain (3.1%) (`table_ratelimit.md`); the tuned
-heuristic already updates about 2.5% of demands. **[PENDING: rate-limit sweep on Abilene and GEANT.]** In the emulation
-(Mininet, Open vSwitch, Ryu; 24 flows) the learned policy reprogrammed about ten times more flows than the tuned heuristic
-(265-408 vs 25-27 flow-mods per minute, with the controller's own 5% hysteresis) and its control loop took 26-32 ms vs
-16-18 ms. Time-series correlation between emulated and simulated max-utilisation was 0.90-0.98 per run and the mean
-max-util difference 0.011 (`table_emu.md`; one scenario, one seed). **[PENDING: additional emulation scenarios and seeds.]**
+heuristic already updates about 2.5% of demands. **[PENDING: rate-limit sweep on Abilene and GEANT.]**
+
+Emulation: Mininet with Open vSwitch and a Ryu controller reading real OpenFlow counters, 24 flows, four scenarios
+(three traffic seeds on a 10-node graph, one 12-node random graph), six policy/telemetry runs each plus a run with a 20%
+update threshold (`table_emu2.md`, controller with the fail-safe fixes, 28 runs). Simulator and emulator agree: across the 24
+runs at the default 5% threshold the correlation between emulated and simulated mean max-utilisation is 0.99, the mean
+absolute difference 0.017 and the bias +0.010; per-run time-series correlation is 0.83-0.98; the policy ranking agrees
+(Kendall tau 0.47-0.73 per scenario). Means over the four scenarios (emulated max-util / flow-mods per minute / control loop):
+
+| policy [telemetry] | max-util | flow-mods/min | loop ms |
+|---|---|---|---|
+| ECMP | 0.866 | 0 | 9 |
+| tuned [SNMP] | 0.798 | 33 | 9 |
+| tuned [degraded] | 0.808 | 30 | 9 |
+| learned [SNMP] | 0.763 | 270 | 12 |
+| learned [degraded] | 0.772 | 332 | 14 |
+| learned [degraded], threshold 0.2 | 0.790 | 76 | 12 |
+| learned + guard (L2, eps -0.06) [degraded] | 0.794 | 258 | 12 |
+
+The learned policy gives lower max-utilisation than the tuned heuristic but reprograms about ten times more flows; a 20%
+update threshold cuts updates 4.4-fold (332 to 76 per minute) at a cost of 0.018 in max-util, leaving it ahead of the tuned
+heuristic under degraded telemetry (0.790 vs 0.808). In the emulator the guard costs more than in simulation (0.794 vs 0.772
+max-util, and packet loss 0.0143 vs 0.0080 against the unguarded policy). Loop times were measured with the host otherwise
+idle; capacities are scaled down and traffic is synthetic, so absolute rates do not transfer.
 
 ### 6.7 Audit tool
 
