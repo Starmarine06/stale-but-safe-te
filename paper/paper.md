@@ -68,7 +68,13 @@ ratios each interval. Traffic is synthetic (gravity base, diurnal cycle, bursts,
 replayed SNDlib trace (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
 Brain, 1-min, 9,723, restricted to its 600 heaviest demands = 90% of sampled traffic). Each (network, load) pair uses one
 scale factor so that the median ECMP max-link-utilisation over the trace equals 0.6, 0.8 or 1.0. This is *real-trace
-evaluation under controlled load scaling*: temporal and spatial structure are real, absolute load is not.
+evaluation under controlled load scaling*: temporal and spatial structure are real, absolute load is not. The scale factors are
+large and differ by network (`experiments/final/table_scale_factors.md`): to reach a median ECMP max-utilisation of 0.8 the
+Abilene and Brain traces are multiplied by about 9 and 23, GEANT by about 4, while the Germany17 and Germany50 traces are
+multiplied by about 0.02 (their native demands exceed the published module capacities by a factor of about 30-40, so capacity
+units in those files are not meaningful on their own). Some traces contain extreme intervals: the largest GEANT interval is
+about 12,000 times its median, so after scaling it has a max-utilisation near 10^4; Abilene's maximum is about 17 times its
+median. Such intervals dominate pooled tail statistics and are the likely source of the 'overloaded windows' of Section 6.4.
 
 **Telemetry impairment.** The controller observes utilisation and demands through a channel with polling period P
 (intervals), delay d, multiplicative noise sigma and per-counter drop probability p; installing rules takes L
@@ -299,7 +305,8 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 
 * Fluid model: no TCP, queueing or packet dynamics. The guard offers no formal guarantee; it is an empirically evaluated filter
   and misses most harmful proposals under degraded telemetry on Zoo graphs.
-* Real traffic but scaled to a target load; the conclusion is insensitive to the scaling rule (6.2b), the absolute numbers are not.
+* Real traffic but scaled to a target load by factors from 0.02 to 23 (Section 3); trace capacities for Germany17/50 are not
+  meaningful in absolute terms; some traces contain extreme outlier intervals. The conclusion is insensitive to the scaling rule (6.2b), the absolute numbers are not.
   Capacities are the networks' published module sizes where available.
 * Telemetry faults are modelled, not measured on a deployed network.
 * Four training seeds (not ten); ablations, DOTE-style and fine-tuned models have one seed; evaluation seeds 4-12 (not 20).
