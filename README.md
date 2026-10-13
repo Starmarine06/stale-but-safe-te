@@ -26,15 +26,23 @@ stale-but-safe audit --network my_topology.graphml --traffic my_traffic.csv --ou
 stale-but-safe demo --topology abilene --mode shadow --model runs/ours_dfm_final.pt --profile snmp
 ```
 
-## Headline finding (real traces, load 0.8, learned model trained only on synthetic graphs)
-| network | oracle gain | learned | tuned heuristic | tuned under degraded telemetry |
-|---|---|---|---|---|
-| Abilene | 57% | 31% | 33% | p99 regret +0.35 (worse than ECMP) |
-| GEANT | 58% | 42% | 38% | no worse than ECMP |
-| Germany17 | 37% | 15% | 19% | -0.2%, p99 regret +0.14 |
+## Headline findings
+Real SNDlib traces (Abilene, GEANT, Germany17, Germany50, Brain), 3 loads x 4 telemetry qualities; the learned
+policy is trained only on small synthetic graphs (4 training seeds). Full table: `experiments/final/table_real.md`.
 
-Gain = reduction of mean max-link-utilisation vs ECMP. The ranking between tuned and learned depends on the
-telemetry quality; see `experiments/final/real_sanity_load*.txt` and the paper draft for the full protocol.
+* **Ranking depends on telemetry quality.** In the four networks with TE headroom the learned policy is ahead of the
+  tuned heuristic in 36 of 36 cells with rich / SNMP / degraded telemetry; with clean telemetry it is 7 ahead, 4 behind,
+  1 tie (the tuned heuristic wins on GEANT and Germany17 at loads 0.8-1.0, by 1.5-4.1 points).
+* **Tuned heuristics can fail badly under degraded telemetry.** Abilene at load 1.0: -4.0% vs ECMP (worst-case regret
+  +1.02) while the learned policy gains 29%; Germany17 -3%. Not universal: Germany50 and GEANT do not collapse.
+* **Held-out Topology Zoo (24 graphs, 4 seeds):** learned beats tuned on 21-23 of 24 graphs under degraded telemetry;
+  seed-to-seed spread 0.001-0.002 in score.
+* **Guard (validation-chosen, L2-only):** keeps ~82% of the learned gain on Zoo graphs and halves worst-case regret
+  (0.019 -> 0.008); costs under 1 point on real traces; rescues the tuned heuristic.
+* **Emulation (Mininet + OVS + Ryu):** time-series correlation with the simulator 0.90-0.98; costs: ~10x more
+  flow-mods than the heuristic.
+* **Honest limits:** the learned policy gets about half of the oracle headroom; traffic scaled to a target load;
+  telemetry faults modelled, not measured; Brain's benefit is confined to rare windows. See `paper/paper.md`.
 
 ## Reproduce
 | Step | Command |
