@@ -1,4 +1,6 @@
 {
+ "seeds": 6,
+ "ood": [],
  "network": "abilene",
  "nodes": 12,
  "links": 30,
@@ -15,173 +17,524 @@
   "ideal": {
    "ecmp": {
     "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
     "p99_regret": 0.0,
     "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0077574534329687495
+    "loss": 0.011831990430735372
    },
    "tuned": {
-    "gain_pct": 32.81317136678463,
-    "p99_regret": -0.024871960675458608,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00020320981256096864
+    "gain_pct": 30.199057820801695,
+    "gain_ci_pct": [
+     24.582727400348585,
+     35.01521495146664
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     18.951,
+     37.12,
+     34.975,
+     24.26,
+     36.625,
+     29.264
+    ],
+    "top_window_share": 0.20486334918629348,
+    "p99_regret": -0.030358193874158456,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005952867545283954
    },
    "learned": {
-    "gain_pct": 31.50851107420445,
+    "gain_pct": 29.052428733685808,
+    "gain_ci_pct": [
+     25.78356899748143,
+     32.0489970167214
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     22.377,
+     34.209,
+     33.096,
+     28.062,
+     29.889,
+     26.681
+    ],
+    "top_window_share": 0.1962493886357178,
     "p99_regret": -0.05966891547736307,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 5.42038785867649e-05
+    "worse_than_ecmp_pct": 0.5,
+    "loss": 0.005549515867005787
    },
    "learned+guard": {
-    "gain_pct": 31.50851107420445,
+    "gain_pct": 29.603700567826056,
+    "gain_ci_pct": [
+     25.939648878214033,
+     32.64210160641593
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     22.377,
+     34.209,
+     33.096,
+     28.062,
+     33.18,
+     26.698
+    ],
+    "top_window_share": 0.19259488739610947,
     "p99_regret": -0.05966891547736307,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 5.42038785867649e-05
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.00560126056368095
    },
    "tuned+guard": {
-    "gain_pct": 32.813940309848135,
-    "p99_regret": -0.03037396948449071,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0002032098125609716
+    "gain_pct": 30.199719249009497,
+    "gain_ci_pct": [
+     24.584711684972007,
+     35.01521495146664
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     18.955,
+     37.12,
+     34.975,
+     24.26,
+     36.625,
+     29.264
+    ],
+    "top_window_share": 0.20485886231021427,
+    "p99_regret": -0.0336886864760388,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005952867545283955
    }
   },
   "snmp": {
    "ecmp": {
     "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
     "p99_regret": 0.0,
     "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0077574534329687495
+    "loss": 0.011831990430735372
    },
    "tuned": {
-    "gain_pct": 31.019190125689967,
-    "p99_regret": -0.014547886077244214,
-    "worse_than_ecmp_pct": 0.6666666666666667,
-    "loss": 0.00030707198203589543
+    "gain_pct": 23.556765874665086,
+    "gain_ci_pct": [
+     15.565431277762665,
+     31.72473419341781
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     9.711,
+     36.947,
+     35.172,
+     13.4,
+     23.585,
+     22.525
+    ],
+    "top_window_share": 0.2614075178404303,
+    "p99_regret": -0.015357274896551101,
+    "worse_than_ecmp_pct": 0.5,
+    "loss": 0.005908958297026702
    },
    "learned": {
-    "gain_pct": 29.081583664856847,
-    "p99_regret": -0.06653857366290894,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00020645027473499943
+    "gain_pct": 29.193155374114134,
+    "gain_ci_pct": [
+     25.509352146099083,
+     32.954519431509226
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.122,
+     30.511,
+     30.517,
+     29.447,
+     37.835,
+     23.726
+    ],
+    "top_window_share": 0.21600536169944445,
+    "p99_regret": -0.05612475742969358,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005756973611299904
    },
    "learned+guard": {
-    "gain_pct": 29.081583664856847,
-    "p99_regret": -0.06653857366290894,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00020645027473499943
+    "gain_pct": 29.161707959960115,
+    "gain_ci_pct": [
+     25.477879034177786,
+     32.954519431509226
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.122,
+     30.511,
+     30.517,
+     29.447,
+     37.835,
+     23.538
+    ],
+    "top_window_share": 0.21623829764675512,
+    "p99_regret": -0.02643114846111528,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005756973611299904
    },
    "tuned+guard": {
-    "gain_pct": 30.916657943719272,
+    "gain_pct": 23.348392424743757,
+    "gain_ci_pct": [
+     15.389039342957089,
+     31.604556710899264
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     9.182,
+     36.947,
+     35.172,
+     13.4,
+     23.585,
+     21.804
+    ],
+    "top_window_share": 0.2637404573138159,
     "p99_regret": 0.0,
-    "worse_than_ecmp_pct": 0.6666666666666667,
-    "loss": 0.00030707198203589435
+    "worse_than_ecmp_pct": 0.5,
+    "loss": 0.005908958297026702
    }
   },
   "degraded": {
    "ecmp": {
     "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
     "p99_regret": 0.0,
     "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0077574534329687495
+    "loss": 0.011831990430735372
    },
    "tuned": {
-    "gain_pct": 22.060871169376185,
-    "p99_regret": 0.3506654113497268,
-    "worse_than_ecmp_pct": 15.333333333333332,
-    "loss": 0.008715301727595628
+    "gain_pct": 22.258722124855275,
+    "gain_ci_pct": [
+     10.554778643975544,
+     33.658590159547494
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     35.486,
+     0.452,
+     40.87,
+     21.917,
+     29.148,
+     5.68
+    ],
+    "top_window_share": 0.3060205398043421,
+    "p99_regret": 0.3289453748003696,
+    "worse_than_ecmp_pct": 14.166666666666666,
+    "loss": 0.01155148622181642
    },
    "learned": {
-    "gain_pct": 29.191215025934426,
-    "p99_regret": -0.06419662035148838,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0002760868302968818
+    "gain_pct": 29.767748843698786,
+    "gain_ci_pct": [
+     26.435014099587583,
+     33.37932939480141
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     24.25,
+     30.033,
+     30.793,
+     30.695,
+     38.144,
+     24.691
+    ],
+    "top_window_share": 0.21356658896728326,
+    "p99_regret": -0.06675995438535923,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005803427068473896
    },
    "learned+guard": {
-    "gain_pct": 28.713932568926694,
+    "gain_pct": 29.39858685635386,
+    "gain_ci_pct": [
+     25.953002369192042,
+     33.086947585370716
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.933,
+     29.745,
+     30.005,
+     30.695,
+     37.963,
+     24.051
+    ],
+    "top_window_share": 0.21521994712769962,
     "p99_regret": 0.0,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00039559252140887664
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.0058647631470078974
    },
    "tuned+guard": {
-    "gain_pct": 25.235102564860135,
-    "p99_regret": 0.0,
-    "worse_than_ecmp_pct": 0.33333333333333337,
-    "loss": 0.005127448072781252
+    "gain_pct": 23.84058520052974,
+    "gain_ci_pct": [
+     14.310881996148241,
+     33.18199254093733
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     35.145,
+     8.463,
+     40.104,
+     20.839,
+     28.885,
+     9.608
+    ],
+    "top_window_share": 0.2803600707723743,
+    "p99_regret": 0.003673612102250862,
+    "worse_than_ecmp_pct": 1.0,
+    "loss": 0.00941649573881235
    }
   },
   "yours": {
    "ecmp": {
     "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
     "p99_regret": 0.0,
     "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0077574534329687495
+    "loss": 0.011831990430735372
    },
    "tuned": {
-    "gain_pct": 22.060871169376185,
-    "p99_regret": 0.3506654113497268,
-    "worse_than_ecmp_pct": 15.333333333333332,
-    "loss": 0.008715301727595628
+    "gain_pct": 22.258722124855275,
+    "gain_ci_pct": [
+     10.554778643975544,
+     33.658590159547494
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     35.486,
+     0.452,
+     40.87,
+     21.917,
+     29.148,
+     5.68
+    ],
+    "top_window_share": 0.3060205398043421,
+    "p99_regret": 0.3289453748003696,
+    "worse_than_ecmp_pct": 14.166666666666666,
+    "loss": 0.01155148622181642
    },
    "learned": {
-    "gain_pct": 29.191215025934426,
-    "p99_regret": -0.06419662035148838,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0002760868302968818
+    "gain_pct": 29.767748843698786,
+    "gain_ci_pct": [
+     26.435014099587583,
+     33.37932939480141
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     24.25,
+     30.033,
+     30.793,
+     30.695,
+     38.144,
+     24.691
+    ],
+    "top_window_share": 0.21356658896728326,
+    "p99_regret": -0.06675995438535923,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005803427068473896
    },
    "learned+guard": {
-    "gain_pct": 28.713932568926694,
+    "gain_pct": 29.39858685635386,
+    "gain_ci_pct": [
+     25.953002369192042,
+     33.086947585370716
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.933,
+     29.745,
+     30.005,
+     30.695,
+     37.963,
+     24.051
+    ],
+    "top_window_share": 0.21521994712769962,
     "p99_regret": 0.0,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00039559252140887664
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.0058647631470078974
    },
    "tuned+guard": {
-    "gain_pct": 25.235102564860135,
-    "p99_regret": 0.0,
-    "worse_than_ecmp_pct": 0.33333333333333337,
-    "loss": 0.005127448072781252
+    "gain_pct": 23.84058520052974,
+    "gain_ci_pct": [
+     14.310881996148241,
+     33.18199254093733
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     35.145,
+     8.463,
+     40.104,
+     20.839,
+     28.885,
+     9.608
+    ],
+    "top_window_share": 0.2803600707723743,
+    "p99_regret": 0.003673612102250862,
+    "worse_than_ecmp_pct": 1.0,
+    "loss": 0.00941649573881235
    }
   }
  },
  "headroom": {
-  "gain_pct": 56.792900221087336,
-  "p99_regret": -0.17889656848566432,
+  "gain_pct": 56.54972221400444,
+  "gain_ci_pct": [
+   54.18081078477761,
+   58.953054880703505
+  ],
+  "windows": 6,
+  "window_gains_pct": [
+   53.272,
+   57.755,
+   57.499,
+   56.439,
+   61.793,
+   52.539
+  ],
+  "top_window_share": 0.18211917065044245,
+  "p99_regret": -0.18914983476032313,
   "worse_than_ecmp_pct": 0.0,
-  "loss": -2.3314683517128286e-17
+  "loss": 0.006472216764261177
  },
  "polling_sweep": {
   "method": "learned",
   "rows": {
    "1": {
-    "gain_pct": 28.659978705929024,
-    "p99_regret": -0.05101993733465341,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00027865273211490684
+    "gain_pct": 28.60514032645008,
+    "gain_ci_pct": [
+     25.2500173120273,
+     32.04468103192421
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.103,
+     30.224,
+     29.721,
+     28.926,
+     36.333,
+     23.323
+    ],
+    "top_window_share": 0.2116942821135164,
+    "p99_regret": -0.05543935209230949,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005777464935652708
    },
    "2": {
-    "gain_pct": 29.178359616953287,
+    "gain_pct": 29.141478152607892,
+    "gain_ci_pct": [
+     25.903462309281405,
+     32.58433780883255
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     23.927,
+     30.414,
+     30.472,
+     29.131,
+     36.867,
+     24.038
+    ],
+    "top_window_share": 0.21085204851097483,
     "p99_regret": -0.057396713115530615,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00034526187387964055
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.00580707465609811
    },
    "5": {
-    "gain_pct": 29.191215025934426,
-    "p99_regret": -0.06419662035148838,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.0002760868302968818
+    "gain_pct": 29.767748843698786,
+    "gain_ci_pct": [
+     26.435014099587583,
+     33.37932939480141
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     24.25,
+     30.033,
+     30.793,
+     30.695,
+     38.144,
+     24.691
+    ],
+    "top_window_share": 0.21356658896728326,
+    "p99_regret": -0.06675995438535923,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005803427068473896
    },
    "10": {
-    "gain_pct": 30.59023266537818,
-    "p99_regret": -0.06380303119383525,
-    "worse_than_ecmp_pct": 0.0,
-    "loss": 0.00031993407779261037
+    "gain_pct": 31.09578601327027,
+    "gain_ci_pct": [
+     27.709541152628255,
+     34.641769737891444
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     25.715,
+     30.324,
+     33.485,
+     32.282,
+     38.658,
+     26.11
+    ],
+    "top_window_share": 0.20719664671517954,
+    "p99_regret": -0.07010518521921451,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.005811866801585953
    }
   }
  },
  "verdict": {
   "action": "Use learned.",
   "reasons": [
-   "Best-case headroom (LP oracle) is 56.8%; with your telemetry learned captures 29.2%.",
-   "The tuned heuristic is fragile under your telemetry: it is worse than ECMP in 15% of intervals (p99 regret +0.35).",
-   "Polling rate barely matters for learned here (gain varies only 1.9 points between 1 and 10 intervals)."
+   "Best-case headroom (LP oracle) is 56.5%; with your telemetry learned captures 29.8% (95% interval [26.4, 33.4]).",
+   "Not distinguishable from tuned+guard (paired 95% interval over 6 windows includes 0); prefer the simplest of these that meets your tail-risk needs.",
+   "The tuned heuristic is fragile under your telemetry: it is worse than ECMP in 14% of intervals (p99 regret +0.33).",
+   "Polling every 10 interval(s) works best for learned (31.1% vs 28.6% at the worst rate)."
   ]
  }
 }

@@ -171,7 +171,10 @@ def verdict(o: dict) -> dict:
         who = "Even an all-knowing optimiser" if exact and head < 5 else "No method we tested, even with perfect telemetry,"
         return {"action": "Stay on ECMP.", "reasons": lines + [
             f"{who} gains only {bi['gain_pct']:.1f}% max-utilisation here (95% interval over {bi['windows']} windows "
-            f"[{lo:.1f}, {hi:.1f}]), so a TE controller is not worth its operational risk."]}
+            f"[{lo:.1f}, {hi:.1f}]), so a TE controller is not worth its operational risk."] + (
+            [f"Provisional: only {bi['windows']} trace windows were evaluated, and gains can be confined to rare surge windows "
+             "that a short sample misses (on the real Brain trace one window in a dozen gained 21%). Evaluate more windows before ruling TE out."]
+            if bi["windows"] < 20 else [])}
     if lo < 5:
         return {"action": "Insufficient evidence.", "reasons": lines + [
             f"The best method's gain with perfect telemetry is {bi['gain_pct']:.1f}% with a 95% interval [{lo:.1f}, {hi:.1f}] over "
