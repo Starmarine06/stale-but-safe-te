@@ -20,7 +20,7 @@ heuristic in all 36 cells with rich, SNMP-like or degraded telemetry, and ahead 
 A validation-chosen pre-action safety guard roughly halves the learned policy's worst-case regret at a cost of
 about 18% of its gain, and rescues the tuned heuristic. Finally, we package the measurements as an audit tool that
 tells an operator, for a given topology, traffic and telemetry quality, whether TE is worth deploying at all (on
-one real network, Brain, it is not) and which method to trust.
+one real network, Brain, benefits are confined to rare traffic windows) and which method to trust.
 
 ## 1 Introduction
 
@@ -136,8 +136,10 @@ GEANT, Germany17, Germany50; 12 network/load cells per telemetry profile):
   +1.02) against +29.4% for the learned policy; Abilene at 0.8, 3.5% against 26.4% with clean telemetry; Germany17,
   -3%. The failure is network dependent: on Germany50 and (mildly) GEANT the tuned heuristic does not collapse.
 * Germany50 (50 nodes, larger than every training graph): learned 33-36% gain against 9-31% for tuned, in all 12 cells.
-* Brain (161 nodes, one-minute traces, 600 heaviest demands = 90% of traffic): every method gains only 3-5%;
-  there is essentially no TE headroom.
+* Brain (161 nodes, one-minute traces, 600 heaviest demands = 90% of traffic): TE headroom is concentrated in rare
+  windows. In 11 of 12 trace windows tested the learned policy gains 0.0-0.3%; in one window it gains 20.9%, which
+  produces the 3-5% averages in the table. A single 100-interval window therefore under- or over-states the benefit
+  here, and the audit tool's verdict for such networks should be read with that variability in mind.
 * The learned policy's gain varies by about +-5 points across training seeds on Abilene (+-1 on the larger graphs).
   The oracle gain (n <= 25 only) is 47% on Abilene and 37% on Germany17: the learned policy captures roughly half
   of the available headroom.
@@ -152,7 +154,8 @@ ECMP in about 83% of intervals and costs about 0.011 of score even with clean te
 points of gain on average per network (Abilene 0.2, GEANT 0.3, Germany17 0.8, Germany50 0.0, Brain 0.7) and cuts the
 p99 regret on GEANT from +0.026 to +0.002; for the tuned heuristic under degraded telemetry it improves the gain by
 2.3 points and cuts the p99 regret from 0.198 to 0.074 (no effect with clean telemetry). On Brain the guard falls
-back 95-100% of the time because no 6% improvement is ever predicted, at a cost of about one point.
+back 95-100% of the time because a 6% predicted improvement is rare, at a cost of about one point (it misses most
+of the single high-gain window).
 
 ### 6.4 Ablations — **TBD**
 
@@ -173,8 +176,9 @@ vs 16-18 ms. This is a validation of the simulator, not an independent result: o
 ### 6.6 Audit tool
 
 On real Abilene with SNMP-like-to-degraded telemetry the tool reports 47-57% best-case headroom, flags the tuned
-heuristic as fragile (worse than ECMP in 15% of intervals) and recommends the learned policy; on Brain it
-reports no headroom and recommends staying on ECMP.
+heuristic as fragile (worse than ECMP in 15% of intervals) and recommends the learned policy; on Brain (n > 25, so no exact optimum) it
+reports that no tested method gains more than 0.1% in its three windows and recommends staying on ECMP; this verdict is
+window-sensitive (see 6.2).
 
 ## 7 Negative results
 
