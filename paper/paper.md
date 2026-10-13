@@ -148,8 +148,11 @@ Validation-chosen L2-only guard (eps = -0.06), evaluated once on the 24 test gra
 tuned +0.014 -> -0.034 (p99 regret 0.183 -> 0.030, Holm p = 0.005); learned -0.060 -> -0.049 (keeps 82% of the
 gain; p99 regret 0.019 -> 0.008, p = 0.0003). Guarded learned still beats guarded tuned. The guard falls back to
 ECMP in about 83% of intervals and costs about 0.011 of score even with clean telemetry. The earlier default
-(eps = 0, all layers) was more conservative and halved the learned gain (`experiments/final/table_all.md`). On Brain
-the guard falls back 95-100% of the time at a cost of about one point (5.3% to 4.1-5.0% gain).
+(eps = 0, all layers) was more conservative and halved the learned gain (`experiments/final/table_all.md`). On the real traces (matched seeds, seed-0 model) the same guard costs the learned policy only 0.0-0.8
+points of gain on average per network (Abilene 0.2, GEANT 0.3, Germany17 0.8, Germany50 0.0, Brain 0.7) and cuts the
+p99 regret on GEANT from +0.026 to +0.002; for the tuned heuristic under degraded telemetry it improves the gain by
+2.3 points and cuts the p99 regret from 0.198 to 0.074 (no effect with clean telemetry). On Brain the guard falls
+back 95-100% of the time because no 6% improvement is ever predicted, at a cost of about one point.
 
 ### 6.4 Ablations — **TBD**
 

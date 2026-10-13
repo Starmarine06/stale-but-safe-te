@@ -18,7 +18,7 @@ for r in rows:
     by[(r["topo"], r["profile"])][r["method"]] = r
 out = []
 P = lambda s="": (print(s), out.append(s))
-P("| network@load | telemetry | oracle | tuned (gain / p99) | learned, mean±SD over seeds (gain / p99) | ideal-trained | learned+guard | winner |")
+P("| network@load | telemetry | oracle | tuned (gain / p99) | learned, mean±SD over seeds (gain / p99) | ideal-trained (s0) | learned s0 raw / +guard (matched seed) | winner |")
 P("|---|---|---|---|---|---|---|---|")
 wins = defaultdict(int)
 for (topo, prof), m in sorted(by.items(), key=lambda kv: (kv[0][0].split("@")[0], float(kv[0][0].split("@")[1]), ["ideal", "rich", "snmp", "degraded"].index(kv[0][1]))):
@@ -35,8 +35,9 @@ for (topo, prof), m in sorted(by.items(), key=lambda kv: (kv[0][0].split("@")[0]
     orc = f"{100 * m['oracle']['gain']:.1f}" if "oracle" in m else "-"
     gi = f"{100 * m['gnn-ideal-s0']['gain']:.1f}" if "gnn-ideal-s0" in m else "-"
     lg = m.get("gnn-ours-s0+guard")
+    raw0 = 100 * m["gnn-ours-s0"]["gain"]
     P(f"| {topo} | {prof} | {orc} | {gt:.1f} / {t['regret_p99']:+.3f} | {g.mean():.1f}±{g.std(ddof=1) if len(g) > 1 else 0:.1f} / {p99.mean():+.3f} "
-      f"| {gi} | {100 * lg['gain']:.1f} (fb {lg.get('fallback_rate', 0):.2f}) | {win} |")
+      f"| {gi} | {raw0:.1f} / {100 * lg['gain']:.1f} (fb {lg.get('fallback_rate', 0):.2f}) | {win} |")
 P("\nWinner counts (|gain difference| < 1 point = tie), over network x load cells:\n")
 for prof in ("ideal", "rich", "snmp", "degraded"):
     P(f"- {prof}: learned {wins[(prof, 'learned')]}, tuned {wins[(prof, 'tuned')]}, tie {wins[(prof, 'tie')]}")
