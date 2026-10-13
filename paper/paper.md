@@ -1,110 +1,128 @@
-# When does learned traffic engineering beat a tuned heuristic? Telemetry quality decides: a benchmark, a safety guard and an audit tool
+# Telemetry Quality Determines When Learned Traffic Engineering Outperforms Reactive Heuristics
 
-*Draft. All numbers are produced by the scripts in `experiments/`; results files are in `experiments/final/`.
-Status of claims is stated explicitly in Section 8. Items marked **TBD** are not finished.*
+*Draft v2. All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
+**[PENDING]** depend on experiments still running when this draft was written. Protocol deviations are tabulated in
+`docs/eval_protocol.md`; claims and their status are in Section 8.*
 
 ## Abstract
 
-Learned traffic-engineering (TE) policies are usually evaluated with perfect, instantaneous link counters.
-Real controllers see counters that are polled every few minutes, delayed, noisy and sometimes missing. We
-study how this changes which method wins. We build a controlled telemetry-impairment model (polling period,
-delay, noise, missing counters, rule-install latency) shared by a fluid simulator and an SDN controller
-(Ryu + Open vSwitch in Mininet), and compare ECMP, a per-profile tuned heuristic, an LP oracle and a graph-neural-network
-(GNN) split-ratio policy trained by direct optimisation through a differentiable fluid model. The policy is
-trained only on small synthetic graphs. On 24 held-out Topology Zoo graphs and on real SNDlib traffic traces
-(Abilene, GEANT, Germany17, Germany50, Brain), the ranking depends on telemetry quality: with clean telemetry a
-tuned heuristic is competitive and often better; with degraded telemetry it can fall to ECMP level or worse
-(for example 4.0% *worse* than ECMP on Abilene at load 1.0, worst-case regret +1.02), while the learned policy keeps
-its gain (about 29% there). In the four real networks with TE headroom, the learned policy is ahead of the tuned
-heuristic in all 36 cells with rich, SNMP-like or degraded telemetry, and ahead in 7 of 12 with clean telemetry.
-A validation-chosen pre-action safety guard roughly halves the learned policy's worst-case regret at a cost of
-about 18% of its gain, and rescues the tuned heuristic. Finally, we package the measurements as an audit tool that
-tells an operator, for a given topology, traffic and telemetry quality, whether TE is worth deploying at all (on
-one real network, Brain, benefits are confined to rare traffic windows) and which method to trust.
+Learned traffic-engineering (TE) policies are usually evaluated with accurate, timely link counters, whereas
+operational controllers see counters that are polled every few minutes, delayed, noisy and sometimes missing. We ask
+how telemetry quality changes which method is worth deploying. We define a shared impairment model (polling period,
+delay, noise, missing counters, rule-install latency) used by a fluid simulator and an SDN controller (Ryu with Open
+vSwitch in Mininet), and compare ECMP, a tuned reactive heuristic (re-tuned for each telemetry profile), static and
+per-network learned (DOTE-style) baselines, an LP oracle, and a policy trained only on small synthetic graphs. On 24
+held-out Topology Zoo graphs the tuned heuristic is better with clean telemetry, while the learned policy is better
+with degraded telemetry (21-23 of 24 graphs over four training seeds), where the heuristic's average score falls to
+ECMP level. On replayed SNDlib traces from four networks with traffic-engineering headroom, scaled to controlled loads,
+the learned policy is never behind the heuristic under non-clean telemetry across ten independent trace windows per
+cell, and the heuristic falls below ECMP on two of four networks. The picture is conditional: a DOTE-style model
+trained on a network's own history beats the zero-shot policy (48-49% versus 22-25% gain on Abilene), fine-tuning on
+history closes most of that gap, an ablation shows that model-based fluid features rather than graph message passing
+carry the result, and in overloaded trace windows the heuristic beats the learned policy. A runtime ECMP-fallback guard
+reduces tail regret in some regimes (link failures) and little in others; a hysteresis rate limiter removes most flow
+updates at no measured loss of gain. Telemetry faults are modelled, not measured, and traffic is scaled to a target
+load, so the results do not establish performance in a production network.
 
 ## 1 Introduction
 
-Most learned-TE papers assume the controller knows the current traffic matrix and link loads. Operational
-networks do not: SNMP counters are typically polled every few minutes, flow telemetry is sampled, and both
-arrive late and with gaps. A heuristic that reacts to the latest counters can then chase stale information, and a
-learned policy trained on clean inputs can misbehave. Prior work shows neural routers degrade under realistic
-delay (LOGGIA, arXiv 2604.02927, for distributed link-weight routing); we do not claim that observation. Our
-questions are different and operational:
+Telemetry quality is a missing dimension in the evaluation of learned traffic engineering. Learned TE policies are
+typically trained and tested with perfect inputs; operational controllers poll counters at fixed periods and act on
+stale, noisy and incomplete views. Heuristics tuned to the latest counters can chase stale information, and a learned
+policy trained on clean inputs may misbehave. Prior work shows that neural routers degrade under realistic delay
+(Section 2), so we do not claim that observation. We ask a narrower, operational question:
 
-* **RQ1.** In centralised SDN TE, how does the ranking between a tuned heuristic and a learned policy change with
-  telemetry quality, on real topologies and real traffic?
-* **RQ2.** Can a policy trained only on synthetic graphs under randomised telemetry transfer, and does the
-  randomisation matter?
-* **RQ3.** How much of the worst-case risk can a runtime guard remove, and at what cost in gain?
-* **RQ4.** Do simulator conclusions hold in an emulated SDN?
-* **RQ5.** Can the measurements be turned into a decision aid for an operator?
+> For a given network and telemetry quality, which of ECMP, a tuned reactive heuristic, or a learned policy should an
+> operator run, and what does each cost in tail risk and in controller activity?
 
-Contributions: (i) a telemetry-impairment model shared by simulator and controller; (ii) a like-for-like
-comparison of tuned heuristics and a learned policy under the *same* impairments on real traces; (iii) a
-three-layer guard with measured tail regret and a validation-based selection protocol; (iv) a sim-to-emulation
-check; (v) an open audit tool. Negative results (LP-teacher distillation, PPO fine-tuning) are reported.
+We contribute (i) an impairment model shared by simulator and controller and a like-for-like comparison against a
+heuristic re-tuned for every telemetry profile; (ii) evidence on held-out Topology Zoo graphs and replayed real traces
+that the ranking depends on telemetry quality, with the conditions under which it does not (clean telemetry,
+overload, per-network training data); (iii) an ablation and baseline study that identifies what carries the result;
+(iv) an empirical evaluation of an ECMP-fallback guard and of a rate limiter; and (v) an open audit tool that applies
+these measurements to a user's network. Negative results (LP-teacher distillation, PPO fine-tuning) are reported.
 
 ## 2 Related work
 
-*Learned TE.* Teal (GNN + multi-agent RL + ADMM), DOTE (direct optimisation of the TE objective from historical
-matrices), CFR-RL, DATE, Roracle (GNN trained on LP-optimal targets). These assume accurate traffic inputs.
-*Delay and telemetry.* LOGGIA models communication and inference delay for neural routing and reports that
-neural baselines fail under realistic delay; EnvelopeTC bounds agent actions and disables reroutes after a
-staleness bound. *Safe fallback.* "Training Wheels" (Mao et al.) hands control to a safe policy when the state
-becomes unsafe; our guard builds on that idea and adds a model-based pre-action check and a measured-regret
-monitor. We read most related papers at abstract level only; they must be verified before submission
-(`docs/related_work.md`).
+*Learned TE.* DOTE (Perry et al., NSDI 2023) trains a network on recent demand matrices to output split ratios over
+candidate paths by directly minimising maximum link utilisation; our training method is of this family, and we add a
+differentiable fluid model with packet-loss term and training under impaired observations. Teal (Xu et al., SIGCOMM
+2023), CFR-RL (Zhang et al., IEEE JSAC 2020), FlexDATE and Roracle target scalability or rerouting; they assume accurate
+inputs. DOTE tests demand noise up to +-35% only; Teal's delay is solver latency. *Delay and telemetry.* LOGGIA
+(Boltres et al., TMLR 2026, arXiv 2604.02927) models communication and inference delay for neural link-weight routing
+in a packet-level simulator and reports that neural baselines stop beating static shortest-path routing under delay; it
+compares with default shortest-path protocols, studies one impairment axis, and has no safety mechanism. This is the
+closest prior result and partially anticipates our central claim. EnvelopeTC (Jia et al., IEEE JCC 2026) bounds agent
+actions and disables reroutes after a staleness limit in a hierarchical data-centre setting. RedTE (Gui et al., SIGCOMM
+2024) addresses centralised control-loop latency by moving decisions to routers. *Safe fallback.* Training Wheels (Mao
+et al., NeurIPS 2019) falls back to a simple policy in unsafe states; our guard applies this idea. In a literature search
+we found no study that varies polling period, noise, missing counters and install latency together for centralised
+split-ratio TE and compares learned policies against heuristics re-tuned per telemetry profile; the search was not
+exhaustive. FlexDATE, Roracle and FIGRET were read at abstract level only (`docs/related_work.md`).
 
 ## 3 Setting
 
-**Network and traffic.** A topology with link capacities and `k = 4` candidate paths per demand. Traffic is either
-synthetic (gravity base, diurnal cycle, bursts, hotspots, shifts, flash crowds) or a *real trace* replayed from
-SNDlib. Real traces are scaled by one constant per (network, load) so that the median ECMP max-link-utilisation
-over the trace equals the requested load (0.6, 0.8 or 1.0); temporal and spatial structure remain real, absolute
-load does not. The policy outputs split ratios over the candidate paths each interval.
+**Network and traffic.** A topology with link capacities and k = 4 candidate paths per demand; the policy outputs split
+ratios each interval. Traffic is synthetic (gravity base, diurnal cycle, bursts, hotspots, shifts, flash crowds) or a
+replayed SNDlib trace (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
+Brain, 1-min, 9,723, restricted to its 600 heaviest demands = 90% of sampled traffic). Each (network, load) pair uses one
+scale factor so that the median ECMP max-link-utilisation over the trace equals 0.6, 0.8 or 1.0. This is *real-trace
+evaluation under controlled load scaling*: temporal and spatial structure are real, absolute load is not.
 
-**Telemetry impairment.** The controller observes link utilisation and demands through a channel with polling
-period `P` (intervals), delay `d`, multiplicative noise `sigma` and per-counter drop probability `p`; rule
-installation takes `L` intervals. Four profiles: *ideal* (1,0,0,0), *rich* (1,1,0.03,0), *SNMP* (5,1,0.05,0.02) and
-*degraded* (5,3,0.2,0.1). The same channel is applied to real counters in the emulated controller.
+**Telemetry impairment.** The controller observes utilisation and demands through a channel with polling period P
+(intervals), delay d, multiplicative noise sigma and per-counter drop probability p; installing rules takes L
+intervals. Profiles: ideal (1,0,0,0), rich (1,1,0.03,0), SNMP-like (5,1,0.05,0.02), degraded (5,3,0.2,0.1). The same
+channel is applied to real OpenFlow counters in the emulated controller.
 
-**Metrics.** Gain = reduction of mean max-link-utilisation vs ECMP; score = max-util ratio vs ECMP plus 5 x
-fluid packet loss, reported as the paired difference to ECMP (dScore, lower is better); tail risk = p99 of
-(max-util minus ECMP's max-util) per interval ("regret", positive = worse than ECMP).
+**Metrics.** We report separately: gain (reduction of mean max-link-utilisation vs ECMP), fluid packet loss, tail
+regret (p99 of per-interval max-util minus ECMP's; positive = worse than ECMP) and flow-update rate. The composite score
+(max-util ratio + 5 x loss, paired difference to ECMP, "dScore") is a convenience; conclusions do not depend on the
+weight (Section 6.1). **Unit of analysis:** for Zoo results, the graph (paired across methods; seeds and training seeds
+are averaged within a graph and reported as spread); for real traces, the (network, load) cell with independent trace
+windows inside it; windows within one day-long trace overlap and are not treated as independent.
 
 ## 4 Methods
 
-**Baselines.** ECMP; a tuned heuristic (EWMA-smoothed bottleneck soft-min over candidate paths with hysteresis, damped updates and
-age-based shrinkage of stale readings; its five parameters are tuned separately for each telemetry profile by a
-40-trial random search on four synthetic graphs disjoint from the training and test graphs, which gives it the
-information that telemetry quality varies, a favourable baseline); an LP
-oracle with the true next demand (graphs with n <= 25 only).
+**Baselines.** *ECMP.* *Tuned heuristic:* EWMA-smoothed bottleneck soft-min over candidate paths with hysteresis, damped
+updates and age-based shrinkage of stale readings; five parameters tuned per telemetry profile by a 40-trial random
+search on four synthetic graphs disjoint from training and test graphs (it therefore knows the telemetry profile, a
+favourable baseline). *Static LP:* LP-optimal splits for the mean traffic matrix of the training part of a trace, no
+telemetry. *DOTE-style:* an MLP on the last three impaired demand estimates, trained per network on the first 70% of its
+trace (ideal-telemetry and degraded-telemetry variants) with our differentiable loss; evaluated on the last 30%.
+*LP oracle:* perfect information, graphs with n <= 25 only; a reference bound, not a deployable method.
 
-**Learned policy.** A GNN on the link graph with path pooling. Inputs are impaired utilisation and demand history
-(H = 3), telemetry age, and model-based fluid features (ECMP-predicted utilisation, utilisation predicted for the
-current configuration, per-path what-if bottleneck). Training is *direct optimisation through a differentiable
-fluid model*: the policy sees only the impaired observation, while the loss uses the true next demand,
-`smoothmax(util)/ecmp_mu + 5 fluid_loss + 0.1 churn` (DOTE-style). Training graphs are 40 synthetic BA/ER/geometric
-graphs with 10-20 nodes, never Topology Zoo or SNDlib graphs. Two variants: *ours* (telemetry randomised per
-episode) and *ideal* (clean telemetry only). Four training seeds each.
+**Learned policy.** A GNN on the link graph with path pooling. Inputs: impaired utilisation and demand history (H = 3),
+telemetry age, and model-based fluid features (ECMP-predicted utilisation, utilisation predicted for the current
+configuration, per-path what-if bottleneck). Training is direct optimisation through a differentiable fluid model: the
+policy sees the impaired observation, the loss uses the true next demand, `smoothmax(util)/ecmp_mu + 5 loss + 0.1 churn`.
+Training graphs are 40 synthetic BA/ER/geometric graphs with 10-20 nodes; no Zoo or SNDlib graph is used. Variants:
+randomised-telemetry training ("ours") and ideal-only training; four seeds each. *Fine-tuning:* the pre-trained model is
+trained for 6 iterations (~3-5 minutes on CPU) on rollouts over the first 70% of a network's trace with randomised
+telemetry and evaluated on the last 30%.
 
-**Guard.** L1: stale/missing telemetry, malformed action, deadline; L2: fluid-model check of the proposal against
-ECMP on the estimated state with margin eps; L3: runtime monitor with exponential backoff. Settings are chosen on
-validation graphs only; the headline guard is L2 only with eps = -0.06.
+**Guard.** L1: stale or missing telemetry, malformed action, deadline. L2: fluid-model check of the proposal against ECMP
+on the *estimated* state, rejecting it if predicted max-util exceeds ECMP's by more than a margin eps. L3: runtime
+monitor with backoff. The headline guard is L2 only with eps = -0.06, chosen on validation graphs. **Property claimed:**
+none formal. The guard is an empirically evaluated runtime filter; we report its fallback rate, false-rejection rate,
+the share of harmful proposals caught and the regret before and after (Section 6.5).
 
-**Audit tool.** `stale-but-safe audit` takes a topology (SNDlib name, Topology Zoo graph or GraphML), optional
-traffic (CSV or trace) and telemetry parameters, and reports best-case headroom (LP oracle), gain and tail regret of
-each method under the user's telemetry, a polling-interval sweep and a rule-based recommendation, as a
-self-contained HTML report.
+**Rate limiter.** A demand's installed split is kept unless the proposal moves it by more than a threshold (half the L1
+distance); the number of updates per interval is the flow/group modifications a controller would send.
+
+**Audit tool.** `stale-but-safe audit` takes a topology, optional traffic and telemetry parameters and reports best-case
+headroom (LP oracle where n <= 25), gain with a 95% bootstrap interval over trace windows and tail regret for each
+method under the user's telemetry, a polling sweep, and one of three outcomes: stay on ECMP, use a named method, or
+insufficient evidence (too few windows, interval straddling the 5% threshold, or gain concentrated in one window). It
+flags telemetry values outside the evaluated range. Its output is an offline estimate, not a deployment recommendation.
 
 ## 5 Protocol
 
-Topology Zoo: 263 graphs split into train/validation/test by a fixed seed (`configs/splits.yaml`); we report a
-24-graph test subset (`test_subset`), 5 evaluation seeds, horizon 100, load 0.8. Statistics are computed over
-topologies (paired): bootstrap 95% CI, IQM, Holm-corrected Wilcoxon. Real traces: five networks, three loads, four
-profiles, four evaluation seeds (each replays a different random window); the learned result is the mean over four
-training seeds. Guard and tuned-heuristic parameters never use test graphs. Deviations from the pre-registered
-protocol (fewer training and evaluation seeds than planned) are listed in `docs/eval_protocol.md`.
+Topology Zoo: 263 graphs split into train/validation/test (`configs/splits.yaml`); we report the 24-graph `test_subset`,
+5 evaluation seeds, horizon 100, load 0.8; paired bootstrap 95% CI, IQM and Holm-corrected Wilcoxon over graphs.
+Real traces: four networks with headroom plus Brain, loads {0.6, 0.8, 1.0}, four profiles; two independent evaluation
+runs (4 windows, then 10 fresh windows per cell, 12 for Brain at load 0.8). Tuning and model selection never use test
+graphs or windows. Deviations from the planned protocol (4 instead of 10 training seeds, 5-12 instead of 20 evaluation
+seeds, single-seed ablations, post-hoc baselines and analyses) are listed in `docs/eval_protocol.md`.
 
 ## 6 Results
 
@@ -117,90 +135,120 @@ protocol (fewer training and evaluation seeds than planned) are listed in `docs/
 | SNMP | -0.049 | -0.062 +- 0.001 | 16-18 of 24 | 0.048 / 0.017 |
 | degraded | +0.014 | -0.061 +- 0.001 | 21-23 of 24 | 0.183 / 0.019 |
 
-(Seed 0: tuned vs learned Holm-adjusted Wilcoxon p = 0.013, 0.84, 0.078, 0.0012 for ideal/rich/SNMP/degraded.)
-With clean telemetry the tuned heuristic is better; with degraded telemetry it is no better than ECMP on average
-(95% CI [-0.023, +0.057]) and has a tail ten times worse. The seed-to-seed spread of the learned policy (0.001-0.002)
-is much smaller than the effects above. Under four stress scenarios (link failure, demand shift, flash crowd,
-hotspots; 12 graphs, SNMP/degraded telemetry) the learned policy is ahead of the tuned heuristic in every case
-(`experiments/final/stress_*.json`).
+(Seed 0, Holm-adjusted Wilcoxon over graphs, tuned vs learned: p = 0.013, 0.84, 0.078, 0.0012. Bootstrap 95% CI of the
+tuned heuristic under degraded telemetry: [-0.023, +0.057], i.e. not distinguishable from ECMP.) The ranking is
+insensitive to the packet-loss weight: with weight 0 (pure max-utilisation) the tuned heuristic still wins at ideal
+telemetry (-0.056 vs -0.043) and the learned policy wins at degraded telemetry (-0.040 vs -0.006); see
+`experiments/final/table_lossweight.md`. Under link failures, demand shifts, flash crowds and hotspots (12 graphs,
+SNMP/degraded telemetry) the learned policy is ahead in every case (`experiments/final/stress_*.json`).
 
 ### 6.2 Real traces
 
-Table `experiments/final/table_real.md` (60 cells). Summary over the four networks with TE headroom (Abilene,
-GEANT, Germany17, Germany50; 12 network/load cells per telemetry profile):
+Tables: `experiments/final/table_real.md` (first run, 4 windows) and `table_realw.md` (10 fresh windows). Over the four
+networks with headroom (Abilene, GEANT, Germany17, Germany50 in the first run; first three in the second), per
+(network, load) cell, the learned policy (mean of four training seeds) versus the tuned heuristic:
 
-* rich, SNMP, degraded telemetry: learned ahead of tuned in 12/12, 12/12, 12/12 cells (more than one point of gain);
-* clean telemetry: learned 7, tuned 4, tie 1. The tuned heuristic wins on GEANT and Germany17 at loads 0.8 and 1.0
-  by 1.5-4.1 points.
-* Largest tuned failures under degraded telemetry: Abilene at load 1.0, -4.0% gain (worse than ECMP, p99 regret
-  +1.02) against +29.4% for the learned policy; Abilene at 0.8, 3.5% against 26.4% with clean telemetry; Germany17,
-  -3%. The failure is network dependent: on Germany50 and (mildly) GEANT the tuned heuristic does not collapse.
-* Germany50 (50 nodes, larger than every training graph): learned 33-36% gain against 9-31% for tuned, in all 12 cells.
-* Brain (161 nodes, one-minute traces, 600 heaviest demands = 90% of traffic): TE headroom is concentrated in rare
-  windows. In 11 of 12 trace windows tested the learned policy gains 0.0-0.3%; in one window it gains 20.9%, which
-  produces the 3-5% averages in the table. A single 100-interval window therefore under- or over-states the benefit
-  here, and the audit tool's verdict for such networks should be read with that variability in mind.
-* The learned policy's gain varies by about +-5 points across training seeds on Abilene (+-1 on the larger graphs).
-  The oracle gain (n <= 25 only) is 47% on Abilene and 37% on Germany17: the learned policy captures roughly half
-  of the available headroom.
+* first run (12 cells per profile): rich, SNMP-like and degraded telemetry, learned ahead in 12/12 each; clean telemetry
+  7 learned, 4 tuned, 1 tie;
+* second run (9 cells per profile): rich 8 ahead + 1 tie, SNMP 8 + 1, degraded 9 ahead; clean telemetry 4 learned, 3 tuned,
+  2 ties. "Ahead" means more than one point of gain.
+* The heuristic falls below ECMP under degraded telemetry on Germany17 (-3% to -4%) and, in individual Abilene windows,
+  by up to -51% (Section 6.4); on GEANT it falls to about 0% at degraded telemetry on the held-out windows, and on
+  Germany50 it does not collapse.
+* Germany50 (50 nodes, larger than any training graph): learned 33-36% versus 9-31%.
+* Brain: gain is about 0.3% for every method in the 12 windows of the second run; in one window of the first run the
+  learned policy gained 20.9%, so benefits are confined to rare windows.
+* The oracle gain (n <= 25) is 47-58% on Abilene and 37% on Germany17; the zero-shot policy captures roughly half.
 
-### 6.3 Guard
+### 6.3 What carries the result: baselines and ablations
 
-Validation-chosen L2-only guard (eps = -0.06), evaluated once on the 24 test graphs, degraded telemetry:
-tuned +0.014 -> -0.034 (p99 regret 0.183 -> 0.030, Holm p = 0.005); learned -0.060 -> -0.049 (keeps 82% of the
-gain; p99 regret 0.019 -> 0.008, p = 0.0003). Guarded learned still beats guarded tuned. The guard falls back to
-ECMP in about 83% of intervals and costs about 0.011 of score even with clean telemetry. The earlier default
-(eps = 0, all layers) was more conservative and halved the learned gain (`experiments/final/table_all.md`). On the real traces (matched seeds, seed-0 model) the same guard costs the learned policy only 0.0-0.8
-points of gain on average per network (Abilene 0.2, GEANT 0.3, Germany17 0.8, Germany50 0.0, Brain 0.7) and cuts the
-p99 regret on GEANT from +0.026 to +0.002; for the tuned heuristic under degraded telemetry it improves the gain by
-2.3 points and cuts the p99 regret from 0.198 to 0.074 (no effect with clean telemetry). On Brain the guard falls
-back 95-100% of the time because a 6% predicted improvement is rare, at a cost of about one point (it misses most
-of the single high-gain window).
+Held-out windows (last 30% of the trace), gain % (`experiments/final/table_ft.md`; seed-0 GNN):
 
-### 6.4 Ablations — **TBD**
+| Abilene @0.8 | tuned | static LP | DOTE-style (degraded-trained) | GNN zero-shot | GNN fine-tuned |
+|---|---|---|---|---|---|
+| ideal | 33.6 | 34.5 | 49.1 | 23.7 | 46.2 |
+| SNMP | 27.7 | 34.5 | 49.1 | 22.4 | 41.3 |
+| degraded | 23.5 | 34.5 | 48.9 | 22.5 | 39.3 |
 
-Models without history (H = 1), without telemetry-age input, without the GNN (per-link MLP) and without model-based
-features are trained (one seed) and being evaluated at ideal and degraded telemetry. Randomised-telemetry training
-versus ideal-only: the mean gap is within seed noise (about 0.002), but randomised training has lower seed variance and a
-lower p99 regret under degraded telemetry (0.019 vs 0.027 over four seeds).
+On GEANT the DOTE-style model reaches about 18% in every profile, the zero-shot policy 15-18%, the fine-tuned policy 16-19%
+and static LP -38.6% (traffic is not stationary). Hence: (a) with per-network history a DOTE-style model beats the
+zero-shot GNN, and fine-tuning recovers most of the difference on Abilene but little on GEANT; (b) robustness to
+telemetry is a property of any policy that does not rely on fresh counters, not specific to our GNN; (c) what the
+zero-shot policy offers is no need for per-network training data.
+Ablations (24 Zoo graphs, one seed each; `table_ablations.md`): removing the fluid-model features costs +0.008 (ideal) and
++0.013 (degraded) dScore and raises p99 regret from 0.019 to 0.030; removing history costs +0.003 at ideal telemetry only;
+removing the age input is ~0; replacing the GNN with a per-link MLP is slightly better (-0.005, -0.004). The model-based
+features, not message passing, carry the result.
+Training with randomised telemetry versus ideal-only: the mean differences are within seed noise (~0.002), but the
+randomised model has a lower p99 regret under degraded telemetry (0.019 vs 0.027 over four seeds).
 
-### 6.5 Emulation
+### 6.4 Where it fails: overload
 
-Seven runs of one scenario (10-node synthetic graph, 24 flows, one seed; capacities scaled down) in Mininet +
-Open vSwitch with a Ryu controller reading real OpenFlow counters. Per-run time-series correlation between emulated and simulated
-max-utilisation is 0.90-0.98; the mean difference in mean max-util is 0.011 (learned under degraded telemetry:
-0.880 emulated vs 0.889 simulated; tuned 0.894 vs 0.914). Costs not visible in simulation: the learned policy
-reprograms flows about ten times more often (265-408 vs 25-27 flow-mods/min) and its controller loop takes 26-32 ms
-vs 16-18 ms. This is a validation of the simulator, not an independent result: one scenario, one seed.
+Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 (traffic surges far above the requested load) lie
+outside the training range (loads 0.5-1.1). On Abilene at load 0.8 over 30 windows: in 27 typical windows the learned
+policy has median gain 36.5% and is never worse than ECMP, while the tuned heuristic has median 31.5% (worst window
+-50.8% under degraded telemetry); in 3 overloaded windows the tuned heuristic gains 45-49% and the learned policy 9-21%
+(worse than ECMP in one of three; worst case +3 to +7 in absolute max-util). The guard lifts the learned policy to 20-27%
+in those windows (`table_overload.md`). Tail statistics pooled over windows are therefore dominated by a few surges.
 
-### 6.6 Audit tool
+### 6.5 Guard
 
-On real Abilene with SNMP-like-to-degraded telemetry the tool reports 47-57% best-case headroom, flags the tuned
-heuristic as fragile (worse than ECMP in 15% of intervals) and recommends the learned policy; on Brain (n > 25, so no exact optimum) it
-reports that no tested method gains more than 0.1% in its three windows and recommends staying on ECMP; this verdict is
-window-sensitive (see 6.2).
+Definitions (per interval, using the true demand, simulator only): *beneficial* proposal = true max-util below 0.99 x ECMP's,
+*harmful* = above 1.01 x; false rejection = beneficial proposals among fallbacks; harm caught = harmful proposals replaced.
+Zoo graphs (10 graphs with n <= 25, `table_guard_audit.md`), headline guard (L2 only, eps = -0.06):
+
+| scenario | fallback | false rejection | harm caught | gain kept | p99 regret raw -> guarded |
+|---|---|---|---|---|---|
+| ideal | 71% | 12% | 43% | 83% | +0.050 -> +0.019 |
+| degraded | 72% | 14% | 22% | 76% | +0.065 -> +0.057 |
+| link failure, degraded | 80% | 13% | 90% | 91% | +0.148 -> +0.021 |
+| demand shift, degraded | 73% | 18% | 53% | 74% | +0.084 -> +0.058 |
+
+**[PENDING: real-trace rows of the guard audit.]** On the 24 test graphs the per-graph p99 regret falls from 0.019 to 0.008
+at degraded telemetry (average of per-graph p99), while the pooled p99 above falls only from +0.065 to +0.057: the guard cuts
+the typical tail but misses harmful proposals concentrated in a few graphs. The guard is most effective under link failures.
+It falls back often (71-80%) yet keeps 74-91% of the gain because fallback occurs mostly in low-gain intervals. For the
+tuned heuristic under degraded telemetry the guard improves the gain by 2.3 points on real traces and lowers its p99 regret
+from 0.198 to 0.074; the validation-chosen guard barely affects the learned policy on real traces (0.0-0.8 points).
+
+### 6.6 Operational cost and emulation
+
+Without a rate limiter the learned policy updates 91% of demands every interval in simulation (Zoo, ideal telemetry); a
+5% threshold cuts this to 8% and a 10% threshold to 2.4% with unchanged gain (3.1%) (`table_ratelimit.md`); the tuned
+heuristic already updates about 2.5% of demands. **[PENDING: rate-limit sweep on Abilene and GEANT.]** In the emulation
+(Mininet, Open vSwitch, Ryu; 24 flows) the learned policy reprogrammed about ten times more flows than the tuned heuristic
+(265-408 vs 25-27 flow-mods per minute, with the controller's own 5% hysteresis) and its control loop took 26-32 ms vs
+16-18 ms. Time-series correlation between emulated and simulated max-utilisation was 0.90-0.98 per run and the mean
+max-util difference 0.011 (`table_emu.md`; one scenario, one seed). **[PENDING: additional emulation scenarios and seeds.]**
+
+### 6.7 Audit tool
+
+On real Abilene with degraded telemetry the tool reports 47-58% best-case headroom, flags the tuned heuristic as fragile and
+recommends the learned policy. For Brain and for windows with surges, the new interval logic returns "insufficient evidence"
+or "stay on ECMP" depending on the interval; the earlier version, which used three windows, was window-sensitive.
 
 ## 7 Negative results
 
-LP-teacher distillation (DAgger) produced a weak student (6.4% gain vs 15.0% for the tuned heuristic on training
-graphs); PPO fine-tuning did not change it; direct optimisation through the fluid model fixed this. Randomised
-telemetry training did not improve mean performance over ideal-only training.
+LP-teacher distillation (DAgger) produced a weak student (6.4% gain vs 15.0% for the tuned heuristic on training graphs); PPO
+fine-tuning did not change it; direct optimisation through the fluid model fixed this. Randomised-telemetry training did not
+improve mean performance over ideal-only training. A per-link MLP did as well as the GNN. Static LP routing is excellent on
+a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 
 ## 8 Limitations and status of claims
 
-* Fluid model: no TCP, queueing or packet effects; the guard's guarantee is empirical, not formal.
-* Real *traffic* but scaled to a target load; capacities are the networks' published ones where available (Abilene,
-  GEANT, Germany: module capacities).
-* Telemetry faults are *modelled*, not measured on a real network. Parameter values reflect common SNMP polling practice.
-* Emulation: one scenario, one seed, scaled capacities; flow-mod rates reflect Open vSwitch on one machine.
-* Learned policy trained once per seed with 4 seeds, not the protocol's 10; 4-5 evaluation seeds, not 20.
-* The learned policy gets about half of oracle headroom; it is not a near-optimal solver. No comparison against
-  published systems (DOTE, Teal) was run.
-* "Learned beats tuned" holds under degraded telemetry; with clean telemetry the tuned heuristic is competitive.
-* Not claimed: a general performance win; first demonstration of neural routing degrading under delay (LOGGIA).
+* Fluid model: no TCP, queueing or packet dynamics. The guard offers no formal guarantee; it is an empirically evaluated filter
+  and misses most harmful proposals under degraded telemetry on Zoo graphs.
+* Real traffic but scaled to a target load; sensitivity to the scaling rule is **not tested**. Capacities are the networks'
+  published module sizes where available.
+* Telemetry faults are modelled, not measured on a deployed network.
+* Four training seeds (not ten); ablations, DOTE-style and fine-tuned models have one seed; evaluation seeds 4-12 (not 20).
+* DOTE-style and fine-tuned models need per-network history; only Abilene and GEANT have enough.
+* Germany17 and Germany50 have one day of data; their windows overlap.
+* Out-of-range overload hurts the zero-shot policy (6.4).
+* No comparison with Teal or other published systems; DOTE-style is our re-implementation of the idea, not the authors' code.
+* Not claimed: a general performance win; being first to show degradation under delay (LOGGIA); production readiness.
 
 ## 9 Reproducibility
 
-Code, configs and results: repository root. `pip install -e ".[dev]"`, `python -m pytest -q`, `docs/howto.md`
-(emulation), `experiments/` (one script per table). Real data: SNDlib (public), prepared by
-`python -m stale_but_safe.env.real prepare`.
+`pip install -e ".[dev]"`, `python -m pytest -q`; real data from SNDlib (public), prepared by
+`python -m stale_but_safe.env.real prepare`; one script per table in `experiments/`; emulation in `docs/howto.md`.
