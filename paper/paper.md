@@ -280,9 +280,14 @@ networks above about 50 nodes with all-pairs demands.
 
 ### 6.7 Audit tool
 
-On real Abilene with degraded telemetry the tool reports 47-58% best-case headroom, flags the tuned heuristic as fragile and
-recommends the learned policy. For Brain and for windows with surges, the new interval logic returns "insufficient evidence"
-or "stay on ECMP" depending on the interval; the earlier version, which used three windows, was window-sensitive.
+Run on four real networks with degraded telemetry (polling every 5 intervals, delay 3, noise 0.2, loss 0.1; 6 trace windows;
+`reports/*.html`): Abilene: use the learned policy (29.8%, 95% interval [26.4, 33.4]; best-case headroom 56.5%), not
+distinguishable from the guarded tuned heuristic; Germany50: use the learned policy (33.9% [30.7, 36.8]), not distinguishable from
+its guarded version; GEANT: use the guarded tuned heuristic (25.8% [14.0, 37.3], the paired interval separates it from the learned
+policy on these six windows, although the longer evaluation of Section 6.2 favours the learned policy, so six windows are not
+enough to settle close calls); Brain: stay on ECMP, flagged provisional because six windows cannot rule out the rare surge window
+in which the learned policy gained 21%. The tool therefore reports intervals and ties, not only a winner, and says when the sample
+is too small. It remains an offline estimate; its verdicts have not been validated against any operator decision.
 
 ## 7 Negative results
 
