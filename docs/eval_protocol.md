@@ -64,4 +64,17 @@ Fluid model (no packet dynamics / TCP); empirical, not formal, safety bound; Min
 synthetic traffic only unless a real TM dataset is added; Zoo graphs have no real capacities.
 
 ## Deviations
-(none yet)
+Everything below differs from the protocol above or was added after seeing results. Post-hoc analyses are exploratory.
+
+| # | Planned | Actually done | Why / consequence |
+|---|---|---|---|
+| 1 | 10 training seeds | **4** per headline configuration (randomised-telemetry and ideal-telemetry); **1** per ablation, per DOTE-style model, per fine-tuned model | Compute. Seed SD of the learned policy is 0.001-0.002 (Zoo score), up to ~5 gain points on Abilene; single-seed ablation differences below ~0.004 are not interpretable |
+| 2 | 20 evaluation seeds | Zoo: **5** per graph; real traces: **4** windows (first run), **10** independent windows (second run; 12 for Brain, loads 0.8 only) | Compute. Germany17/50 have only one day of data (288 intervals), so their windows overlap and are not independent |
+| 3 | Full Zoo test split (141 graphs) | 24-graph `test_subset`; oracle only on graphs with n <= 25 (12 graphs) | LP cost; oracle numbers on the oracle subset must not be compared with 24-graph means |
+| 4 | Synthetic traffic only unless a real dataset is added | **Real SNDlib traces added** (Abilene, GEANT, Germany17, Germany50, Brain), scaled per (network, load) so the median ECMP max-utilisation equals 0.6/0.8/1.0; Brain restricted to its 600 heaviest demands (90% of sampled traffic) | Load scaling means absolute load is not the original one; sensitivity to the scaling rule is NOT yet tested |
+| 5 | Baselines: ECMP, tuned heuristic, LP oracle | **DOTE-style per-network MLP, static-LP routing and a per-network fine-tuned GNN added after seeing results** | Reviewer-style objection; DOTE-style trained on first 70% of each trace, tested on last 30%; Abilene and GEANT only (others too short) |
+| 6 | Guard settings chosen on validation | Done (validation sweep over eps, tau, layers); the headline guard (L2-only, eps=-0.06) was chosen on validation graphs and evaluated once on test. Guard audit (false rejection, harm caught) is post-hoc and exploratory | |
+| 7 | - | Overload-window analysis, loss-weight sensitivity, ablations, rate-limit sweep: post hoc | Exploratory |
+| 8 | Tuned heuristic tuned per profile | 40-trial random search on four synthetic graphs per telemetry profile; **not** re-tuned for real traces | Real-trace results favour neither side by design, but the heuristic may be under-tuned for real traffic |
+| 9 | Emulation: multiple scenarios | See `experiments/final/table_emu*.md` for the scenarios and seeds actually run | |
+| 10 | Telemetry faults measured | **Modelled** (P, d, sigma, p, L); parameters from common SNMP practice, not from a deployed network | Main external-validity limit |
