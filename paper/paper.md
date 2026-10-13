@@ -204,7 +204,9 @@ Zoo graphs (10 graphs with n <= 25, `table_guard_audit.md`), headline guard (L2 
 | link failure, degraded | 80% | 13% | 90% | 91% | +0.148 -> +0.021 |
 | demand shift, degraded | 73% | 18% | 53% | 74% | +0.084 -> +0.058 |
 
-**[PENDING: real-trace rows of the guard audit.]** On the 24 test graphs the per-graph p99 regret falls from 0.019 to 0.008
+On real Abilene and GEANT traces (load 0.8, three typical windows each) the guard fires in only 0-2% of intervals because
+the learned policy's proposals are essentially never harmful there (0.0% of accepted intervals harmful; raw p99 regret
+already <= 0); its value on real traces appears in overloaded windows (Section 6.4) and for the tuned heuristic. On the 24 test graphs the per-graph p99 regret falls from 0.019 to 0.008
 at degraded telemetry (average of per-graph p99), while the pooled p99 above falls only from +0.065 to +0.057: the guard cuts
 the typical tail but misses harmful proposals concentrated in a few graphs. The guard is most effective under link failures.
 It falls back often (71-80%) yet keeps 74-91% of the gain because fallback occurs mostly in low-gain intervals. For the
