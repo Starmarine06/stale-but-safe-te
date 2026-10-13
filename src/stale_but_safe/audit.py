@@ -119,11 +119,14 @@ def audit(topo, trace, user_tele: TelemetryCfg, load: float, horizon: int, seeds
 
 def verdict(o: dict) -> dict:
     ideal, yours = o["results"]["ideal"], o["results"]["yours"]
-    head = o["headroom"]["gain_pct"] if o["headroom"] else max(v["gain_pct"] for v in ideal.values())
+    exact = o["headroom"] is not None
+    head = o["headroom"]["gain_pct"] if exact else max(v["gain_pct"] for v in ideal.values())
     lines, action = [], ""
     if head < 5:
         action = "Stay on ECMP."
-        lines.append(f"Even an all-knowing optimiser gains only {head:.1f}% max-utilisation here, so a TE controller is "
+        who = ("Even an all-knowing optimiser" if exact else
+               "No method we tested (the exact optimum is not computed above 25 nodes), even with perfect telemetry,")
+        lines.append(f"{who} gains only {head:.1f}% max-utilisation here, so a TE controller is "
                      "not worth its operational risk.")
     else:
         cand = {k: v for k, v in yours.items() if k != "ecmp"}
@@ -131,7 +134,9 @@ def verdict(o: dict) -> dict:
         pool = safe or cand
         pick = max(pool, key=lambda k: pool[k]["gain_pct"])
         action = f"Use {pick}."
-        lines.append(f"Headroom is {head:.1f}% (best case); with your telemetry {pick} captures {pool[pick]['gain_pct']:.1f}%.")
+        what = (f"Best-case headroom (LP oracle) is {head:.1f}%" if exact else
+                f"The best method tested gains {head:.1f}% with perfect telemetry (exact optimum not computed above 25 nodes)")
+        lines.append(f"{what}; with your telemetry {pick} captures {pool[pick]['gain_pct']:.1f}%.")
         t = yours["tuned"]
         if t["p99_regret"] > 0.05 or t["worse_than_ecmp_pct"] > 15:
             lines.append(f"The tuned heuristic is fragile under your telemetry: it is worse than ECMP in "
@@ -168,6 +173,8 @@ def to_html(o: dict) -> str:
             h = (H - 2 * pad) * v / gmax
             x = pad + gi * bw + bw * 0.1 + bi * w
             svg.append(f'<rect x="{x:.1f}" y="{H - pad - h:.1f}" width="{w - 2:.1f}" height="{h:.1f}" fill="{cols[n]}"><title>{n} {pn}: {v:.1f}%</title></rect>')
+            if n != "ecmp":
+                svg.append(f'<text x="{x + (w - 2) / 2:.1f}" y="{H - pad - h - 3:.1f}" text-anchor="middle" font-size="9">{v:.0f}</text>')
         svg.append(f'<text x="{pad + gi * bw + bw / 2:.1f}" y="{H - 12}" text-anchor="middle">{esc(pn)}</text>')
     svg.append(f'<text x="4" y="14">% max-util gain vs ECMP (max {gmax:.0f})</text></svg>')
     legend = "".join(f'<span><i style="background:{cols[n]}"></i>{n}</span>' for n in names if n in o["results"]["ideal"])
