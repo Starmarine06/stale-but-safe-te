@@ -56,3 +56,10 @@ FlexDATE/DATE, Roracle, FIGRET (abstract/snippet level).
 **Consequences for claims:** do not say "first to study stale telemetry in TE". Contribution = (i) multi-axis impairment
 sweep, (ii) *tuned-heuristic* comparator re-tuned per telemetry profile, (iii) a ranking-flip analysis on real topologies and
 traces, (iv) guard measured by tail regret / false rejection (idea from Training Wheels), (v) audit tool.
+
+## Second full-text pass (agent-assisted)
+FlexDATE (IEEE/ACM ToN 31(4), 2023; DATE = IWQoS 2021, DATE paper itself unopened), Roracle (ICNP 2023) and FIGRET (SIGCOMM 2024,
+arXiv 2405.04932) read in full: none studies delayed/noisy/sampled/missing telemetry as a variable, none compares a tuned reactive
+heuristic under impairment. Roracle is adjacent ("routing computed on the current TM goes stale; learned lookahead resists",
+datasets include Abilene, GEANT, Brain). Closest 2023-2026 staleness papers (abstract level only): arXiv 2605.16187 (online TE,
+control-loop latency), Teal, arXiv 2410.16846 (safe load balancing, two loops). Still to do: Scholar check, open the DATE paper.
