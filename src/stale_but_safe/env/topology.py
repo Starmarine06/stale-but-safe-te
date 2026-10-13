@@ -39,7 +39,7 @@ class Topology:
 
 
 def from_graph(g: nx.Graph, k: int = 4, name: str = "graph",
-               default_cap: float = 1.0) -> Topology:
+               default_cap: float = 1.0, demands: list | None = None) -> Topology:
     """Build from an undirected graph with optional edge attrs 'cap' and 'prop'."""
     g = nx.convert_node_labels_to_integers(g)
     n = g.number_of_nodes()
@@ -51,7 +51,9 @@ def from_graph(g: nx.Graph, k: int = 4, name: str = "graph",
             links.append((s, t))
             cap.append(a.get("cap", default_cap))
             prop.append(a.get("prop", 1.0))
-    demands = [(s, t) for s in range(n) for t in range(n) if s != t]
+    if demands is None:
+        demands = [(s, t) for s in range(n) for t in range(n) if s != t]
+    demands = [tuple(d) for d in demands]
     D = len(demands)
     path_links = []
     mask = np.zeros((D, k), bool)
