@@ -135,7 +135,7 @@ def main(argv=None):
     u.add_argument("--loss", type=float, default=0.02, help="probability a counter is missing")
     u.add_argument("--load", type=float, default=0.8, help="scale traffic so median ECMP max-util = load")
     u.add_argument("--horizon", type=int, default=100)
-    u.add_argument("--seeds", type=int, default=3)
+    u.add_argument("--seeds", type=int, default=6, help="trace windows per cell (>=5 needed for an interval)")
     u.add_argument("--model", default=str(Path(__file__).resolve().parents[2] / "runs" / "ours_dfm_final.pt"))
     u.add_argument("--out", default="reports/audit")
     u.set_defaults(fn=lambda a: __import__("stale_but_safe.audit", fromlist=["main"]).main(a))

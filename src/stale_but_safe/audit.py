@@ -20,7 +20,7 @@ from .baselines.heuristics import ECMP, LPOracle, TunedHeuristic
 from .env import real
 from .env.te_env import EnvCfg
 from .env.telemetry import PROFILES, TelemetryCfg
-from .eval.runner import evaluate
+from .eval.compare import episode_stats
 from .guard.guard import Guard, GuardCfg
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -72,10 +72,36 @@ def _tuned_profile(c: TelemetryCfg) -> str:
     return "ideal" if sev < 0.5 else "rich" if sev < 2.5 else "snmp" if sev < 6 else "degraded"
 
 
+def evaluate(topo, cfg, pol, seeds):
+    """One rollout per seed (= one trace window); keeps per-window gains so uncertainty can be reported."""
+    rows = [episode_stats(topo, cfg, pol, s) for s in seeds]
+    reg = np.concatenate([r["regret"] for r in rows])
+    gains = np.array([1 - r["mu"] / r["ecmp_mu"] for r in rows])
+    return {"improvement_vs_ecmp": float(gains.mean()), "regret_p99": float(np.quantile(reg, 0.99)),
+            "raw": {"regret": reg}, "mean_loss": float(np.mean([r["loss"] for r in rows])), "gains": gains}
+
+
+def _ci(g, n=2000, seed=0):
+    rng = np.random.default_rng(seed)
+    means = rng.choice(g, (n, len(g))).mean(1) if len(g) > 1 else np.array([g.mean()])
+    return float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
+
+
 def _summ(r):
-    reg = r["raw"]["regret"]
-    return {"gain_pct": 100 * r["improvement_vs_ecmp"], "p99_regret": r["regret_p99"],
-            "worse_than_ecmp_pct": 100 * float((reg > 0.01).mean()), "loss": r["mean_loss"]}
+    reg, g = r["raw"]["regret"], r["gains"]
+    lo, hi = _ci(g)
+    pos = np.clip(g, 0, None)
+    return {"gain_pct": 100 * r["improvement_vs_ecmp"], "gain_ci_pct": [100 * lo, 100 * hi], "windows": int(len(g)),
+            "top_window_share": float(pos.max() / pos.sum()) if pos.sum() > 1e-9 else 0.0,
+            "p99_regret": r["regret_p99"], "worse_than_ecmp_pct": 100 * float((reg > 0.01).mean()), "loss": r["mean_loss"]}
+
+
+OOD = {"P": 10, "d": 5, "sigma": 0.3, "p": 0.2}      # largest values covered by the training/evaluation grid
+
+
+def ood_notes(t: TelemetryCfg) -> list[str]:
+    return [f"telemetry {k}={getattr(t, k)} is outside the range this tool was evaluated on (max {v}); treat results as extrapolation"
+            for k, v in OOD.items() if getattr(t, k) > v]
 
 
 def audit(topo, trace, user_tele: TelemetryCfg, load: float, horizon: int, seeds: int, model: str | None):
@@ -87,7 +113,7 @@ def audit(topo, trace, user_tele: TelemetryCfg, load: float, horizon: int, seeds
         learned = (m, c, LearnedPolicy)
     profs = {"ideal": PROFILES["ideal"], "snmp": PROFILES["snmp"], "degraded": PROFILES["degraded"],
              "yours": user_tele}
-    out = {"network": topo.name, "nodes": topo.n, "links": topo.E, "demands": topo.D,
+    out = {"seeds": seeds, "ood": ood_notes(user_tele), "network": topo.name, "nodes": topo.n, "links": topo.E, "demands": topo.D,
            "traffic": "real trace" if trace is not None else "synthetic gravity+bursts",
            "load": load, "user_telemetry": vars(user_tele), "results": {}, "headroom": None}
     for pn, tele in profs.items():
@@ -118,41 +144,54 @@ def audit(topo, trace, user_tele: TelemetryCfg, load: float, horizon: int, seeds
 
 
 def verdict(o: dict) -> dict:
+    """Offline estimate, not a deployment recommendation. Outcomes: 'Stay on ECMP', 'Use <method>' or
+    'Insufficient evidence' (too few windows, gain interval straddles the 5% threshold, or gain concentrated)."""
     ideal, yours = o["results"]["ideal"], o["results"]["yours"]
     exact = o["headroom"] is not None
-    head = o["headroom"]["gain_pct"] if exact else max(v["gain_pct"] for v in ideal.values())
-    lines, action = [], ""
-    if head < 5:
-        action = "Stay on ECMP."
-        who = ("Even an all-knowing optimiser" if exact else
-               "No method we tested (the exact optimum is not computed above 25 nodes), even with perfect telemetry,")
-        lines.append(f"{who} gains only {head:.1f}% max-utilisation here, so a TE controller is "
-                     "not worth its operational risk.")
+    lines = list(o.get("ood", []))
+    best_ideal = max((k for k in ideal if k != "ecmp"), key=lambda k: ideal[k]["gain_pct"])
+    bi = ideal[best_ideal]
+    head = o["headroom"]["gain_pct"] if exact else bi["gain_pct"]
+    lo, hi = bi["gain_ci_pct"]
+    if bi["windows"] < 5:
+        return {"action": "Insufficient evidence.", "reasons": lines + [
+            f"Only {bi['windows']} trace windows were evaluated; at least 5 are needed for an interval estimate."]}
+    if hi < 5:
+        who = "Even an all-knowing optimiser" if exact and head < 5 else "No method we tested, even with perfect telemetry,"
+        return {"action": "Stay on ECMP.", "reasons": lines + [
+            f"{who} gains only {bi['gain_pct']:.1f}% max-utilisation here (95% interval over {bi['windows']} windows "
+            f"[{lo:.1f}, {hi:.1f}]), so a TE controller is not worth its operational risk."]}
+    if lo < 5:
+        return {"action": "Insufficient evidence.", "reasons": lines + [
+            f"The best method's gain with perfect telemetry is {bi['gain_pct']:.1f}% with a 95% interval [{lo:.1f}, {hi:.1f}] over "
+            f"{bi['windows']} windows, which straddles the 5% threshold; benefits depend on which traffic windows occur.",
+            f"The single best window supplies {100 * bi['top_window_share']:.0f}% of the total gain. Collect more traffic or run in shadow mode."]}
+    cand = {k: v for k, v in yours.items() if k != "ecmp"}
+    safe = {k: v for k, v in cand.items() if v["p99_regret"] <= 0.02}
+    pool = safe or cand
+    pick = max(pool, key=lambda k: pool[k]["gain_pct"])
+    what = (f"Best-case headroom (LP oracle) is {head:.1f}%" if exact else
+            f"The best method tested gains {bi['gain_pct']:.1f}% with perfect telemetry (exact optimum not computed above 25 nodes)")
+    pl, ph = pool[pick]["gain_ci_pct"]
+    lines.append(f"{what}; with your telemetry {pick} captures {pool[pick]['gain_pct']:.1f}% (95% interval [{pl:.1f}, {ph:.1f}]).")
+    t = yours["tuned"]
+    if t["p99_regret"] > 0.05 or t["worse_than_ecmp_pct"] > 15:
+        lines.append(f"The tuned heuristic is fragile under your telemetry: it is worse than ECMP in "
+                     f"{t['worse_than_ecmp_pct']:.0f}% of intervals (p99 regret {t['p99_regret']:+.2f}).")
+    if not safe:
+        lines.append("No method keeps p99 regret under 0.02; run in shadow mode before any rollout.")
+    if pool[pick]["top_window_share"] > 0.5 and pool[pick]["windows"] >= 5:
+        lines.append(f"Warning: {100 * pool[pick]['top_window_share']:.0f}% of {pick}'s gain comes from one window.")
+    rows = o["polling_sweep"]["rows"]
+    g = {p: rows[p]["gain_pct"] for p in rows}
+    bestP, spread = max(g, key=g.get), max(g.values()) - min(g.values())
+    if spread < 2:
+        lines.append(f"Polling rate barely matters for {o['polling_sweep']['method']} here "
+                     f"(gain varies only {spread:.1f} points between 1 and 10 intervals).")
     else:
-        cand = {k: v for k, v in yours.items() if k != "ecmp"}
-        safe = {k: v for k, v in cand.items() if v["p99_regret"] <= 0.02}
-        pool = safe or cand
-        pick = max(pool, key=lambda k: pool[k]["gain_pct"])
-        action = f"Use {pick}."
-        what = (f"Best-case headroom (LP oracle) is {head:.1f}%" if exact else
-                f"The best method tested gains {head:.1f}% with perfect telemetry (exact optimum not computed above 25 nodes)")
-        lines.append(f"{what}; with your telemetry {pick} captures {pool[pick]['gain_pct']:.1f}%.")
-        t = yours["tuned"]
-        if t["p99_regret"] > 0.05 or t["worse_than_ecmp_pct"] > 15:
-            lines.append(f"The tuned heuristic is fragile under your telemetry: it is worse than ECMP in "
-                         f"{t['worse_than_ecmp_pct']:.0f}% of intervals (p99 regret {t['p99_regret']:+.2f}).")
-        if not safe:
-            lines.append("No method keeps p99 regret under 0.02; run in shadow mode before any rollout.")
-        rows = o["polling_sweep"]["rows"]
-        g = {p: rows[p]["gain_pct"] for p in rows}
-        bestP, spread = max(g, key=g.get), max(g.values()) - min(g.values())
-        if spread < 2:
-            lines.append(f"Polling rate barely matters for {o['polling_sweep']['method']} here "
-                         f"(gain varies only {spread:.1f} points between 1 and 10 intervals).")
-        else:
-            lines.append(f"Polling every {bestP} interval(s) works best for {o['polling_sweep']['method']} "
-                         f"({g[bestP]:.1f}% vs {g[min(g, key=g.get)]:.1f}% at the worst rate).")
-    return {"action": action, "reasons": lines}
+        lines.append(f"Polling every {bestP} interval(s) works best for {o['polling_sweep']['method']} "
+                     f"({g[bestP]:.1f}% vs {g[min(g, key=g.get)]:.1f}% at the worst rate).")
+    return {"action": f"Use {pick}.", "reasons": lines}
 
 
 # ------------------------------------------------------------------ report
@@ -209,7 +248,7 @@ your telemetry: poll every {u['P']} interval(s), delay {u['d']}, noise {u['sigma
 <h2>Details</h2><div class="card"><table><tr><th>telemetry</th><th>method</th><th>gain %</th><th>p99 regret</th><th>% intervals worse than ECMP</th></tr>{"".join(rows)}</table>
 <p class="mut">Regret = max-util minus ECMP's; positive means worse than ECMP. "yours" is the telemetry you specified.</p></div>
 <h2>Polling interval ({esc(o['polling_sweep']['method'])})</h2><div class="card"><table><tr><th>poll every</th><th>gain %</th><th>p99 regret</th></tr>{ps}</table></div>
-<p class="mut">Fluid-model simulation; not a certificate for production. Use shadow mode on real telemetry before any rollout.</p>
+<p class="mut">Offline estimate from a fluid-model simulation, not a deployment recommendation or a certificate for production. Intervals are 95% bootstrap over trace windows. Use shadow mode on real telemetry before any rollout.</p>
 </main></body></html>"""
 
 
