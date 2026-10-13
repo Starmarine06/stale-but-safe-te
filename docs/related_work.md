@@ -33,3 +33,26 @@ This is not a systematic review.
 ## Reading list (to verify before submission)
 LOGGIA 2604.02927; EnvelopeTC 2605.09473; Training Wheels (MLSys'19); Roracle; Teal (SIGCOMM'23); CFR-RL; DATE;
 Almasan et al. 2022; rliable (Agarwal et al., NeurIPS'21) for statistics.
+
+## Full-text verification pass (agent-assisted; spot-check before submission)
+Read in full text: LOGGIA, EnvelopeTC, DOTE, CFR-RL, Training Wheels, RedTE. Teal: grep only. **Not verified:**
+FlexDATE/DATE, Roracle, FIGRET (abstract/snippet level).
+
+* LOGGIA (Boltres et al., TMLR 2026, arXiv 2604.02927): centralised *and* distributed modes, B4/GEANT/synthetic, ns-3,
+  single-path link-weight routing, models inference + propagation delay only; reports neural baselines no longer beat
+  static shortest-path routing under delay. **Partial pre-emption** of "ranking flips": single axis (delay), RL vs
+  default shortest-path, no tuned heuristic, no guard.
+* EnvelopeTC (Jia et al., IEEE JCC 2026, arXiv 2605.09473): hierarchical SDN, bounds on edge agents, staleness bound
+  disables reroutes, rollback/audit; no ranking claim; no SNDlib/Zoo.
+* DOTE (Perry et al., NSDI 2023): direct optimisation of split ratios from the last 12 demand matrices; GEANT/Abilene/
+  Microsoft traces; tests multiplicative demand noise up to +-35% only. **Training-method antecedent of ours; cite as such.**
+* Teal (Xu et al., SIGCOMM 2023, arXiv 2210.13763): delay = solver latency only.
+* CFR-RL (Zhang et al., IEEE JSAC 2020, arXiv 2004.11986): no staleness analysis; RL beats rule heuristics.
+* RedTE (Gui et al., SIGCOMM 2024): centralised control-loop latency; moves decisions to routers.
+* Training Wheels (Mao et al., NeurIPS 2019): safe-fallback precedent.
+* Searches did not surface a paper that varies polling period, noise, missing counters and install latency together for
+  centralised split-ratio TE (search-based, not exhaustive).
+
+**Consequences for claims:** do not say "first to study stale telemetry in TE". Contribution = (i) multi-axis impairment
+sweep, (ii) *tuned-heuristic* comparator re-tuned per telemetry profile, (iii) a ranking-flip analysis on real topologies and
+traces, (iv) guard measured by tail regret / false rejection (idea from Training Wheels), (v) audit tool.

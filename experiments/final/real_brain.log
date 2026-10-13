@@ -1,0 +1,12 @@
+brain load=0.6 ideal    done t=197s
+brain load=0.6 rich     done t=378s
+brain load=0.6 snmp     done t=545s
+brain load=0.6 degraded done t=717s
+brain load=0.8 ideal    done t=888s
+brain load=0.8 rich     done t=1058s
+brain load=0.8 snmp     done t=1231s
+brain load=0.8 degraded done t=1411s
+brain load=1.0 ideal    done t=1596s
+brain load=1.0 rich     done t=1776s
+brain load=1.0 snmp     done t=1950s
+brain load=1.0 degraded done t=2140s
