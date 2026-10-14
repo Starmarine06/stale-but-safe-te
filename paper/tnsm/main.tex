@@ -17,7 +17,7 @@
 \markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 \begin{abstract}
-Which traffic-engineering controller should an operator run when its telemetry is stale or noisy? We compare ECMP, a reactive heuristic re-tuned for each telemetry condition, and a learned split-ratio policy trained only on small synthetic graphs. All three run under the same impairment model, in a fluid simulator and an emulated SDN, on 24 held-out Topology Zoo graphs and replayed SNDlib traces. The answer depends on the telemetry. With clean or moderately impaired telemetry, the re-tuned heuristic matches or beats the learned policy. With delay, noise and drops together, the learned policy is ahead. On Zoo graphs it gains +0.033 dScore (95\% interval [+0.018, +0.049]) and loses on none of the 24 graphs. It is also ahead in all nine real-trace cells. Its mean p99 regret is lower in every profile (0.017 to 0.019 against 0.036 to 0.092), but this tail advantage is not uniform. It has the lower tail on only 9 to 13 of 24 graphs, and the gap comes from a few graphs where the heuristic does badly. In a delay and polling grid, the heuristic's gain falls as both grow, while the learned policy's stays flat. The effect is clear on GEANT and unresolved on Abilene, and no single delay flips the ranking. Ablations show that fluid-model features matter and message passing does not. A single tuning run can shift a comparison as much as the effects reported. Telemetry faults are modelled, not measured, so this is not a production validation.
+Which traffic-engineering controller should an operator run when its telemetry is stale or noisy? We compare ECMP, a reactive heuristic re-tuned for each telemetry condition, and a learned split-ratio policy trained only on small synthetic graphs. All three run under the same impairment model, in a fluid simulator and an emulated SDN, on 24 held-out Topology Zoo graphs and replayed SNDlib traces. The answer depends on the telemetry. With clean or moderately impaired telemetry, the re-tuned heuristic matches or beats the learned policy. With delay, noise and drops together, the learned policy is ahead. On Zoo graphs it gains +0.033 dScore (95\% interval [+0.018, +0.049]) and loses on none of the 24 graphs. It is also ahead in all nine real-trace cells. Its mean p99 regret is lower in every profile (0.017 to 0.019 against 0.036 to 0.092), but this tail advantage is not uniform. It has the lower tail on only 9 to 13 of 24 graphs, and the gap comes from a few graphs where the heuristic does badly. In a delay and polling grid, the heuristic's gain falls as delay and polling period grow, while the learned policy's stays flat. The effect is clear on GEANT, and on Abilene it needs 48 evaluation windows per cell to appear. No single delay flips the ranking. Ablations show that fluid-model features matter and message passing does not. A single tuning run can shift a comparison as much as the effects reported. Telemetry faults are modelled, not measured, so this is not a production validation.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -261,9 +261,9 @@ GEANT & 10 & 20 & 20.5 & 31.4 & +10.9 [+7.9, +13.5] & L & 14 \\
 \label{fig:3}
 \end{figure*}
 
-On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene the result is not resolved. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points. The interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. The tuner saw only synthetic graphs and never a real trace or evaluation window.
+On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows (Table~\ref{tab:14}). The tuner saw only synthetic graphs and never a real trace or evaluation window.
 
-\textit{Why Abilene is unresolved.} The Abilene results depend on which windows are drawn and on how the heuristic is tuned. We evaluated two window samples (A: 12 windows, B: 16 windows) with two heuristic parameter sets (the per-profile set and the grid-selected set) under the same telemetry (Table~\ref{tab:7}). Both experiments use the same model checkpoints, trace loader, scaling, gain definition and 100-interval windows chosen by seed.
+\textit{Why the Abilene result depends on the sample.} The Abilene results depend on which windows are drawn and on how the heuristic is tuned. We evaluated two window samples (A: 12 windows, B: 16 windows) with two heuristic parameter sets (the per-profile set and the grid-selected set) under the same telemetry (Table~\ref{tab:7}). Both experiments use the same model checkpoints, trace loader, scaling, gain definition and 100-interval windows chosen by seed.
 
 \begin{table}[!t]
 \caption{Abilene at load 0.8 under the same telemetry: two window samples and two heuristic parameter sets. Difference is learned minus heuristic in points with a 95\% bootstrap interval over windows.}
@@ -290,7 +290,33 @@ clean, d=3, P=5 & B & grid-selected & 40.9 & 28.6 & -12.3 [-31.9, +0.3] \\
 \end{tabular}}
 \end{table}
 
-The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36\% to 29\%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2\% against 17.0\% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Conclusions for Abilene are therefore limited to the statement that the sign depends on the window sample and on the heuristic's tuning.
+The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36\% to 29\%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2\% against 17.0\% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Because the 16-window result could not be resolved, we evaluated the same selected heuristic on 48 new windows (seeds not used before) in each Abilene cell (Table~\ref{tab:14}).
+
+\begin{table*}[!t]
+\caption{Abilene at load 0.8 on 48 new windows per cell. Gains in \%; difference is learned minus heuristic in points with a 95\% bootstrap interval over windows. Verdict: L learned ahead, H heuristic ahead, = tie.}
+\label{tab:14}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.05}
+\adjustbox{max width=\textwidth}{%
+\begin{tabular}{lllcccc}
+\hline
+d & P & heuristic \% & learned \% & difference [95\% CI] & verdict & windows \\
+\hline
+0 & 1 & 43.1 & 35.8 & -7.3 [-10.9, -4.7] & H & 48 \\
+0 & 5 & 38.0 & 34.6 & -3.3 [-7.9, +0.2] & = & 48 \\
+0 & 20 & 33.9 & 35.3 & +1.4 [-2.7, +5.1] & = & 48 \\
+3 & 1 & 40.2 & 35.9 & -4.3 [-7.8, -1.6] & H & 48 \\
+3 & 5 & 38.3 & 35.8 & -2.5 [-6.1, +0.4] & = & 48 \\
+3 & 20 & 31.3 & 36.4 & +5.1 [+1.5, +8.3] & L & 48 \\
+10 & 1 & 33.3 & 36.5 & +3.3 [+0.0, +6.2] & L & 48 \\
+10 & 5 & 32.6 & 35.7 & +3.1 [-0.7, +6.7] & = & 48 \\
+10 & 20 & 30.0 & 36.3 & +6.2 [+2.7, +9.0] & L & 48 \\
+\hline
+\end{tabular}}
+\end{table*}
+
+With 48 windows the Abilene pattern resembles GEANT's. The heuristic is ahead with fresh and frequent telemetry (d = 0 and d = 3 with P = 1), the learned policy is ahead in three cells with stale or infrequent telemetry (d = 3 with P = 20, d = 10 with P = 1, and d = 10 with P = 20, by 3.3 to 6.2 points), and four cells are ties. The learned policy's gain is stable across the grid (34.6\% to 36.5\%), while the heuristic's gain falls from 43.1\% to 30.0\%. The earlier 16-window sample showed the heuristic ahead everywhere, so Abilene results depend on the window sample, and we treat 16 windows as too few for this network. Even with 48 windows several cells remain ties, and the ranking in a single cell should not be over-read.
 
 \subsection{Sensitivity to the load-scaling rule}
 \label{sec:6.2b}
