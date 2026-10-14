@@ -1,0 +1,44 @@
+degraded:
+  budget: 80
+  params:
+    age_decay: 0.6
+    ewma: 0.24020052832203165
+    hyst: 0.005055584249885725
+    step: 0.1553190323513418
+    tau: 0.22412867093822916
+  rule: best tuning score of 5 tuner seeds
+  score: 1.0775885579889106
+  tuner_seed: 101
+ideal:
+  budget: 80
+  params:
+    age_decay: 0.6
+    ewma: 0.6768566272438457
+    hyst: 0.057839128786632533
+    step: 0.12040849561635326
+    tau: 0.08918678346395692
+  rule: best tuning score of 5 tuner seeds
+  score: 1.0175136521019275
+  tuner_seed: 101
+rich:
+  budget: 80
+  params:
+    age_decay: 0.1
+    ewma: 0.929904504075496
+    hyst: 0.039262353420927876
+    step: 0.13307908824477518
+    tau: 0.1984628520795561
+  rule: best tuning score of 5 tuner seeds
+  score: 1.0309288881848357
+  tuner_seed: 103
+snmp:
+  budget: 80
+  params:
+    age_decay: 0.3
+    ewma: 0.629496873672245
+    hyst: 0.06769025975564205
+    step: 0.1287468464092361
+    tau: 0.07590821260955874
+  rule: best tuning score of 5 tuner seeds
+  score: 1.0495140211170808
+  tuner_seed: 101
