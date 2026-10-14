@@ -41,7 +41,7 @@ axis and has no safety mechanism. EnvelopeTC [8] bounds agent actions and disabl
 staleness limit in a hierarchical data-centre setting. RedTE [9] removes centralised control-loop latency
 by moving decisions to routers. *Safe fallback.* Training Wheels [10] falls back to a simple policy in
 unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing [11] pursue related goals
-by different means. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
+by different means. *Surveys and robust TE.* Deep-RL approaches to TE are surveyed in [14]. Robust TE under demand uncertainty predates learning: COYOTE [15] configures traffic splitting for uncertain demands (we have read only its abstract). Those works address demand uncertainty in the planned configuration, not the age and fidelity of the telemetry a reactive controller sees. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
 staleness). What we add is an empirical result: in a controlled impairment sweep that holds all other factors fixed and compares
 against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
 reactive heuristic or a learned policy is the better choice, on real topologies and traces. In our literature search we found no paper that sweeps polling period, delay, noise, missing counters and install latency together for centralised split-ratio TE. This is a search result and not proof of absence.
@@ -495,3 +495,5 @@ Two networks were evaluated only with the single-run heuristic. On Germany50 (50
 11. L. Dinh, P. T. A. Quang, J. Leguay. Safe Load Balancing in Software-Defined-Networking. *Computer Communications*, 2024. arXiv:2410.16846.
 12. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775.
 13. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010 (data source).
+14. Y. Xiao, J. Liu, J. Wu, N. Ansari. Leveraging Deep Reinforcement Learning for Traffic Engineering: A Survey. *IEEE Commun. Surveys Tuts.* 23(4), 2021, pp. 2064-2097. doi:10.1109/COMST.2021.3102580.
+15. M. Chiesa, G. Retvari, M. Schapira. Lying Your Way to Better Traffic Engineering. *ACM CoNEXT*, 2016. doi:10.1145/2999572.2999585; arXiv:1610.02728.
