@@ -9,3 +9,7 @@ data/real/geant/
 data/real/nobel/
 data/real/*.npz
 bash.exe.stackdump
+paper/tnsm/*.aux
+paper/tnsm/*.log
+paper/tnsm/*.out
+paper/tnsm/*.toc
