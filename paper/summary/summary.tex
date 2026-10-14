@@ -1,0 +1,43 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\setlist{nosep,leftmargin=1.2em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\begin{document}
+{\large\bfseries The Cost of Stale Telemetry in Traffic Engineering --- one-page explainer}\\
+Dev Nambiar, VIT Vellore \quad Target: IEEE Trans.\ on Network and Service Management \\ Code: \url{https://github.com/Starmarine06/stale-but-safe-te}
+
+\textbf{The problem.} A network controller (SDN) decides how to split traffic over paths using measurements of link load. Those measurements are often old, noisy or missing, because counters are polled every few minutes and take time to arrive. Many recent papers propose learned (neural) controllers, but they usually assume fresh data and compare against weak baselines.
+
+\textbf{The question.} When telemetry is bad, should an operator use a learned policy or a simple hand-tuned rule? Is a safety fallback worth having?
+
+\textbf{What we compared.}
+\begin{itemize}
+\item \textbf{ECMP}: split traffic equally over shortest paths. No measurements needed.
+\item \textbf{Tuned heuristic}: a reactive rule that shifts traffic away from busy links. We re-tune it for every telemetry condition, so it is a fair opponent.
+\item \textbf{Learned policy}: a graph neural network trained by optimising through a simple traffic (fluid) model while seeing impaired measurements.
+\item \textbf{Guard}: checks each proposal and falls back to ECMP if the data is stale or the proposal looks worse.
+\end{itemize}
+Telemetry was degraded in a controlled way (polling period, delay, noise, missing counters). Tests used 24 public topologies with synthetic demand, and real traffic traces from Abilene, GEANT and Germany17. Measured: reduction in maximum link utilisation versus ECMP, packet loss, and worst-case (p99) regret.
+
+\textbf{What we found.}
+\begin{itemize}
+\item \textbf{No overall winner.} With fresh, frequent telemetry the tuned heuristic is as good or better. As telemetry gets old or sparse, the learned policy pulls ahead (clearly on GEANT; on Abilene once 48 more test windows were added).
+\item \textbf{Tail risk.} The learned policy's worst cases are about half as bad or better (p99 regret 0.017--0.019 versus 0.036--0.092).
+\item \textbf{Earlier claims were retracted.} An early ``learned wins 32 of 36 cases'' came from a weakly tuned baseline. With proper tuning the real-trace count is learned 12, heuristic 17, tie 7.
+\item \textbf{The GNN structure adds nothing} over a simple per-link MLP in our tests. The traffic-model features are what help.
+\item \textbf{The guard} roughly halves worst-case regret, at a small cost in average score. A small Mininet/Ryu emulation agreed in direction with the simulator.
+\end{itemize}
+
+\textbf{What this does \emph{not} show.} It is not a general ``learned beats heuristic'' result. Results depend on the topology, traffic and window sample (Abilene especially). The model is a fluid simulator, not packet-level. Telemetry faults are modelled, not measured from a live network. We did not run LOGGIA, the closest prior work, because its setting (link-weight routing, packet-level, goodput) is not directly comparable. The guard has no formal guarantee.
+
+\textbf{Practical outcome.} An open audit tool that, given a topology and trace, reports whether to use ECMP, a tuned heuristic or the learned policy under a chosen telemetry quality.
+
+\textbf{Use of AI tools.} An AI assistant (Claude Code) produced much of the code, analysis, figures and text. This is disclosed in the paper's acknowledgment, as IEEE requires. The author directed the work and is responsible for it.
+\end{document}
