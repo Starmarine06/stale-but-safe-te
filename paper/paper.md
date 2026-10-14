@@ -10,7 +10,7 @@ Which traffic-engineering controller should an operator run when the telemetry i
 reactive heuristic re-tuned for each telemetry condition, and a learned split-ratio policy trained only on small synthetic
 graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
 held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
-we identify. With clean telemetry the heuristic is competitive and sometimes better. As telemetry delay and polling period grow,
+we identify. With clean or lightly degraded telemetry a well-tuned heuristic matches or beats the learned policy on average; the learned policy wins on average only under heavily degraded telemetry (delay, noise and drops together) and has consistently lower tail regret. As telemetry delay and polling period grow,
 a heuristic re-tuned for each condition (five independent tuning runs per cell) is competitive or better when telemetry is fresh
 and frequent, and on GEANT falls behind the learned policy as delay and polling period grow (paired window-level intervals exclude
 zero in favour of the learned policy in 6 of 9 cells, by 2.5-12.3 points, and in favour of the heuristic in 1). On Abilene the earlier
@@ -160,6 +160,46 @@ insensitive to the packet-loss weight: with weight 0 (pure max-utilisation) the 
 telemetry (-0.056 vs -0.043) and the learned policy wins at degraded telemetry (-0.040 vs -0.006); see
 `experiments/final/table_lossweight.md`. Under link failures, demand shifts, flash crowds and hotspots (12 graphs,
 SNMP/degraded telemetry) the learned policy is ahead in every case (`experiments/final/stress_*.json`).
+
+**Re-tuned heuristic (stronger baseline; changes the picture).** The heuristic above uses parameters from a 40-trial, single-run search
+per profile. We repeated the tuning with a protocol fixed beforehand: five independent tuner seeds per profile, 80 trials each, same four
+synthetic tuning graphs, objective and search space (`experiments/retune_profiles.py`); each tuner seed is then evaluated on the same 24
+held-out graphs and evaluation seeds (`table_retune.md`). Positive diff means the learned policy is better:
+
+| profile | heuristic | dScore | p99 regret | diff vs learned [95% CI] | learned W/T/L |
+|---|---|---|---|---|---|
+| ideal | learned (4 seeds) | -0.065 | 0.018 | - | - |
+| ideal | original (40 trials, 1 run) | -0.080 | 0.024 | -0.016 [-0.030, -0.005] | 1/10/13 |
+| ideal | re-tuned, mean over 5 tuner seeds | -0.076 | 0.036 | -0.011 [-0.026, +0.002] | 4/11/9 |
+| ideal | re-tuned, selected by tuning score | -0.085 | 0.026 | -0.020 [-0.036, -0.008] | 1/10/13 |
+| ideal | re-tuned, per tuner seed (dScore) | -0.078, -0.085, -0.072, -0.078, -0.065 | | | |
+| rich | learned (4 seeds) | -0.063 | 0.018 | - | - |
+| rich | original (40 trials, 1 run) | -0.067 | 0.033 | -0.004 [-0.014, +0.004] | 6/12/6 |
+| rich | re-tuned, mean over 5 tuner seeds | -0.076 | 0.036 | -0.014 [-0.027, -0.004] | 3/10/11 |
+| rich | re-tuned, selected by tuning score | -0.073 | 0.041 | -0.010 [-0.024, +0.002] | 4/10/10 |
+| rich | re-tuned, per tuner seed (dScore) | -0.080, -0.081, -0.073, -0.073, -0.076 | | | |
+| snmp | learned (4 seeds) | -0.062 | 0.017 | - | - |
+| snmp | original (40 trials, 1 run) | -0.049 | 0.048 | +0.013 [+0.003, +0.023] | 9/12/3 |
+| snmp | re-tuned, mean over 5 tuner seeds | -0.060 | 0.077 | +0.002 [-0.007, +0.012] | 7/10/7 |
+| snmp | re-tuned, selected by tuning score | -0.072 | 0.056 | -0.010 [-0.023, +0.000] | 3/11/10 |
+| snmp | re-tuned, per tuner seed (dScore) | -0.056, -0.072, -0.060, -0.060, -0.053 | | | |
+| degraded | learned (4 seeds) | -0.061 | 0.019 | - | - |
+| degraded | original (40 trials, 1 run) | +0.014 | 0.183 | +0.075 [+0.036, +0.120] | 14/10/0 |
+| degraded | re-tuned, mean over 5 tuner seeds | -0.029 | 0.092 | +0.033 [+0.018, +0.049] | 15/9/0 |
+| degraded | re-tuned, selected by tuning score | -0.040 | 0.093 | +0.021 [+0.010, +0.034] | 14/9/1 |
+| degraded | re-tuned, per tuner seed (dScore) | -0.021, -0.040, -0.045, -0.034, -0.004 | | | |
+
+Three things change. (1) *Mean performance:* with the stronger heuristic the learned policy no longer leads under SNMP telemetry
+(expected diff +0.002 [-0.007, +0.012], 7 wins / 10 ties / 7 losses; the tuner seed with the best tuning score is ahead of the learned policy
+by 0.010 [-0.023, +0.000]) and trails the heuristic under rich telemetry (-0.014 [-0.027, -0.004]); under ideal telemetry the
+heuristic stays ahead on average (-0.011, interval includes 0) and with the selected seed (-0.020 [-0.036, -0.008]). The earlier statement
+that the learned policy wins at SNMP telemetry was partly an artefact of a weakly tuned baseline. (2) *Degraded telemetry:* the learned policy remains
+ahead (+0.033 [+0.018, +0.049] on average over tuner seeds, 15 wins / 9 ties / 0 losses; +0.021 [+0.010, +0.034] for the selected seed), but by less than
+against the original heuristic (+0.075). (3) *Tail risk:* the learned policy's p99 regret (0.017-0.019) is lower than every re-tuned heuristic's
+(0.036-0.093) in every profile, so even where the heuristic is better on average, it is worse in the tail. Tuner-seed spread is material
+(e.g. SNMP dScore from -0.053 to -0.072), so a single tuning run, as used elsewhere in this paper, can move a comparison by about as much as
+the differences reported. The comparisons in Sections 6.2, 6.4-6.6 and the stress scenarios use the original per-profile heuristic and have
+not been repeated with re-tuned parameters; they should be read as favouring the learned policy more than a fully tuned baseline would.
 
 ### 6.2 Real traces
 
