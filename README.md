@@ -41,7 +41,7 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   collapses with delay, but one re-tuned per condition stays close. In a delay x polling grid with five independent tuning runs
   per cell, the re-tuned heuristic is competitive with fresh, frequent telemetry and falls behind as delay and polling period
   grow. Paired window-level intervals (16 fresh windows): on GEANT learned ahead in 6 of 9 cells (2.5-12.3 points), tie in 2,
-  heuristic ahead in 1; on Abilene unresolved (intervals include 0 in 6 of 9 cells, heuristic ahead in 3). An audit (`experiments/final/table_abilene_audit.md`) shows the Abilene sign moves with the window sample and with the
+  heuristic ahead in 1; on Abilene a 16-window sample was unresolved, and 48 further windows give the same gradient as GEANT (heuristic ahead at d<=3 with P=1, learned ahead in 3 cells with stale or infrequent telemetry, 4 ties; `table_abilene_more.md`). An audit (`experiments/final/table_abilene_audit.md`) shows the Abilene sign moves with the window sample and with the
   heuristic's tuning, with no implementation inconsistency found. Not a sharp crossover.
 * **It is conditional.** A DOTE-style model trained on a network's own history beats the zero-shot policy (Abilene 48-49% vs
   22-25%); fine-tuning on history recovers most of it. Fluid-model features carry the result, not graph message passing. In
