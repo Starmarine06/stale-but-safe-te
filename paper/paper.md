@@ -46,6 +46,20 @@ staleness). What we add is an empirical result: in a controlled impairment sweep
 against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
 reactive heuristic or a learned policy is the better choice, on real topologies and traces. In our literature search we found no paper that sweeps polling period, delay, noise, missing counters and install latency together for centralised split-ratio TE. This is a search result and not proof of absence.
 
+Table 15 sets the closest works side by side. Datasets differ as well: LOGGIA uses a five-node toy network, B4, the 2001 GEANT graph from the Topology Zoo and synthetic graphs with generated TCP/UDP traffic [7]; Roracle evaluates on Abilene, GEANT and Brain among others [6]; we use 24 Zoo graphs with synthetic demands plus real traces on Abilene, GEANT and Germany17.
+
+**Table 15.** Closest prior work compared with this study (from the full texts of [4], [6] and [7] and the text of [1] as read earlier; entries for other works are not tabulated because we did not verify them).
+
+| Work | Control setting | Staleness or impairment studied | Baselines | Safety mechanism |
+|---|---|---|---|---|
+| DOTE [1] | Split ratios over paths, minutes scale | Demand noise up to +-35% | LP-based TE schemes | None |
+| Teal [4] | Split ratios, WAN scale | Solver time only | LP solvers | None |
+| Roracle [6] | Lookahead routing | Age of the traffic matrix (routing computation delay) | Optimal routing on the current matrix | None |
+| LOGGIA [7] | Link weights, per-router or central, packet-level, sub-second | Communication and inference delay (one axis) | Shortest-path routing, neural baselines | None |
+| This study | Split ratios, centralised, fluid model plus a small emulation | Polling period, delay, noise, missing counters, install latency | ECMP and a heuristic re-tuned per condition | Guard falling back to ECMP |
+
+**Comparison with LOGGIA.** We did not run LOGGIA, and a like-for-like comparison is not possible with the present setup. LOGGIA optimises goodput by link-weight routing in a packet-level simulator with central or per-router decisions at sub-second time scales, while we optimise maximum link utilisation by split ratios over fixed candidate paths at the time scale of telemetry polls, in a fluid model. Its code is public (project page cited in [7]), so a fair test would add our re-tuned heuristic and ECMP as baselines inside its framework and run its learned model there. We list this as future work. Our results should therefore be read as a statement about split-ratio TE under impaired telemetry, and not as a ranking against LOGGIA.
+
 ## 3 Setting
 
 **Network and traffic.** A topology with link capacities and k = 4 candidate paths per demand; the policy outputs split
