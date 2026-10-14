@@ -24,23 +24,23 @@ these measurements to a user's network. Negative results (LP-teacher distillatio
 
 ## 2 Related work
 
-*Learned TE.* DOTE (Perry et al., NSDI 2023) trains a network on recent demand matrices to output split ratios over
+*Learned TE.* DOTE [1] trains a network on recent demand matrices to output split ratios over
 candidate paths by directly minimising maximum link utilisation; our training method is of this family, and we add a
-differentiable fluid model with a packet-loss term and training under impaired observations. FIGRET (Liu et al., SIGCOMM 2024)
-adds burst robustness to this family; FlexDATE (Ye et al., IEEE/ACM ToN 2023) choose
-critical flows with RL and reroute them by LP, with INT/SNMP telemetry assumed timely; Teal (Xu et al., SIGCOMM 2023) and
-CFR-RL (Zhang et al., IEEE JSAC 2020) target scale or rerouting. None of these treats telemetry staleness, noise or missing
+differentiable fluid model with a packet-loss term and training under impaired observations. FIGRET [2]
+adds burst robustness to this family; FlexDATE [3] choose
+critical flows with RL and reroute them by LP, with INT/SNMP telemetry assumed timely; Teal [4] and
+CFR-RL [5] target scale or rerouting. None of these treats telemetry staleness, noise or missing
 counters as an experimental variable (full texts read; DOTE tests demand noise up to +-35% only; Teal's delay is solver
-latency). *Staleness.* Roracle (Ye et al., ICNP 2023) is the closest in spirit: it shows that LP-optimal routing computed on
+latency). *Staleness.* Roracle [6] is the closest in spirit: it shows that LP-optimal routing computed on
 the current matrix degrades as it ages (about 20% in MLU over a five-step horizon) and that a learned lookahead resists this;
 the staleness there is routing-computation delay and traffic drift, there is no telemetry-impairment sweep and no tuned reactive
-baseline, and it evaluates on Abilene, GEANT and Brain among others. LOGGIA (Boltres et al., TMLR 2026, arXiv 2604.02927) models
+baseline, and it evaluates on Abilene, GEANT and Brain among others. LOGGIA [7] models
 communication and inference delay for neural link-weight routing in a packet-level simulator and reports that neural baselines
 stop beating static shortest-path routing under delay; it compares with default shortest-path protocols, studies one impairment
-axis and has no safety mechanism. EnvelopeTC (Jia et al., IEEE JCC 2026) bounds agent actions and disables reroutes after a
-staleness limit in a hierarchical data-centre setting. RedTE (Gui et al., SIGCOMM 2024) removes centralised control-loop latency
-by moving decisions to routers. *Safe fallback.* Training Wheels (Mao et al., NeurIPS 2019) falls back to a simple policy in
-unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing (arXiv 2410.16846) pursue related goals
+axis and has no safety mechanism. EnvelopeTC [8] bounds agent actions and disables reroutes after a
+staleness limit in a hierarchical data-centre setting. RedTE [9] removes centralised control-loop latency
+by moving decisions to routers. *Safe fallback.* Training Wheels [10] falls back to a simple policy in
+unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing [11] pursue related goals
 by different means. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
 staleness). What we add is an empirical result: in a controlled impairment sweep that holds all other factors fixed and compares
 against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
@@ -50,7 +50,7 @@ reactive heuristic or a learned policy is the better choice, on real topologies 
 
 **Network and traffic.** A topology with link capacities and k = 4 candidate paths per demand; the policy outputs split
 ratios each interval. Traffic is synthetic (gravity base, diurnal cycle, bursts, hotspots, shifts, flash crowds) or a
-replayed SNDlib trace (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
+replayed SNDlib trace [13] (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
 Brain, 1-min, 9,723, restricted to its 600 heaviest demands = 90% of sampled traffic). Each (network, load) pair uses one
 scale factor so that the median ECMP max-link-utilisation over the trace equals 0.6, 0.8 or 1.0. This is *real-trace
 evaluation under controlled load scaling*: temporal and spatial structure are real, absolute load is not. The scale factors are
@@ -109,7 +109,7 @@ flags telemetry values outside the evaluated range. Its output is an offline est
 
 ## 5 Protocol
 
-Topology Zoo: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
+Topology Zoo [12]: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
 5 evaluation seeds per graph, horizon 100, load 0.8; paired bootstrap 95% CI, IQM and Holm-corrected Wilcoxon over graphs.
 Real traces: four networks with headroom plus Brain, loads {0.6, 0.8, 1.0}, four profiles; two independent evaluation
 runs (4 windows, then 10 fresh windows per cell, 12 for Brain at load 0.8). Tuning and model selection never use test
@@ -467,13 +467,15 @@ Two networks were evaluated only with the single-run heuristic. On Germany50 (50
 ## References
 
 1. Y. Perry, F. V. Frujeri, C. Hoch, S. Kandula, I. Menache, M. Schapira, A. Tamar. DOTE: Rethinking (Predictive) WAN Traffic Engineering. *NSDI*, 2023, pp. 1557-1581. arXiv:2303.00735.
-2. Z. Xu, F. Y. Yan, R. Singh, J. T. Chiu, A. M. Rush, M. Yu. Teal: Learning-Accelerated Optimization of WAN Traffic Engineering. *ACM SIGCOMM*, 2023, pp. 378-393. doi:10.1145/3603269.3604857; arXiv:2210.13763.
-3. J. Zhang, M. Ye, Z. Guo, C.-Y. Yen, H. J. Chao. CFR-RL: Traffic Engineering with Reinforcement Learning in SDN. *IEEE JSAC* 38(10), 2020, pp. 2249-2259. doi:10.1109/JSAC.2020.3000371.
-4. A. Boltres, N. Freymuth, B. Schichtholz, M. Koenig, G. Neumann. Towards Near-Real-Time Telemetry-Aware Routing with Neural Routing Algorithms. *TMLR*, 2026. arXiv:2604.02927.
-5. W. Jia, J. Wang, Z. Yan, T. Liu, Y. Ren, K. Lei. EnvelopeTC: Hierarchical Intra-Path Learning for Adaptive Traffic Control. *IEEE JCC*, 2026. doi:10.1109/JCC72984.2026.00071; arXiv:2605.09473.
-6. F. Gui, S. Wang, D. Li, L. Chen, K. Gao, C. Min, Y. Wang. RedTE: Mitigating Subsecond Traffic Bursts with Real-time and Distributed Traffic Engineering. *ACM SIGCOMM*, 2024. doi:10.1145/3651890.3672231.
-7. H. Mao, M. Schwarzkopf, H. He, M. Alizadeh. Towards Safe Online Reinforcement Learning in Computer Systems ("Training Wheels"). *NeurIPS 2019* (workshop paper; the PDF footer names the 33rd NeurIPS, Vancouver).
-8. M. Ye, J. Zhang, Z. Guo, H. J. Chao. FlexDATE: Flexible and Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM Trans. Networking* 31(4), 2023. doi:10.1109/TNET.2022.3217083.
-9. M. Ye, J. Zhang, Z. Guo, H. J. Chao. Roracle: Enabling Lookahead Routing for Scalable Traffic Engineering with Supervised Learning. *IEEE ICNP*, 2023. doi:10.1109/ICNP59255.2023.10355645.
-10. X. Liu, S. Zhao, Y. Cui, X. Wang. FIGRET: Fine-Grained Robustness-Enhanced Traffic Engineering. *ACM SIGCOMM*, 2024. arXiv:2405.04932.
-11. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010 (data source).
+2. X. Liu, S. Zhao, Y. Cui, X. Wang. FIGRET: Fine-Grained Robustness-Enhanced Traffic Engineering. *ACM SIGCOMM*, 2024. arXiv:2405.04932.
+3. M. Ye, J. Zhang, Z. Guo, H. J. Chao. FlexDATE: Flexible and Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM Trans. Networking* 31(4), 2023. doi:10.1109/TNET.2022.3217083.
+4. Z. Xu, F. Y. Yan, R. Singh, J. T. Chiu, A. M. Rush, M. Yu. Teal: Learning-Accelerated Optimization of WAN Traffic Engineering. *ACM SIGCOMM*, 2023, pp. 378-393. doi:10.1145/3603269.3604857; arXiv:2210.13763.
+5. J. Zhang, M. Ye, Z. Guo, C.-Y. Yen, H. J. Chao. CFR-RL: Traffic Engineering with Reinforcement Learning in SDN. *IEEE JSAC* 38(10), 2020, pp. 2249-2259. doi:10.1109/JSAC.2020.3000371.
+6. M. Ye, J. Zhang, Z. Guo, H. J. Chao. Roracle: Enabling Lookahead Routing for Scalable Traffic Engineering with Supervised Learning. *IEEE ICNP*, 2023. doi:10.1109/ICNP59255.2023.10355645.
+7. A. Boltres, N. Freymuth, B. Schichtholz, M. Koenig, G. Neumann. Towards Near-Real-Time Telemetry-Aware Routing with Neural Routing Algorithms. *TMLR*, 2026. arXiv:2604.02927.
+8. W. Jia, J. Wang, Z. Yan, T. Liu, Y. Ren, K. Lei. EnvelopeTC: Hierarchical Intra-Path Learning for Adaptive Traffic Control. *IEEE JCC*, 2026. doi:10.1109/JCC72984.2026.00071; arXiv:2605.09473.
+9. F. Gui, S. Wang, D. Li, L. Chen, K. Gao, C. Min, Y. Wang. RedTE: Mitigating Subsecond Traffic Bursts with Real-time and Distributed Traffic Engineering. *ACM SIGCOMM*, 2024. doi:10.1145/3651890.3672231.
+10. H. Mao, M. Schwarzkopf, H. He, M. Alizadeh. Towards Safe Online Reinforcement Learning in Computer Systems ("Training Wheels"). *NeurIPS 2019* (workshop paper; the PDF footer names the 33rd NeurIPS, Vancouver).
+11. L. Dinh, P. T. A. Quang, J. Leguay. Safe Load Balancing in Software-Defined-Networking. *Computer Communications*, 2024. arXiv:2410.16846.
+12. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775.
+13. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010 (data source).

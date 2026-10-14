@@ -62,6 +62,8 @@ def inline(t, refs=True):
                 else:
                     out.append(esc_plain(tk))
     s = "".join(out)
+    if refs:
+        s = re.sub(r"\[(\d+(?:, ?\d+)*)\]", lambda mm: r"\cite{" + ",".join("r" + x.strip() for x in mm.group(1).split(",")) + "}", s)
     return crossref(s) if refs else s
 
 
