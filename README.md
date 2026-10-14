@@ -78,6 +78,28 @@ true next-interval demand as privileged information; the policy only ever sees t
 Earlier attempts (LP-teacher distillation, PPO fine-tuning) are kept in `train/bc.py`, `train/ppo.py` and
 reported as negative results in the paper draft.
 
+## Paper artefact map
+Each paper table is produced by one script and one result file under `experiments/final/`.
+
+| Paper item | Script(s) | Result file |
+|---|---|---|
+| Table 1, Table A1, Fig. 1 | `experiments/retune_profiles.py`, `experiments/analyze_retune.py` | `table_retune.md` |
+| Table 2, Table 10 | `experiments/final_eval.py --tuned-only`, `experiments/analyze_v2_guard_stress.py` | `table_v2_guard_stress.md` |
+| Table 3, Fig. 2 | `experiments/realci_v2.py`, `experiments/analyze_realci_v2.py` | `table_realci_v2.md` |
+| Table 4 | `experiments/delay_controlled.py 1` | `table_delay_part1.md` |
+| Table 5 | `experiments/delay_tuning_repeat.py` | `table_delay_repeat.md` |
+| Table 6, Fig. 3 | `experiments/delay_grid_ci.py` | `table_delay_ci.md` |
+| Table 7 | `experiments/abilene_audit.py` | `table_abilene_audit.md` |
+| Table 8 | `experiments/overload_windows.py abilene 0.8 configs/tuned_heuristic_v2.yaml _v2` | `table_overload_v2.md` |
+| Table 9 | `experiments/guard_audit.py` | `table_guard_audit.md` |
+| Table 11 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
+| Table 12 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
+| Table 13 | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
+| GNN versus MLP, ablations | `experiments/analyze_gnn_vs_mlp.py`, `experiments/analyze_ablations.py` | `table_gnn_vs_mlp.md`, `table_ablations.md` |
+| Loss-weight sensitivity | `experiments/sensitivity_lossweight.py experiments/final/results_v2_zoo.json` | `table_lossweight_v2.md` |
+
+Build the paper with `python paper/make_figures.py` and `python paper/md2tex.py` followed by `bash paper/tnsm/build.sh` (needs a LaTeX installation with IEEEtran).
+
 ## Layout
 See `docs/architecture.md`. Short version: `src/stale_but_safe/{env,baselines,models,train,guard,eval,emu,controller}`,
 `experiments/` (one script per result), `docker/` (Mininet and Ryu images), `docs/`, `paper/`.

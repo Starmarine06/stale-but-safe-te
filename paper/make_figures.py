@@ -23,8 +23,8 @@ for r in json.load(open(F + "results_ours.json"))["results"]:
     if r["method"] == "tuned": old[r["profile"]][r["topo"]] = r
 profs = ["ideal", "rich", "snmp", "degraded"]; lab = ["ideal", "rich", "SNMP", "degraded"]
 fig, ax = plt.subplots(1, 2, figsize=(7.2, 2.9))
-w = 0.26; x = np.arange(4)
-for k, (name, col) in enumerate([("learned", LEARN), ("original heuristic", OLD), ("re-tuned heuristic", HEUR)]):
+w = 0.38; x = np.arange(4)
+for k, (name, col) in enumerate([("learned", LEARN), ("re-tuned heuristic", HEUR)]):
     for j, pr in enumerate(profs):
         topos = sorted(L[pr])
         if name == "learned":
@@ -36,7 +36,7 @@ for k, (name, col) in enumerate([("learned", LEARN), ("original heuristic", OLD)
             d = np.mean([[r["per_topo"][t]["delta"] for t in topos] for r in rs], 0); p = np.mean([[r["per_topo"][t]["regret_p99"] for t in topos] for r in rs], 0)
         for a, v in ((ax[0], d), (ax[1], p)):
             lo, hi = boot(v)
-            a.bar(x[j] + (k - 1) * w, v.mean(), w, color=col, label=name if j == 0 else None, yerr=[[v.mean() - lo], [hi - v.mean()]], capsize=2, error_kw={"lw": 0.8})
+            a.bar(x[j] + (k - 0.5) * w, v.mean(), w, color=col, label=name if j == 0 else None, yerr=[[v.mean() - lo], [hi - v.mean()]], capsize=2, error_kw={"lw": 0.8})
 ax[0].axhline(0, color="k", lw=0.6); ax[0].set_ylabel("dScore vs ECMP (lower = better)"); ax[1].set_ylabel("p99 regret vs ECMP (lower = better)")
 for a in ax: a.set_xticks(x); a.set_xticklabels(lab); a.set_xlabel("telemetry profile")
 ax[0].legend(frameon=False, fontsize=7.5, loc="upper left"); ax[0].set_title("(a) mean score", fontsize=9); ax[1].set_title("(b) tail risk", fontsize=9)
