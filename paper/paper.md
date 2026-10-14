@@ -11,9 +11,9 @@ reactive heuristic re-tuned for each telemetry condition, and a learned split-ra
 graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
 held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
 we identify. With clean telemetry the heuristic is competitive and sometimes better. As telemetry delay and polling period grow,
-a heuristic re-tuned for each condition is as good or better only when polling is frequent (every interval) and delay is at most three
-intervals, and is otherwise behind the learned policy by 0.5-17 points of gain (a delay x polling grid; the heuristic's re-tuned
-gain is noisy and not monotone in delay), while the learned policy's gain hardly changes; measurement noise and missing counters hardly matter. Other conditions
+a heuristic re-tuned for each condition (five independent tuning runs per cell) is as good or better when telemetry is fresh
+and frequent (delay at most three intervals with polling every one to five intervals, on Abilene; fresher still on GEANT) and falls
+behind the learned policy, by up to 15 points of gain, as delay and polling period grow, while the learned policy's gain hardly changes; measurement noise and missing counters hardly matter. Other conditions
 change the picture: a model trained on a network's own history does substantially better than the zero-shot policy, the
 heuristic wins in rare overloaded windows, and on some networks ECMP is sufficient. Ablations show that model-based fluid
 features, not graph message passing, carry the learned policy. Operationally the learned policy reprograms about ten times more
@@ -214,29 +214,34 @@ Two conclusions. First, a heuristic whose parameters are frozen collapses with d
 an artefact of mis-tuning: re-tuned at each delay it keeps most of its gain. Second, a re-tuned heuristic matches the
 learned policy at small delay (d = 3: Abilene 34.7 vs 34.2, GEANT 43.6 vs 42.5, Zoo 3.2 vs 4.3) and is behind at d = 5 and d = 10
 in this table (Abilene 23.2 and 21.0 vs about 34.6; GEANT 23.2 and 24.9 vs about 42). The learned policy's gain does not depend on d.
-The interaction grid below shows that this is not a clean monotone crossover. The re-tuning budget is modest (40 trials, synthetic graphs, other impairments ideal), so a
+The interaction grid below, with repeated tuning, shows the boundary depends on polling period and network. The re-tuning budget is modest (40 trials, synthetic graphs, other impairments ideal), so a
 stronger tuned baseline might narrow the gap; this is not tested. The per-profile comparisons of Sections 6.1-6.2 use heuristics
 re-tuned for each profile, so they are not affected by the frozen-parameter artefact. 
 
-*Delay x polling grid* (`table_delay_part2.md`; heuristic re-tuned in every cell, learned = mean of 4 seeds; mean gain %, no
-window-level intervals in this experiment). Learned minus re-tuned heuristic, in points of gain:
+*Delay x polling grid with repeated tuning* (`table_delay_repeat.md`; `experiments/delay_tuning_repeat.py`). The first version of this
+grid used one 40-trial tuning run per cell and was non-monotone in delay (Abilene at P = 20: 33.8, 24.6, 30.0 at d = 0, 3, 10), which
+we read as tuning noise. We therefore re-tuned the heuristic five times per cell with independent tuner seeds and 80 trials each
+(same synthetic tuning graphs and objective; the seed with the best *tuning* score is the reported heuristic, so selection never sees
+the evaluation data). Learned = mean of 4 training seeds. Gain %, learned minus heuristic, in points ("best seed" is an
+evaluation-side oracle over the five tuner seeds and therefore favours the heuristic):
 
-| case | d=0, P=1 | d=0, P=5 | d=0, P=20 | d=3, P=1 | d=3, P=5 | d=3, P=20 | d=10, P=1 | d=10, P=5 | d=10, P=20 |
+| case | d=0 P=1 | d=0 P=5 | d=0 P=20 | d=3 P=1 | d=3 P=5 | d=3 P=20 | d=10 P=1 | d=10 P=5 | d=10 P=20 |
 |---|---|---|---|---|---|---|---|---|---|
-| Zoo (10 graphs) | -0.3 | +1.4 | +1.8 | +1.1 | +0.2 | +0.5 | +1.4 | +5.1 | +2.1 |
-| Abilene | -7.4 | +0.5 | +0.6 | -0.4 | +7.8 | +10.1 | +13.7 | +4.7 | +4.0 |
-| GEANT | -3.0 | +7.3 | +7.0 | -1.2 | +7.8 | +11.3 | +16.9 | +3.8 | +4.2 |
+| Zoo (10 graphs) | -0.4 | -0.1 | +0.9 | +1.2 | +1.0 | +1.1 | +1.5 | +1.9 | +0.9 |
+| Abilene | -7.2 | -2.9 | +5.4 | -2.7 | -1.8 | +8.5 | +3.5 | +6.3 | +6.2 |
+| GEANT | -1.7 | +1.8 | +12.5 | +0.7 | +3.8 | +15.5 | +5.0 | +11.3 | +15.0 |
 
-The re-tuned heuristic is ahead of the learned policy in 4 of 18 real-trace cells (Abilene and GEANT at P = 1, d <= 3, by 0.4-7.4
-points) and behind in the other 14 (by 0.5-16.9 points); on Zoo graphs the two are within 0.3 points at one cell and the learned policy
-is ahead in the other eight (by 0.2-5.1). The learned policy's gain varies by under 2 points across the grid on each case. The
-heuristic's re-tuned gain, in contrast, is not monotone in delay: Abilene at P = 20 gives 33.8, 24.6 and 30.0 for d = 0, 3, 10, and at
-d = 10 the heuristic does better with P = 5 or 20 (29.9, 30.0) than with P = 1 (21.0). A heuristic cannot sensibly gain from more
-delay, so this variation is evidence that the 40-trial re-tuning is itself noisy by roughly 5-10 points of gain, comparable to many of the
-differences above. What the grid supports is therefore weaker than a sharp threshold: the heuristic is best when telemetry is fresh and
-frequent, the learned policy is better or equal elsewhere, and the size of the margin in individual cells should not be
-over-interpreted. A stronger search (more trials, repeated tuning with different seeds) is needed to locate any crossover precisely;
-we have not run it.
+With selection by tuning score the heuristic is ahead in 5 of 18 real-trace cells (Abilene: d <= 3 with P <= 5; GEANT: d = 0, P = 1),
+within 1 point in two more, and behind in the rest by up to 15.5 points; against the best of five tuner seeds it is ahead in 6 cells and
+the learned policy is still 2.9-9.5 points ahead in the cells with P = 20 or d = 10 (except one tie), so the large margins are not an
+artefact of an unlucky tuner run. On Zoo graphs the two are within 0.4 points at d = 0 with P <= 5 and the learned policy is ahead by
+0.9-1.9 elsewhere. The learned policy's gain varies by under 2 points across the grid, while the heuristic's decreases with both
+delay and polling period (Abilene, selected seed: 41.7 at d = 0, P = 1 down to 27.8 at d = 10, P = 20). The tuner-seed range inside a
+cell is up to about 10 points (e.g. GEANT d = 10, P = 1: 24.4-36.8), so single-cell margins below that size should not be
+over-interpreted; the pattern across cells is what we report. This is a gradient, not a sharp threshold: there is no delay value
+at which the ranking flips independent of polling period and network. The experiment has no window-level confidence intervals, and
+tuning uses 4 synthetic graphs, so a stronger or in-domain search could shift the boundary; the single-run grid (`table_delay_part2.md`)
+is retained as raw data but superseded by this table.
 
 *One-at-a-time sweep with frozen parameters* (`table_telemetry_sweep.md`; heuristic parameters are those tuned for the nearest
 standard profile, so the collapse is exaggerated as described above; 10 Zoo graphs with n <= 25, Abilene and GEANT at load 0.8;
