@@ -23,3 +23,12 @@ dScore vs ECMP (lower = better); 24 held-out Zoo graphs; learned = mean of 4 tra
 | degraded | re-tuned, mean over 5 tuner seeds | -0.029 | 0.092 | +0.033 [+0.018, +0.049] | 15/9/0 |
 | degraded | re-tuned, selected by tuning score | -0.040 | 0.093 | +0.021 [+0.010, +0.034] | 14/9/1 |
 | degraded | re-tuned, per tuner seed (dScore) | -0.021, -0.040, -0.045, -0.034, -0.004 | | | |
+
+p99 regret (per-graph p99 over intervals x 5 eval seeds, then mean over graphs), heuristic minus learned; positive = learned has lower tail regret; 95% bootstrap CI over graphs (4000 resamples, seed 0):
+
+| profile | learned p99 | heuristic (mean over 5 tuner seeds) p99 | diff [95% CI] | graphs where learned p99 lower |
+|---|---|---|---|---|
+| ideal | 0.018 | 0.036 | +0.018 [+0.000, +0.039] | 9 of 24 |
+| rich | 0.018 | 0.036 | +0.018 [+0.004, +0.035] | 10 of 24 |
+| snmp | 0.017 | 0.077 | +0.060 [+0.027, +0.101] | 13 of 24 |
+| degraded | 0.019 | 0.092 | +0.073 [+0.038, +0.113] | 13 of 24 |

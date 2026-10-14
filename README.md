@@ -48,7 +48,7 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   overloaded trace windows the reactive heuristic wins (45-49% vs 9-21%).
 * **Guard:** strong for link failures (catches ~90% of harmful proposals), weak for degraded telemetry (~22%); no formal guarantee;
   costs more in emulation than in simulation.
-* **Operational cost:** the learned policy reprograms ~10x more flows than the heuristic; a 5-20% update threshold removes 90-99%
+* **Operational cost:** the learned policy reprograms ~2x more flows than the re-tuned heuristic (270-332 vs ~139 per minute; ~10x more than the original, weaker heuristic); a 5-20% update threshold removes 90-99%
   of updates in simulation at no loss of gain (77% in emulation for 0.018 max-util). Decision time 2 ms (12 nodes) to 311 ms (80 nodes).
 * **Emulation (28 runs, 4 scenarios):** simulated vs emulated mean max-util correlation 0.99, mean abs difference 0.017.
 * **Audit tool:** `stale-but-safe audit` gives headroom, per-method gains with 95% intervals, and one of: stay on ECMP / use X /

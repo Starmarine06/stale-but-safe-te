@@ -42,3 +42,15 @@ for prof in ("ideal", "rich", "snmp", "degraded"):
     sel = min(range(len(rs)), key=lambda i: rs[i]["tune_score"])
     row("re-tuned, selected by tuning score", ds[sel], p9[sel])
     print(f"| {prof} | re-tuned, per tuner seed (dScore) | {', '.join(f'{d.mean():+.3f}' for d in ds)} | | | |")
+
+print()
+print("p99 regret (per-graph p99 over intervals x 5 eval seeds, then mean over graphs), heuristic minus learned; positive = learned has lower tail regret; 95% bootstrap CI over graphs (4000 resamples, seed 0):")
+print()
+print("| profile | learned p99 | heuristic (mean over 5 tuner seeds) p99 | diff [95% CI] | graphs where learned p99 lower |")
+print("|---|---|---|---|---|")
+for prof in ("ideal", "rich", "snmp", "degraded"):
+    topos = sorted(L[prof]); lp = np.array([np.mean([r["regret_p99"] for r in L[prof][t]]) for t in topos])
+    rs = [r for r in raw if r["profile"] == prof]
+    hp = np.mean([[r["per_topo"][t]["regret_p99"] for t in topos] for r in rs], 0)
+    df = hp - lp; lo, hi = ci(df)
+    print(f"| {prof} | {lp.mean():.3f} | {hp.mean():.3f} | {df.mean():+.3f} [{lo:+.3f}, {hi:+.3f}] | {int((df > 0).sum())} of {len(df)} |")

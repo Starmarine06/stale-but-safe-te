@@ -1,0 +1,5 @@
+emu10_s0 done
+emu10_s1 done
+emu10_s2 done
+er12_s0 done
+EMU DONE

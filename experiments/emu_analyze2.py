@@ -16,6 +16,7 @@ from stale_but_safe.models.learned import LearnedPolicy, load
 
 root = Path(sys.argv[1] if len(sys.argv) > 1 else "runs/emu2")
 tuned = yaml.safe_load(open("configs/tuned_heuristic.yaml"))
+tuned_v2 = yaml.safe_load(open("configs/tuned_heuristic_v2.yaml"))
 M = "model:runs/ours_dfm_final.pt"
 
 
@@ -26,6 +27,8 @@ def make_policy(spec, profile):
         guard = GuardCfg(eps=float(head[7:]), layers=(True, True, False))
     if spec == "ecmp":
         pol = ECMP()
+    elif spec.startswith("tunedv2:"):
+        pol = TunedHeuristic(**tuned_v2[spec.split(":", 1)[1]]["params"])
     elif spec.startswith("tuned:"):
         pol = TunedHeuristic(**tuned[spec.split(":", 1)[1]]["params"])
     else:

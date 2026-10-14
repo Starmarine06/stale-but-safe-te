@@ -58,6 +58,10 @@ def build_policy(spec: str, topo, shim):
         prof = spec.split(":", 1)[1]
         params = yaml.safe_load(open("/app/configs/tuned_heuristic.yaml"))[prof]["params"]
         pol = TunedHeuristic(**params)
+    elif spec.startswith("tunedv2:"):
+        import yaml
+        prof = spec.split(":", 1)[1]
+        pol = TunedHeuristic(**yaml.safe_load(open("/app/configs/tuned_heuristic_v2.yaml"))[prof]["params"])
     elif spec.startswith("model:"):
         from stale_but_safe.models.learned import LearnedPolicy, load
         m, c = load(spec.split(":", 1)[1])
