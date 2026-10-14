@@ -262,7 +262,7 @@ The heuristic is ahead in 5 of 18 real-trace cells (Abilene with d at most 3 and
 
 ![Figure 3](figures/fig3_delay.png)
 
-**Figure 3.** Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points on fresh windows, with 95% bootstrap intervals over windows.
+**Figure 3.** Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points, with 95% bootstrap intervals over windows. Left: Abilene, the 16-window sample used in Table 6. Middle: Abilene, the 48 additional windows of Table 14. Right: GEANT, 16 windows (14 after skipping zero-traffic windows). The two Abilene panels use different window samples, so they are not repeated measurements of one estimate.
 
 On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows (Table 14). The tuner saw only synthetic graphs and never a real trace or evaluation window.
 
