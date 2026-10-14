@@ -14,6 +14,25 @@ ZOO_DIR = ROOT / "data" / "topologies" / "zoo_raw"
 SPLITS = ROOT / "configs" / "splits.yaml"
 
 
+ZOO_URL = "https://github.com/sk2/topologyzoo/archive/refs/heads/master.zip"
+
+
+def available() -> bool:
+    return any(ZOO_DIR.rglob("*.graphml"))
+
+
+def fetch(url: str = ZOO_URL) -> int:
+    """Download the Internet Topology Zoo GraphML files (not redistributed with this repository; see the Zoo's own terms)."""
+    import io
+    import urllib.request
+    import zipfile
+    data = urllib.request.urlopen(url, timeout=120).read()
+    z = zipfile.ZipFile(io.BytesIO(data))
+    ZOO_DIR.mkdir(parents=True, exist_ok=True)
+    z.extractall(ZOO_DIR)
+    return sum(1 for n in z.namelist() if n.endswith(".graphml"))
+
+
 def load_graph(path) -> nx.Graph | None:
     try:
         g = nx.read_graphml(str(path))
@@ -33,6 +52,8 @@ def load_graph(path) -> nx.Graph | None:
 
 
 def catalog(min_n=10, max_n=50) -> dict[str, tuple[int, int]]:
+    if not available():
+        raise RuntimeError("Topology Zoo graphs not found. Run: python -m stale_but_safe.env.zoo fetch")
     out = {}
     for f in sorted(ZOO_DIR.rglob("*.graphml")):
         g = load_graph(f)
@@ -68,5 +89,15 @@ def load_split(split: str) -> list[str]:
 
 
 def zoo_topology(name: str, k: int = 4) -> Topology:
-    f = next(ZOO_DIR.rglob(f"{name}.graphml"))
+    f = next(ZOO_DIR.rglob(f"{name}.graphml"), None)
+    if f is None:
+        raise RuntimeError("Topology Zoo graph %r not found. Run: python -m stale_but_safe.env.zoo fetch" % name)
     return from_graph(load_graph(f), k=k, name=name)
+
+
+if __name__ == "__main__":
+    import sys
+    if sys.argv[1:] == ["fetch"]:
+        print("downloaded", fetch(), "graphs to", ZOO_DIR)
+    else:
+        print("usage: python -m stale_but_safe.env.zoo fetch")

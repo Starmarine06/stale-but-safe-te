@@ -55,6 +55,8 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   insufficient evidence. An offline estimate, not a deployment recommendation.
 
 ## Data and availability
+Topology Zoo graphs are not redistributed here; fetch them with `python -m stale_but_safe.env.zoo fetch` (downloads the public GitHub mirror, 263 GraphML files) before running anything that uses Zoo graphs. Please cite Knight et al., *The Internet Topology Zoo*, IEEE JSAC 2011.
+
 Repository: https://github.com/Starmarine06/stale-but-safe-te (currently private; make it public before submission). The SNDlib archives are public and not redistributed; download them from
 `https://sndlib.put.poznan.pl/download/<archive>.tgz` (archive names in `src/stale_but_safe/env/real.py` and `docs/howto.md`) into `data/real/`, then run
 `python -m stale_but_safe.env.real prepare <name>`. A clean-environment check is in `docs/reproduction_check.md`. The default heuristic parameters for the audit tool
