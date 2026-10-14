@@ -65,17 +65,23 @@ ax.set_title("Learned minus re-tuned heuristic, gain points\nblue = learned ahea
 fig.colorbar(im, ax=ax, shrink=0.8, label="points of gain"); fig.tight_layout(); save(fig, "fig2_real"); plt.close(fig)
 
 # ---------- Fig 3: delay x polling grid with window-level CIs
-ci = json.load(open(F + "delay_ci.json"))
-fig, axs = plt.subplots(1, 2, figsize=(7.2, 2.8), sharey=True)
-for a, net in zip(axs, ["abilene", "geant"]):
+ci = json.load(open(F + "delay_ci.json")); more = json.load(open(F + "abilene_more.json"))
+def grid(panel, d, P):
+    if panel == "abilene48":
+        r = next(x for x in more if x["d"] == d and x["P"] == P)
+    else:
+        r = next(x for x in ci if x["d"] == d and x["P"] == P)["net"][panel[:-2] if panel.endswith("16") else panel]
+    return 100 * (np.array(r["learned"]) - np.array(r["heur"]))
+panels = [("abilene16", "Abilene, 16 windows"), ("abilene48", "Abilene, 48 new windows"), ("geant16", "GEANT, 16 windows")]
+fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.8), sharey=True)
+for a, (pn, title) in zip(axs, panels):
     for P, col in zip((1, 5, 20), ("#1b6ca8", "#3b9a6a", "#a8421b")):
         xs, ms, los, his = [], [], [], []
         for d in (0, 3, 10):
-            r = next(x for x in ci if x["d"] == d and x["P"] == P)["net"][net]
-            df = 100 * (np.array(r["learned"]) - np.array(r["heur"])); lo, hi = boot(df, 3000)
+            df = grid(pn, d, P); lo, hi = boot(df, 3000)
             xs.append(d + {1: -0.25, 5: 0, 20: 0.25}[P]); ms.append(df.mean()); los.append(df.mean() - lo); his.append(hi - df.mean())
         a.errorbar(xs, ms, yerr=[los, his], fmt="o-", color=col, capsize=2, lw=1, ms=3.5, label=f"polling P={P}")
-    a.axhline(0, color="k", lw=0.6); a.set_xticks([0, 3, 10]); a.set_xlabel("telemetry delay d (intervals)"); a.set_title({"abilene": "Abilene", "geant": "GEANT"}[net], fontsize=9)
+    a.axhline(0, color="k", lw=0.6); a.set_xticks([0, 3, 10]); a.set_xlabel("telemetry delay d (intervals)"); a.set_title(title, fontsize=8.5)
 axs[0].set_ylabel("learned minus heuristic (gain points)")
 h, l_ = axs[0].get_legend_handles_labels(); fig.legend(h, l_, loc="upper center", ncol=3, frameon=False, fontsize=8.5)
 fig.tight_layout(rect=(0, 0, 1, 0.92)); save(fig, "fig3_delay"); plt.close(fig)
