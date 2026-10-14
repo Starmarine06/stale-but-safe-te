@@ -30,9 +30,11 @@ stale-but-safe demo --topology abilene --mode shadow --model runs/ours_dfm_final
 Full write-up: `paper/paper.md`; protocol deviations: `docs/eval_protocol.md`. Real SNDlib traces (Abilene, GEANT,
 Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are modelled, not measured.
 
-* **The ranking depends on telemetry quality.** 24 held-out Topology Zoo graphs, 4 training seeds: tuned heuristic better with
-  clean telemetry, learned policy better with degraded telemetry (21-23 of 24 graphs). Real traces, 10 fresh windows per cell:
-  learned never behind the heuristic under rich / SNMP / degraded telemetry; clean telemetry is mixed (4 / 3 / 2 of 9 cells).
+* **The ranking depends on telemetry quality.** 24 held-out Topology Zoo graphs, 4 training seeds, heuristic re-tuned (5 tuner seeds x 80
+  trials per profile): the heuristic is better or equal on average with ideal, rich and SNMP telemetry (SNMP: tie, +0.002 [-0.007, +0.012]); the
+  learned policy is ahead only under heavily degraded telemetry (+0.033 [+0.018, +0.049], 15 wins / 9 ties / 0 losses) and has lower p99
+  regret in every profile (0.017-0.019 vs 0.036-0.093). Earlier claims of learned wins under SNMP came from a weakly tuned baseline
+  (`experiments/final/table_retune.md`). Real-trace per-profile comparisons used the original heuristic and have not been repeated.
 * **Staleness (delay, polling period) matters; noise and missing counters hardly do.** A heuristic with frozen parameters
   collapses with delay, but one re-tuned per condition stays close. In a delay x polling grid with five independent tuning runs
   per cell, the re-tuned heuristic is competitive with fresh, frequent telemetry and falls behind as delay and polling period
