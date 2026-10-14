@@ -159,7 +159,20 @@ telemetry (-0.061 vs -0.043) and the learned policy wins at degraded telemetry (
 (by +0.020 [+0.007, +0.036] for failures, +0.035 [+0.015, +0.058] for shifts, +0.032 [+0.012, +0.059] for flash crowds and
 +0.101 [+0.029, +0.204] for hotspots, positive = learned better); under SNMP telemetry the intervals include zero for failures, flash crowds
 and hotspots and favour the learned policy only for shifts (+0.011 [+0.001, +0.027]). The learned policy's p99 regret is lower in all eight
-cells (0.018-0.048 vs 0.065-0.167). Against the original heuristic the margins were 0.02-0.19 larger.
+cells (0.018-0.048 vs 0.065-0.167). All eight cells (12 graphs each; diff = heuristic minus learned, positive = learned better; the last column is the same difference against the original heuristic):
+
+| scenario | profile | learned dScore | re-tuned heuristic dScore | diff [95% CI over graphs] | learned W/T/L | p99 regret learned / heuristic | original-heuristic diff |
+|---|---|---|---|---|---|---|---|
+| fail | snmp | -0.066 | -0.070 | -0.004 [-0.018, +0.009] | 3/6/3 | 0.018 / 0.065 | +0.021 |
+| fail | degraded | -0.064 | -0.044 | +0.020 [+0.007, +0.036] | 6/6/0 | 0.019 / 0.081 | +0.056 |
+| shift | snmp | -0.059 | -0.047 | +0.011 [+0.001, +0.027] | 4/7/1 | 0.044 / 0.101 | +0.032 |
+| shift | degraded | -0.057 | -0.021 | +0.035 [+0.015, +0.058] | 7/5/0 | 0.045 / 0.143 | +0.078 |
+| flash | snmp | -0.073 | -0.067 | +0.005 [-0.009, +0.023] | 5/4/3 | 0.022 / 0.078 | +0.036 |
+| flash | degraded | -0.069 | -0.036 | +0.032 [+0.012, +0.059] | 7/5/0 | 0.028 / 0.105 | +0.074 |
+| hotspot | snmp | -0.126 | -0.090 | +0.036 [-0.012, +0.105] | 4/2/6 | 0.042 / 0.116 | +0.066 |
+| hotspot | degraded | -0.123 | -0.022 | +0.101 [+0.029, +0.204] | 9/3/0 | 0.048 / 0.167 | +0.190 |
+
+The tail result is consistent in direction across scenarios, but each cell has only 12 graphs and the p99 values are means over graphs, so they carry the same caveat as in Section 6.1 (a minority of graphs can dominate). Against the original heuristic the margins were 0.02-0.19 larger.
 
 **Re-tuned heuristic (stronger baseline; changes the picture).** The heuristic above uses parameters from a 40-trial, single-run search
 per profile. We repeated the tuning with a protocol fixed beforehand: five independent tuner seeds per profile, 80 trials each, same four
