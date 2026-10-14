@@ -1,8 +1,6 @@
 # The Cost of Stale Telemetry in Traffic Engineering: Learned Policies, Re-Tuned Heuristics and ECMP
 
-*Draft v3.1 (GNN-vs-MLP seeds complete). All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
-**[PENDING]** depend on experiments still running when this draft was written. Protocol deviations are tabulated in
-`docs/eval_protocol.md`; claims and their status are in Section 8.*
+*Draft v4 (2026-10-14), not yet submitted: venue, authors and the public repository URL are placeholders, and the manual literature pass (Google Scholar, ACM DL, IEEE Xplore) is not complete. All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Protocol deviations are tabulated in `docs/eval_protocol.md`; claims and their status are in Section 8.*
 
 ## Abstract
 
@@ -202,7 +200,14 @@ held-out graphs and evaluation seeds (`table_retune.md`). Positive diff means th
 | degraded | re-tuned, selected by tuning score | -0.040 | 0.093 | +0.021 [+0.010, +0.034] | 14/9/1 |
 | degraded | re-tuned, per tuner seed (dScore) | -0.021, -0.040, -0.045, -0.034, -0.004 | | | |
 
-Three things change. (1) *Mean performance:* with the stronger heuristic the learned policy no longer leads under SNMP telemetry
+![Figure 1](figures/fig1_zoo.png)
+
+**Figure 1.** Held-out Zoo graphs (24): (a) mean dScore and (b) mean per-graph p99 regret, by telemetry profile, for the learned policy (mean of 4 training seeds), the original 40-trial heuristic and the re-tuned heuristic (mean of 5 tuner seeds). Error bars are 95% bootstrap intervals over graphs; they reflect graph variability, not tuner-seed variability.
+
+Three things change. (1) *Mean performance:*
+
+
+ with the stronger heuristic the learned policy no longer leads under SNMP telemetry
 (expected diff +0.002 [-0.007, +0.012], 7 wins / 10 ties / 7 losses; the tuner seed with the best tuning score is ahead of the learned policy
 by 0.010 [-0.023, +0.000]) and trails the heuristic under rich telemetry (-0.014 [-0.027, -0.004]); under ideal telemetry the
 heuristic stays ahead on average (-0.011, interval includes 0) and with the selected seed (-0.020 [-0.036, -0.008]). The earlier statement
@@ -245,6 +250,10 @@ the heuristic in 17 and includes zero in 7. By telemetry profile (learned / heur
 degraded 9/0/0. Under degraded telemetry the learned policy is ahead by +7.8 to +13.0 points on every network and load; under ideal telemetry the
 heuristic is ahead by 2.4-7.7 points. This agrees with the Zoo result of Section 6.1 and replaces the earlier statement that the learned policy leads
 in 32 of 36 cells, which depended on the weaker heuristic. The window-level evidence below is retained as the record of the original comparison.
+
+![Figure 2](figures/fig2_real.png)
+
+**Figure 2.** Real traces with the re-tuned heuristic: learned minus heuristic gain in points, per network, load and telemetry profile (12 windows per cell). Letters give the verdict of the paired 95% bootstrap interval over windows (L learned ahead, H heuristic ahead, = tie).
 
 **Window-level intervals (original heuristic; superseded by the paragraph above).** To report uncertainty consistently we re-ran the real-trace comparison with
 12 further independent windows per cell, keeping per-window gains (`table_realci.md`; Abilene, GEANT, Germany17; 36 cells; zero-traffic
@@ -338,6 +347,10 @@ of learned minus heuristic gain (points); verdict L = learned ahead, H = heurist
 | geant | 10 | 1 | 29.5 | 33.2 | +3.7 [+1.1, +6.4] | L | 14 |
 | geant | 10 | 5 | 23.6 | 32.9 | +9.2 [+7.3, +10.9] | L | 14 |
 | geant | 10 | 20 | 20.5 | 31.4 | +10.9 [+7.9, +13.5] | L | 14 |
+
+![Figure 3](figures/fig3_delay.png)
+
+**Figure 3.** Delay x polling grid with the re-tuned heuristic (best tuning score of 5 tuner seeds): learned minus heuristic gain in points on 16 fresh windows per cell, with 95% bootstrap intervals over windows. Abilene intervals mostly include zero; on GEANT the learned policy's advantage grows with delay and polling period.
 
 On GEANT the pattern is clear: the heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned
 policy is ahead in the other six, by 2.5-12.3 points; its advantage grows with delay and polling period. On Abilene the picture is
