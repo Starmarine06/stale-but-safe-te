@@ -1,1 +1,12 @@
 geant load=0.6 ideal    done t=216s
+geant load=0.6 rich     done t=484s
+geant load=0.6 snmp     done t=701s
+geant load=0.6 degraded done t=881s
+geant load=0.8 ideal    done t=1181s
+geant load=0.8 rich     done t=1400s
+geant load=0.8 snmp     done t=1650s
+geant load=0.8 degraded done t=1845s
+geant load=1.0 ideal    done t=2061s
+geant load=1.0 rich     done t=2191s
+geant load=1.0 snmp     done t=2308s
+geant load=1.0 degraded done t=2377s

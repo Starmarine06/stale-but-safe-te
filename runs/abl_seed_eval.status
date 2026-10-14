@@ -1,0 +1,7 @@
+eval nognn seed1 0
+eval nomodel seed1 0
+eval nognn seed2 0
+eval nomodel seed2 0
+eval nognn seed3 0
+eval nomodel seed3 0
+EVAL DONE

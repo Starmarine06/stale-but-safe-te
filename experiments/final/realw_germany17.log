@@ -1,1 +1,12 @@
 germany17 load=0.6 ideal    done t=99s
+germany17 load=0.6 rich     done t=251s
+germany17 load=0.6 snmp     done t=464s
+germany17 load=0.6 degraded done t=656s
+germany17 load=0.8 ideal    done t=813s
+germany17 load=0.8 rich     done t=961s
+germany17 load=0.8 snmp     done t=1176s
+germany17 load=0.8 degraded done t=1343s
+germany17 load=1.0 ideal    done t=1576s
+germany17 load=1.0 rich     done t=1739s
+germany17 load=1.0 snmp     done t=1876s
+germany17 load=1.0 degraded done t=1986s

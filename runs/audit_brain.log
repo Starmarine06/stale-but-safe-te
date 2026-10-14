@@ -1,0 +1,3 @@
+Stay on ECMP.
+  No method we tested, even with perfect telemetry, gains only 0.1% max-utilisation here (95% interval over 6 windows [0.0, 0.2]), so a TE controller is not worth its operational risk.
+wrote reports\brain.html

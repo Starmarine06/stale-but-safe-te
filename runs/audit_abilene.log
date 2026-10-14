@@ -1,0 +1,6 @@
+Use learned.
+  Best-case headroom (LP oracle) is 56.5%; with your telemetry learned captures 29.8% (95% interval [26.4, 33.4]).
+  Not distinguishable from tuned+guard (paired 95% interval over 6 windows includes 0); prefer the simplest of these that meets your tail-risk needs.
+  The tuned heuristic is fragile under your telemetry: it is worse than ECMP in 14% of intervals (p99 regret +0.33).
+  Polling every 10 interval(s) works best for learned (31.1% vs 28.6% at the worst rate).
+wrote reports\abilene.html

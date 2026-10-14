@@ -1,0 +1,12 @@
+iter 0 samples=4000 loss=1.2439 mu=1.119 fluid_loss=0.0458 lr=1.00e-03 t=28s
+iter 1 samples=8000 loss=1.1414 mu=1.087 fluid_loss=0.0382 lr=9.85e-04 t=61s
+iter 2 samples=12000 loss=1.1343 mu=1.068 fluid_loss=0.0384 lr=9.40e-04 t=101s
+iter 3 samples=12000 loss=1.1337 mu=1.102 fluid_loss=0.0401 lr=8.68e-04 t=158s
+iter 4 samples=12000 loss=1.1100 mu=1.081 fluid_loss=0.0370 lr=7.75e-04 t=273s
+iter 5 samples=12000 loss=1.0717 mu=1.021 fluid_loss=0.0302 lr=6.66e-04 t=394s
+iter 6 samples=12000 loss=1.0456 mu=1.000 fluid_loss=0.0258 lr=5.50e-04 t=515s
+iter 7 samples=12000 loss=1.0645 mu=1.010 fluid_loss=0.0292 lr=4.34e-04 t=639s
+iter 8 samples=12000 loss=1.0835 mu=1.041 fluid_loss=0.0330 lr=3.25e-04 t=753s
+iter 9 samples=12000 loss=1.0899 mu=1.055 fluid_loss=0.0340 lr=2.32e-04 t=856s
+iter 10 samples=12000 loss=1.0929 mu=1.058 fluid_loss=0.0344 lr=1.60e-04 t=961s
+iter 11 samples=12000 loss=1.1066 mu=1.049 fluid_loss=0.0371 lr=1.15e-04 t=1065s

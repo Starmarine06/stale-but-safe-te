@@ -1,2 +1,12 @@
 abilene load=0.6 ideal    done t=64s
 abilene load=0.6 rich     done t=137s
+abilene load=0.6 snmp     done t=240s
+abilene load=0.6 degraded done t=367s
+abilene load=0.8 ideal    done t=537s
+abilene load=0.8 rich     done t=647s
+abilene load=0.8 snmp     done t=731s
+abilene load=0.8 degraded done t=824s
+abilene load=1.0 ideal    done t=919s
+abilene load=1.0 rich     done t=1049s
+abilene load=1.0 snmp     done t=1194s
+abilene load=1.0 degraded done t=1302s

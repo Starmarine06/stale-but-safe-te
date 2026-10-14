@@ -1,0 +1,7 @@
+[ecmp__ideal] ok=True 74s
+[tuned-snmp__snmp] ok=True 61s
+[tuned-degraded__degraded] ok=True 60s
+[model-runs_ours_dfm_final__snmp] ok=True 61s
+[model-runs_ours_dfm_final__degraded] ok=True 61s
+[model-runs_ideal_dfm_final__degraded] ok=True 61s
+[guard0.05_model-runs_ours_dfm_final__degraded] ok=True 62s

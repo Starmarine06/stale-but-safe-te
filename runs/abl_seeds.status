@@ -1,0 +1,7 @@
+nognn seed1 0
+nomodel seed1 0
+nognn seed2 0
+nomodel seed2 0
+nognn seed3 0
+nomodel seed3 0
+TRAIN DONE
