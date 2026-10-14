@@ -9,7 +9,8 @@ from stale_but_safe.env.telemetry import PROFILES
 from stale_but_safe.eval.compare import episode_stats
 from stale_but_safe.models.learned import LearnedPolicy, load
 
-tuned = yaml.safe_load(open("configs/tuned_heuristic.yaml"))
+import sys
+tuned = yaml.safe_load(open(sys.argv[1] if len(sys.argv) > 1 else "configs/tuned_heuristic.yaml"))
 models = [load(p) for p in ["runs/ours_dfm_final.pt", "runs/ours_dfm_final_s1.pt", "runs/ours_dfm_final_s2.pt", "runs/ours_dfm_final_s3.pt"]]
 print("| network | scaling reference | telemetry | tuned gain % | learned gain % (mean of 4 seeds) | tuned p99 regret | learned p99 regret |")
 print("|---|---|---|---|---|---|---|")

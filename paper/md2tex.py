@@ -1,5 +1,8 @@
 """Convert paper/paper.md (the subset of Markdown it uses) to paper/tnsm/main.tex in IEEEtran journal format.
-  python paper/md2tex.py"""
+  python paper/md2tex.py
+Conventions in paper.md: '**Table N.** caption' directly before a table, '**Figure N.** caption' after an image, headings '## 6 Title' and
+'### 6.1 Title' (numbers become \\label{sec:6.1}), '## Appendix A: Title'. Text references 'Table N', 'Fig. N', 'Section 6.1', 'Appendix A'
+become \\ref{}s, so the printed numbers always follow LaTeX's own numbering."""
 import re
 from pathlib import Path
 
@@ -7,11 +10,11 @@ root = Path(__file__).resolve().parent
 md = (root / "paper.md").read_text(encoding="utf-8").replace("\r\n", "\n")
 
 SPECIAL = {"&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_", "{": r"\{", "}": r"\}"}
+SEC = r"\d(?:\.\d[a-z]?)?"
 
 
 def esc_plain(t):
     t = "".join(SPECIAL.get(ch, ch) for ch in t)
-    t = t.replace("\\", r"\textbackslash{}") if "\\" in t.replace(r"\&", "").replace(r"\%", "").replace(r"\$", "").replace(r"\#", "").replace(r"\_", "").replace(r"\{", "").replace(r"\}", "") else t
     t = t.replace("^", r"\^{}")
     t = re.sub(r"~(?=\d)", r"$\\sim$", t)
     t = t.replace("~", r"\textasciitilde{}")
@@ -26,7 +29,21 @@ def esc_plain(t):
     return t
 
 
-def inline(t):
+def crossref(t):
+    def secs(m):
+        toks = re.split(r"(, | and |--|-)", m.group(2))
+        out = []
+        for tk in toks:
+            out.append(("\\ref{sec:%s}" % tk) if re.fullmatch(SEC, tk) else tk)
+        return m.group(1).rstrip() + "~" + "".join(out)
+    t = re.sub(r"(Sections? )((?:%s)(?:(?:, | and |--|-)(?:%s))*)" % (SEC, SEC), secs, t)
+    t = re.sub(r"Tables? (A?\d+)", lambda m: "Table~\\ref{tab:%s}" % m.group(1), t)
+    t = re.sub(r"Fig\. (\d+)", lambda m: "Fig.~\\ref{fig:%s}" % m.group(1), t)
+    t = re.sub(r"Appendix ([A-Z])\b", lambda m: "Appendix~\\ref{app:%s}" % m.group(1), t)
+    return t
+
+
+def inline(t, refs=True):
     parts = re.split(r"(`[^`]+`)", t)
     out = []
     for p in parts:
@@ -45,15 +62,15 @@ def inline(t):
                 else:
                     out.append(esc_plain(tk))
     s = "".join(out)
-    return s
+    return crossref(s) if refs else s
 
 
-def table(lines):
+def table(lines, caption="", label=""):
     rows = [[c.strip() for c in l.strip().strip("|").split("|")] for l in lines if not re.match(r"^\s*\|[\s:|-]+\|\s*$", l)]
     ncol = max(len(r) for r in rows)
     rows = [r + [""] * (ncol - len(r)) for r in rows]
-    wide = ncol >= 6
-    colspec = "l" * ncol if ncol <= 4 else "l" + "c" * (ncol - 1)
+    wide = ncol >= 7
+    colspec = "l" * min(ncol, 3) + "c" * max(0, ncol - 3) if ncol > 3 else "l" * ncol
     env = "table*" if wide else "table"
     body = []
     for i, r in enumerate(rows):
@@ -63,7 +80,8 @@ def table(lines):
     tab = "\\begin{tabular}{" + colspec + "}\n\\hline\n" + "\n".join(body) + "\n\\hline\n\\end{tabular}"
     size = r"\scriptsize" if ncol >= 5 else r"\footnotesize"
     width = r"\textwidth" if wide else r"\columnwidth"
-    return (f"\\begin{{{env}}}[!t]\n\\centering\n{size}\n\\renewcommand{{\\arraystretch}}{{1.05}}\n"
+    cap = f"\\caption{{{inline(caption)}}}\n\\label{{tab:{label}}}\n" if caption else ""
+    return (f"\\begin{{{env}}}[!t]\n{cap}\\centering\n{size}\n\\renewcommand{{\\arraystretch}}{{1.05}}\n"
             f"\\adjustbox{{max width={width}}}{{%\n{tab}}}\n\\end{{{env}}}\n")
 
 
@@ -74,7 +92,9 @@ def items_tex(items, ordered):
 
 blocks = re.split(r"\n\s*\n", md)
 out, abstract, refs = [], [], []
-i, title, sec, in_refs = 0, "", None, False
+i, title, sec, in_refs, in_appendix = 0, "", None, False, False
+pending_cap = None
+warn = []
 while i < len(blocks):
     b = blocks[i].strip("\n")
     i += 1
@@ -83,19 +103,25 @@ while i < len(blocks):
     if b.startswith("# "):
         title = b[2:].strip()
         continue
-    if b.startswith("*Draft v"):
-        continue
     m = re.match(r"^(#{2,3}) (.*)$", b)
     if m:
         lvl, name = len(m.group(1)), m.group(2).strip()
-        name = re.sub(r"^\d+[a-z]?(\.\d+[a-z]?)? ", "", name)
-        sec, in_refs = name, name == "References"
-        if name == "Abstract":
+        mm = re.match(r"^(\d+[a-z]?(?:\.\d+[a-z]?)?) (.*)$", name)
+        num, name_clean = (mm.group(1), mm.group(2)) if mm else (None, name)
+        sec, in_refs = name_clean, name_clean == "References"
+        if name_clean == "Abstract":
             out.append("%ABSTRACT%")
         elif in_refs:
             out.append("%REFS%")
+        elif name_clean.startswith("Appendix"):
+            letter = re.match(r"Appendix ([A-Z]): (.*)", name_clean)
+            if not in_appendix:
+                out.append("\\appendices")
+                in_appendix = True
+            out.append(f"\\section{{{inline(letter.group(2))}}}\n\\label{{app:{letter.group(1)}}}")
         else:
-            out.append(("\\section{" if lvl == 2 else "\\subsection{") + inline(name) + "}")
+            lab = f"\n\\label{{sec:{num}}}" if num else ""
+            out.append(("\\section{" if lvl == 2 else "\\subsection{") + inline(name_clean) + "}" + lab)
         continue
     if in_refs:
         for line in b.splitlines():
@@ -106,20 +132,30 @@ while i < len(blocks):
     if sec == "Abstract":
         abstract.append(inline(b))
         continue
+    mt = re.match(r"^\*\*Table (A?\d+)\.\*\*\s*(.*)$", b, flags=re.S)
+    if mt:
+        pending_cap = (mt.group(1), mt.group(2).replace("\n", " "))
+        continue
     if b.startswith("!["):
         fn = re.search(r"\((figures/[^)]+)\)", b).group(1)
-        cap = ""
+        cap, fid = "", "?"
         if i < len(blocks) and blocks[i].lstrip().startswith("**Figure"):
-            cap = re.sub(r"^\*\*Figure \d+\.\*\*\s*", "", blocks[i].strip())
+            mf = re.match(r"^\*\*Figure (\d+)\.\*\*\s*(.*)$", blocks[i].strip(), flags=re.S)
+            fid, cap = mf.group(1), mf.group(2).replace("\n", " ")
             i += 1
         wide = "fig1" in fn or "fig3" in fn
         star = "*" if wide else ""
         w = r"0.8\textwidth" if wide else r"\columnwidth"
-        out.append(f"\\begin{{figure{star}}}[!t]\n\\centering\n\\includegraphics[width={w}]{{{fn}}}\n\\caption{{{inline(cap)}}}\n\\end{{figure{star}}}\n")
+        out.append(f"\\begin{{figure{star}}}[!t]\n\\centering\n\\includegraphics[width={w}]{{{fn}}}\n\\caption{{{inline(cap)}}}\n\\label{{fig:{fid}}}\n\\end{{figure{star}}}\n")
         continue
     lines = b.splitlines()
     if all(l.lstrip().startswith("|") for l in lines):
-        out.append(table(lines))
+        if pending_cap is None:
+            warn.append("table without caption near: " + lines[0][:60])
+            out.append(table(lines))
+        else:
+            out.append(table(lines, pending_cap[1], pending_cap[0]))
+            pending_cap = None
         continue
     if all(re.match(r"^\s*[*-] ", l) or l.startswith("  ") for l in lines):
         items = []
@@ -163,7 +199,7 @@ while i < len(blocks):
 
 abs_tex = ("\\begin{abstract}\n" + "\n\n".join(abstract) + "\n\\end{abstract}\n\n\\begin{IEEEkeywords}\n"
            "traffic engineering, software-defined networking, network telemetry, learned control, baseline tuning\n\\end{IEEEkeywords}\n")
-bib = "\\begin{thebibliography}{99}\n" + "\n".join(f"\\bibitem{{r{n + 1}}} {inline(r)}" for n, r in enumerate(refs)) + "\n\\end{thebibliography}\n"
+bib = "\\begin{thebibliography}{99}\n" + "\n".join(f"\\bibitem{{r{n + 1}}} {inline(r, refs=False)}" for n, r in enumerate(refs)) + "\n\\end{thebibliography}\n"
 ack_f = root / "tnsm" / "ack.tex"
 ack = ack_f.read_text(encoding="utf-8") if ack_f.exists() else ""
 head = r"""\documentclass[journal]{IEEEtran}
@@ -179,12 +215,14 @@ head = r"""\documentclass[journal]{IEEEtran}
 \graphicspath{{../}}
 \sloppy
 \begin{document}
-\title{""" + inline(title) + r"""}
+\title{""" + inline(title, refs=False) + r"""}
 \author{Dev~Nambiar,~\IEEEmembership{Vellore Institute of Technology, Vellore, India}%
-\thanks{Manuscript not yet submitted. Corresponding e-mail: [to be added].}}
-\markboth{IEEE Transactions on Network and Service Management, draft}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
+\thanks{Corresponding e-mail: [author e-mail to be added].}}
+\markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 """
 body = "\n".join(out).replace("%ABSTRACT%", abs_tex).replace("%REFS%", ack + "\n" + bib)
 (root / "tnsm" / "main.tex").write_text(head + body + "\n\\end{document}\n", encoding="utf-8")
-print("wrote main.tex;", len(refs), "refs;", len(out), "blocks")
+print("wrote main.tex;", len(refs), "refs;", len(out), "blocks;", len(warn), "warnings")
+for w in warn:
+    print("WARN", w)
