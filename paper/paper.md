@@ -463,7 +463,7 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 * DOTE-style and fine-tuned models need per-network history; only Abilene and GEANT have enough.
 * Germany17 and Germany50 have one day of data; their windows overlap.
 * Out-of-range overload hurts the zero-shot policy (6.4).
-* No comparison with Teal or other published systems; DOTE-style is our re-implementation of the idea, not the authors' code.
+* No comparison with Teal or other published systems (Teal's full text was read: it optimises total flow or MLU against LP/NCFlow/POP baselines with accurate demand inputs and treats staleness only as solver run time, so it is not a like-for-like baseline for telemetry impairments); DOTE-style is our re-implementation of the idea, not the authors' code.
 * Not claimed: a general performance win; being first to show degradation under delay (LOGGIA); production readiness.
 
 ## 9 Reproducibility
