@@ -11,9 +11,12 @@ reactive heuristic re-tuned for each telemetry condition, and a learned split-ra
 graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
 held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
 we identify. With clean telemetry the heuristic is competitive and sometimes better. As telemetry delay and polling period grow,
-a heuristic re-tuned for each condition (five independent tuning runs per cell) is as good or better when telemetry is fresh
-and frequent (delay at most three intervals with polling every one to five intervals, on Abilene; fresher still on GEANT) and falls
-behind the learned policy, by up to 15 points of gain, as delay and polling period grow, while the learned policy's gain hardly changes; measurement noise and missing counters hardly matter. Other conditions
+a heuristic re-tuned for each condition (five independent tuning runs per cell) is competitive or better when telemetry is fresh
+and frequent, and on GEANT falls behind the learned policy as delay and polling period grow (paired window-level intervals exclude
+zero in favour of the learned policy in 6 of 9 cells, by 2.5-12.3 points, and in favour of the heuristic in 1). On Abilene the earlier
+point estimates favouring the learned policy at high staleness are not reproduced on fresh windows: intervals include zero in 6
+of 9 cells and favour the heuristic in 3. The results therefore do not support a universal delay threshold; the learned policy's gain
+hardly changes with staleness, while the heuristic's declines, with network-dependent magnitude and, on Abilene, unresolved sign. measurement noise and missing counters hardly matter. Other conditions
 change the picture: a model trained on a network's own history does substantially better than the zero-shot policy, the
 heuristic wins in rare overloaded windows, and on some networks ECMP is sufficient. Ablations show that model-based fluid
 features, not graph message passing, carry the learned policy. Operationally the learned policy reprograms about ten times more
@@ -242,6 +245,41 @@ over-interpreted; the pattern across cells is what we report. This is a gradient
 at which the ranking flips independent of polling period and network. The experiment has no window-level confidence intervals, and
 tuning uses 4 synthetic graphs, so a stronger or in-domain search could shift the boundary; the single-run grid (`table_delay_part2.md`)
 is retained as raw data but superseded by this table.
+
+*Window-level intervals for the grid* (`table_delay_ci.md`; `experiments/delay_grid_ci.py`). For Abilene and GEANT the heuristic
+selected above is evaluated on 16 fresh windows per cell (seeds not used in tuning or in the tables above; 14 windows remain on
+GEANT after skipping zero-traffic ones), paired with the mean of four learned training seeds; bootstrap 95% interval over windows
+of learned minus heuristic gain (points); verdict L = learned ahead, H = heuristic ahead, = tie:
+
+| network | d | P | heuristic % | learned % | diff [95% CI] | verdict | windows |
+|---|---|---|---|---|---|---|---|
+| abilene | 0 | 1 | 44.9 | 30.9 | -14.0 [-27.8, -5.6] | H | 16 |
+| abilene | 0 | 5 | 40.8 | 30.6 | -10.3 [-25.9, -0.3] | H | 16 |
+| abilene | 0 | 20 | 38.2 | 32.0 | -6.2 [-21.8, +2.9] | = | 16 |
+| abilene | 3 | 1 | 42.6 | 31.2 | -11.4 [-26.8, -1.8] | H | 16 |
+| abilene | 3 | 5 | 40.9 | 28.6 | -12.3 [-29.4, +0.4] | = | 16 |
+| abilene | 3 | 20 | 35.8 | 29.8 | -6.0 [-22.7, +5.8] | = | 16 |
+| abilene | 10 | 1 | 37.0 | 31.8 | -5.1 [-22.4, +5.0] | = | 16 |
+| abilene | 10 | 5 | 37.4 | 31.7 | -5.7 [-21.3, +4.0] | = | 16 |
+| abilene | 10 | 20 | 32.8 | 29.8 | -3.0 [-18.7, +7.0] | = | 16 |
+| geant | 0 | 1 | 38.5 | 34.4 | -4.1 [-5.2, -3.0] | H | 14 |
+| geant | 0 | 5 | 33.9 | 34.2 | +0.4 [-1.1, +1.9] | = | 14 |
+| geant | 0 | 20 | 22.2 | 32.9 | +10.7 [+8.3, +12.8] | L | 14 |
+| geant | 3 | 1 | 33.8 | 34.3 | +0.5 [-1.6, +2.9] | = | 14 |
+| geant | 3 | 5 | 31.7 | 34.2 | +2.5 [+1.0, +4.2] | L | 14 |
+| geant | 3 | 20 | 20.4 | 32.7 | +12.3 [+9.3, +15.0] | L | 14 |
+| geant | 10 | 1 | 29.5 | 33.2 | +3.7 [+1.1, +6.4] | L | 14 |
+| geant | 10 | 5 | 23.6 | 32.9 | +9.2 [+7.3, +10.9] | L | 14 |
+| geant | 10 | 20 | 20.5 | 31.4 | +10.9 [+7.9, +13.5] | L | 14 |
+
+On GEANT the pattern is clear: the heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned
+policy is ahead in the other six, by 2.5-12.3 points; its advantage grows with delay and polling period. On Abilene the picture is
+**not** resolved: the point estimate favours the heuristic in all nine cells, by 3.0-14.0 points, the interval excludes zero (heuristic
+ahead) in three cells and includes zero in six, and the window-to-window spread is large (interval half-widths of 10-15 points). This
+contradicts the earlier Abilene point estimates (learned ahead by 5-8 points at P = 20 or d = 10, from a different sample of 6 windows
+without intervals), so the Abilene "learned advantage at high staleness" in the preceding table is window-sample dependent and not an
+established result. It is also in tension with the profile-level real-trace results of Section 6.2 (learned ahead on Abilene under degraded telemetry in a 12-window sample with a heuristic tuned per profile); both samples are small, and we cannot say from this evidence how much of the Abilene difference is window sampling and how much is heuristic tuning. The tuner saw only synthetic graphs, never a real trace or evaluation window.
+
 
 *One-at-a-time sweep with frozen parameters* (`table_telemetry_sweep.md`; heuristic parameters are those tuned for the nearest
 standard profile, so the collapse is exaggerated as described above; 10 Zoo graphs with n <= 25, Abilene and GEANT at load 0.8;

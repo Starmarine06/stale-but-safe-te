@@ -35,8 +35,9 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   learned never behind the heuristic under rich / SNMP / degraded telemetry; clean telemetry is mixed (4 / 3 / 2 of 9 cells).
 * **Staleness (delay, polling period) matters; noise and missing counters hardly do.** A heuristic with frozen parameters
   collapses with delay, but one re-tuned per condition stays close. In a delay x polling grid with five independent tuning runs
-  per cell, the re-tuned heuristic is ahead with fresh, frequent telemetry (5 of 18 real-trace cells) and behind, by up to 15 points,
-  as delay and polling period grow; it is a gradient, not a sharp crossover, and tuner-seed spread is up to ~10 points.
+  per cell, the re-tuned heuristic is competitive with fresh, frequent telemetry and falls behind as delay and polling period
+  grow. Paired window-level intervals (16 fresh windows): on GEANT learned ahead in 6 of 9 cells (2.5-12.3 points), tie in 2,
+  heuristic ahead in 1; on Abilene unresolved (intervals include 0 in 6 of 9 cells, heuristic ahead in 3). Not a sharp crossover.
 * **It is conditional.** A DOTE-style model trained on a network's own history beats the zero-shot policy (Abilene 48-49% vs
   22-25%); fine-tuning on history recovers most of it. Fluid-model features carry the result, not graph message passing. In
   overloaded trace windows the reactive heuristic wins (45-49% vs 9-21%).
