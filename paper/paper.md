@@ -6,22 +6,18 @@
 
 ## Abstract
 
-Which traffic-engineering controller should an operator run when the telemetry it relies on is stale? We compare ECMP, a
-reactive heuristic re-tuned for each telemetry condition, and a learned split-ratio policy trained only on small synthetic
-graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
-held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
-we identify. With clean or lightly degraded telemetry a well-tuned heuristic matches or beats the learned policy on average; the learned policy wins on average only under heavily degraded telemetry (delay, noise and drops together) and has consistently lower tail regret. As telemetry delay and polling period grow,
-a heuristic re-tuned for each condition (five independent tuning runs per cell) is competitive or better when telemetry is fresh
-and frequent, and on GEANT falls behind the learned policy as delay and polling period grow (paired window-level intervals exclude
-zero in favour of the learned policy in 6 of 9 cells, by 2.5-12.3 points, and in favour of the heuristic in 1). On Abilene the earlier
-point estimates favouring the learned policy at high staleness are not reproduced on fresh windows: intervals include zero in 6
-of 9 cells and favour the heuristic in 3. The results therefore do not support a universal delay threshold; the learned policy's gain
-hardly changes with staleness, while the heuristic's declines, with network-dependent magnitude and, on Abilene, unresolved sign. measurement noise and missing counters hardly matter. Other conditions
-change the picture: a model trained on a network's own history does substantially better than the zero-shot policy, the
-heuristic wins in rare overloaded windows, and on some networks ECMP is sufficient. Ablations show that model-based fluid
-features, not graph message passing, carry the learned policy. Operationally the learned policy reprograms about ten times more
-flows than the heuristic, but a hysteresis threshold removes most of them. Telemetry faults are modelled rather than measured and
-traffic is scaled to target loads, so the results are not a validation in a production network.
+Which traffic-engineering controller should an operator run when the telemetry it relies on is stale or noisy? We compare ECMP, a reactive
+heuristic re-tuned for each telemetry condition (five independent tuning runs, 80 trials each), and a learned split-ratio policy trained only on
+small synthetic graphs, under one impairment model shared by a fluid simulator and an emulated SDN, on 24 held-out Topology Zoo graphs and on
+replayed SNDlib traces. The answer depends on conditions. With clean or moderately impaired telemetry the re-tuned heuristic matches or beats the
+learned policy on average (Zoo and real traces: heuristic ahead or tied under ideal, rich and SNMP-like telemetry). Under heavily degraded
+telemetry (delay, noise and drops together) the learned policy is ahead on average (Zoo +0.033 dScore, 95% interval [+0.018, +0.049], 0 losses in 24
+graphs; all 9 real-trace cells), and its p99 regret is lower than the heuristic's in every telemetry profile (0.017-0.019 vs 0.036-0.093). In a controlled delay x
+polling grid the heuristic's gain declines with both delay and polling period while the learned policy's does not, with a network-dependent
+magnitude (clear on GEANT, unresolved on Abilene); there is no universal delay threshold. Ablations show that model-based fluid features
+matter and graph message passing does not (a per-link MLP does as well). Single heuristic tuning runs can change a comparison as much as the
+effects reported. Telemetry faults are modelled rather than measured and traces are scaled to target loads, so the results are not a validation in
+a production network.
 
 ## 1 Introduction
 
@@ -158,8 +154,12 @@ seeds, single-seed ablations, post-hoc baselines and analyses) are listed in `do
 tuned heuristic under degraded telemetry: [-0.023, +0.057], i.e. not distinguishable from ECMP.) The ranking is
 insensitive to the packet-loss weight: with weight 0 (pure max-utilisation) the tuned heuristic still wins at ideal
 telemetry (-0.056 vs -0.043) and the learned policy wins at degraded telemetry (-0.040 vs -0.006); see
-`experiments/final/table_lossweight.md`. Under link failures, demand shifts, flash crowds and hotspots (12 graphs,
-SNMP/degraded telemetry) the learned policy is ahead in every case (`experiments/final/stress_*.json`).
+`experiments/final/table_lossweight.md`. Under link failures, demand shifts, flash crowds and hotspots (12 graphs, SNMP/degraded telemetry,
+`table_v2_guard_stress.md`) the learned policy is ahead of the re-tuned heuristic under degraded telemetry in all four scenarios
+(by +0.020 [+0.007, +0.036] for failures, +0.035 [+0.015, +0.058] for shifts, +0.032 [+0.012, +0.059] for flash crowds and
++0.101 [+0.029, +0.204] for hotspots, positive = learned better); under SNMP telemetry the intervals include zero for failures, flash crowds
+and hotspots and favour the learned policy only for shifts (+0.011 [+0.001, +0.027]). The learned policy's p99 regret is lower in all eight
+cells (0.018-0.048 vs 0.065-0.167). Against the original heuristic the margins were 0.02-0.19 larger.
 
 **Re-tuned heuristic (stronger baseline; changes the picture).** The heuristic above uses parameters from a 40-trial, single-run search
 per profile. We repeated the tuning with a protocol fixed beforehand: five independent tuner seeds per profile, 80 trials each, same four
@@ -198,8 +198,11 @@ ahead (+0.033 [+0.018, +0.049] on average over tuner seeds, 15 wins / 9 ties / 0
 against the original heuristic (+0.075). (3) *Tail risk:* the learned policy's p99 regret (0.017-0.019) is lower than every re-tuned heuristic's
 (0.036-0.093) in every profile, so even where the heuristic is better on average, it is worse in the tail. Tuner-seed spread is material
 (e.g. SNMP dScore from -0.053 to -0.072), so a single tuning run, as used elsewhere in this paper, can move a comparison by about as much as
-the differences reported. The comparisons in Sections 6.2, 6.4-6.6 and the stress scenarios use the original per-profile heuristic and have
-not been repeated with re-tuned parameters; they should be read as favouring the learned policy more than a fully tuned baseline would.
+the differences reported. The real-trace comparison, the guard evaluation and the stress scenarios were repeated with the re-tuned heuristic (the
+seed with the best tuning score per profile, `configs/tuned_heuristic_v2.yaml`; Sections 6.2 and 6.5 and below) and give the same
+picture; the overload analysis of Section 6.4, the loss-weight sensitivity and the emulation still use the original heuristic.
+Intervals in this table are bootstrap intervals over graphs (evaluation uncertainty) for a fixed set of trained policies; the spread over tuner seeds is
+reported separately as the per-seed row and the min-max of the rows, and the two are not combined.
 
 ### 6.2 Real traces
 
@@ -219,7 +222,15 @@ networks with headroom (Abilene, GEANT, Germany17, Germany50 in the first run; f
   learned policy gained 20.9%, so benefits are confined to rare windows.
 * The oracle gain (n <= 25) is 47-58% on Abilene and 37% on Germany17; the zero-shot policy captures roughly half.
 
-**Window-level intervals (primary real-trace evidence).** To report uncertainty consistently we re-ran the real-trace comparison with
+**Re-tuned heuristic (primary real-trace evidence).** The tables below this paragraph used the original per-profile heuristic. We
+recomputed the heuristic column on the same 12 windows per cell with the re-tuned parameters (selected by tuning score, Section 6.1;
+`table_realci_v2.md`, 36 cells). The paired 95% interval over windows now excludes zero in favour of the learned policy in 12 cells, in favour of
+the heuristic in 17 and includes zero in 7. By telemetry profile (learned / heuristic / tie, 9 cells each): ideal 0/9/0, rich 0/6/3, SNMP 3/2/4,
+degraded 9/0/0. Under degraded telemetry the learned policy is ahead by +7.8 to +13.0 points on every network and load; under ideal telemetry the
+heuristic is ahead by 2.4-7.7 points. This agrees with the Zoo result of Section 6.1 and replaces the earlier statement that the learned policy leads
+in 32 of 36 cells, which depended on the weaker heuristic. The window-level evidence below is retained as the record of the original comparison.
+
+**Window-level intervals (original heuristic; superseded by the paragraph above).** To report uncertainty consistently we re-ran the real-trace comparison with
 12 further independent windows per cell, keeping per-window gains (`table_realci.md`; Abilene, GEANT, Germany17; 36 cells; zero-traffic
 windows skipped). For each cell we bootstrap the paired difference (learned, mean of four training seeds, minus tuned heuristic) over
 windows. The 95% interval excludes zero in favour of the learned policy in 32 of 36 cells, in favour of the tuned heuristic in 2
@@ -436,6 +447,22 @@ It falls back often (71-80%) yet keeps 74-91% of the gain because fallback occur
 tuned heuristic under degraded telemetry the guard improves the gain by 2.3 points on real traces and lowers its p99 regret
 from 0.198 to 0.074; the validation-chosen guard barely affects the learned policy on real traces (0.0-0.8 points).
 
+**Guard against the re-tuned heuristic** (`table_v2_guard_stress.md`; 24 Zoo graphs, L2-only guard, eps = -0.06; mean dScore, p99 regret):
+
+| telemetry | learned | learned + guard | re-tuned heuristic | heuristic + guard |
+|---|---|---|---|---|
+| ideal | -0.064, 0.017 | -0.054, 0.008 | -0.085, 0.026 | -0.064, 0.008 |
+| rich | -0.062, 0.018 | -0.051, 0.009 | -0.073, 0.041 | -0.058, 0.019 |
+| SNMP | -0.062, 0.017 | -0.051, 0.010 | -0.072, 0.056 | -0.054, 0.031 |
+| degraded | -0.060, 0.019 | -0.049, 0.008 | -0.040, 0.093 | -0.042, 0.030 |
+
+The guard roughly halves the p99 regret of both policies (learned 0.017-0.019 to 0.008-0.010; heuristic 0.026-0.093 to 0.008-0.031) and its
+fallback rate is 78-84%. Its cost in average dScore is about +0.011 for the learned policy in every profile and +0.015 to +0.021 for the
+heuristic at ideal, rich and SNMP telemetry, but essentially nothing for the heuristic under degraded telemetry (-0.040 to -0.042), where it
+lowers p99 regret from 0.093 to 0.030. With the guard, the learned policy and the re-tuned heuristic have similar p99 regret at ideal and rich telemetry
+(0.008 vs 0.008, 0.009 vs 0.019) and the learned policy is lower elsewhere. The guard is therefore a tail-risk trade against mean
+performance for either policy, not a property that favours the learned one.
+
 ### 6.6 Operational cost and emulation
 
 Without a rate limiter the learned policy updates 91% of demands every interval in simulation (Zoo, ideal telemetry); a
@@ -504,6 +531,10 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 * Germany17 and Germany50 have one day of data; their windows overlap.
 * Out-of-range overload hurts the zero-shot policy (6.4).
 * No comparison with Teal or other published systems (Teal's full text was read: it optimises total flow or MLU against LP/NCFlow/POP baselines with accurate demand inputs and treats staleness only as solver run time, so it is not a like-for-like baseline for telemetry impairments); DOTE-style is our re-implementation of the idea, not the authors' code.
+* The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs; spread over five tuner seeds is up to ~0.02 dScore on Zoo
+  and ~10 points of gain in the delay grid, so single-run comparisons are fragile. The overload (6.4), loss-weight and emulation results use
+  the original 40-trial heuristic and were not repeated. The in-domain tuning of the heuristic on a network's own history (which the learned
+  policy's fine-tuning variants receive) was not tested.
 * Not claimed: a general performance win; being first to show degradation under delay (LOGGIA); production readiness.
 
 ## 9 Reproducibility

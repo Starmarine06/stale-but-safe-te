@@ -34,7 +34,9 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   trials per profile): the heuristic is better or equal on average with ideal, rich and SNMP telemetry (SNMP: tie, +0.002 [-0.007, +0.012]); the
   learned policy is ahead only under heavily degraded telemetry (+0.033 [+0.018, +0.049], 15 wins / 9 ties / 0 losses) and has lower p99
   regret in every profile (0.017-0.019 vs 0.036-0.093). Earlier claims of learned wins under SNMP came from a weakly tuned baseline
-  (`experiments/final/table_retune.md`). Real-trace per-profile comparisons used the original heuristic and have not been repeated.
+  (`experiments/final/table_retune.md`). Real traces with the re-tuned heuristic (`table_realci_v2.md`, 36 cells, window-level paired CIs): learned ahead
+  in 12, heuristic in 17, tie 7; by profile ideal 0/9/0, rich 0/6/3, SNMP 3/2/4, degraded 9/0/0 (learned/heuristic/tie). Stress scenarios: learned ahead
+  under degraded telemetry in all four (`table_v2_guard_stress.md`). The guard roughly halves p99 regret of both policies at +0.011 mean dScore cost for the learned one.
 * **Staleness (delay, polling period) matters; noise and missing counters hardly do.** A heuristic with frozen parameters
   collapses with delay, but one re-tuned per condition stays close. In a delay x polling grid with five independent tuning runs
   per cell, the re-tuned heuristic is competitive with fresh, frequent telemetry and falls behind as delay and polling period
