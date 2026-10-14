@@ -68,3 +68,10 @@ arXiv 2405.04932) read in full: none studies delayed/noisy/sampled/missing telem
 heuristic under impairment. Roracle is adjacent ("routing computed on the current TM goes stale; learned lookahead resists",
 datasets include Abilene, GEANT, Brain). Closest 2023-2026 staleness papers (abstract level only): arXiv 2605.16187 (online TE,
 control-loop latency), Teal, arXiv 2410.16846 (safe load balancing, two loops). Still to do: Scholar check; the DATE paper (IWQoS 2021) could not be located by web search on 2026-10-14 (search returned an unrelated DATE: Distributed Adaptive TE, JSAC 2007) and remains unopened.
+
+## Search log, 2026-10-14 (browser session)
+* Google Scholar returned a bot-check page ("unusual traffic"); not bypassed, so no Scholar check was done. Semantic Scholar API rate-limited.
+* arXiv API, 13 keyword queries combining traffic engineering with stale/delayed/outdated/telemetry/noisy and learning/RL/GNN/ECMP/DOTE:
+  no paper found that sweeps telemetry impairments with a re-tuned heuristic and ECMP. Only new adjacent hit: arXiv 2212.11155
+  (Robust Path Selection in SD-WANs using DRL: path-update overhead and route computation, not telemetry quality). Keyword search on arXiv is
+  weak (exact-match), so this is absence of evidence, not proof of novelty; a manual Scholar/ACM/IEEE Xplore pass is still needed.
