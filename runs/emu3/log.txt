@@ -1,0 +1,8 @@
+[tunedv2-snmp__snmp] ok=True 65s
+[tunedv2-degraded__degraded] ok=True 60s
+[tunedv2-snmp__snmp] ok=True 59s
+[tunedv2-degraded__degraded] ok=True 59s
+[tunedv2-snmp__snmp] ok=True 59s
+[tunedv2-degraded__degraded] ok=True 59s
+[tunedv2-snmp__snmp] ok=True 60s
+[tunedv2-degraded__degraded] ok=True 60s

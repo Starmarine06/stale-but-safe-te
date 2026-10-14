@@ -12,7 +12,7 @@ small synthetic graphs, under one impairment model shared by a fluid simulator a
 replayed SNDlib traces. The answer depends on conditions. With clean or moderately impaired telemetry the re-tuned heuristic matches or beats the
 learned policy on average (Zoo and real traces: heuristic ahead or tied under ideal, rich and SNMP-like telemetry). Under heavily degraded
 telemetry (delay, noise and drops together) the learned policy is ahead on average (Zoo +0.033 dScore, 95% interval [+0.018, +0.049], 0 losses in 24
-graphs; all 9 real-trace cells), and its p99 regret is lower than the heuristic's in every telemetry profile (0.017-0.019 vs 0.036-0.093). In a controlled delay x
+graphs; all 9 real-trace cells), and its mean p99 regret is lower than the heuristic's in every telemetry profile (0.017-0.019 vs 0.036-0.092), although per graph the learned policy has the lower tail on only 9-13 of 24 graphs, so the tail advantage comes from a minority of graphs where the heuristic does badly. In a controlled delay x
 polling grid the heuristic's gain declines with both delay and polling period while the learned policy's does not, with a network-dependent
 magnitude (clear on GEANT, unresolved on Abilene); there is no universal delay threshold. Ablations show that model-based fluid features
 matter and graph message passing does not (a per-link MLP does as well). Single heuristic tuning runs can change a comparison as much as the
@@ -152,9 +152,9 @@ seeds, single-seed ablations, post-hoc baselines and analyses) are listed in `do
 
 (Seed 0, Holm-adjusted Wilcoxon over graphs, tuned vs learned: p = 0.013, 0.84, 0.078, 0.0012. Bootstrap 95% CI of the
 tuned heuristic under degraded telemetry: [-0.023, +0.057], i.e. not distinguishable from ECMP.) The ranking is
-insensitive to the packet-loss weight: with weight 0 (pure max-utilisation) the tuned heuristic still wins at ideal
-telemetry (-0.056 vs -0.043) and the learned policy wins at degraded telemetry (-0.040 vs -0.006); see
-`experiments/final/table_lossweight.md`. Under link failures, demand shifts, flash crowds and hotspots (12 graphs, SNMP/degraded telemetry,
+insensitive to the packet-loss weight: against the re-tuned heuristic (`table_lossweight_v2.md`), with weight 0 (pure max-utilisation) the heuristic wins at ideal
+telemetry (-0.061 vs -0.043) and the learned policy wins at degraded telemetry (-0.040 vs -0.030); at weight 20 the learned policy wins on 21 of 24 graphs under degraded telemetry and the heuristic stays ahead under ideal, rich and SNMP telemetry
+(it is tuned with weight 5 in all cases). Under link failures, demand shifts, flash crowds and hotspots (12 graphs, SNMP/degraded telemetry,
 `table_v2_guard_stress.md`) the learned policy is ahead of the re-tuned heuristic under degraded telemetry in all four scenarios
 (by +0.020 [+0.007, +0.036] for failures, +0.035 [+0.015, +0.058] for shifts, +0.032 [+0.012, +0.059] for flash crowds and
 +0.101 [+0.029, +0.204] for hotspots, positive = learned better); under SNMP telemetry the intervals include zero for failures, flash crowds
@@ -164,7 +164,7 @@ cells (0.018-0.048 vs 0.065-0.167). Against the original heuristic the margins w
 **Re-tuned heuristic (stronger baseline; changes the picture).** The heuristic above uses parameters from a 40-trial, single-run search
 per profile. We repeated the tuning with a protocol fixed beforehand: five independent tuner seeds per profile, 80 trials each, same four
 synthetic tuning graphs, objective and search space (`experiments/retune_profiles.py`); each tuner seed is then evaluated on the same 24
-held-out graphs and evaluation seeds (`table_retune.md`). Positive diff means the learned policy is better:
+held-out graphs and evaluation seeds (`table_retune.md`). Positive diff means the learned policy is better; 'tie' means |diff| < 0.002 dScore on a graph (an arbitrary practical threshold, about 3% of the learned policy's mean dScore); all intervals are percentile bootstrap intervals over graphs (4000 resamples, fixed seed):
 
 | profile | heuristic | dScore | p99 regret | diff vs learned [95% CI] | learned W/T/L |
 |---|---|---|---|---|---|
@@ -195,8 +195,11 @@ by 0.010 [-0.023, +0.000]) and trails the heuristic under rich telemetry (-0.014
 heuristic stays ahead on average (-0.011, interval includes 0) and with the selected seed (-0.020 [-0.036, -0.008]). The earlier statement
 that the learned policy wins at SNMP telemetry was partly an artefact of a weakly tuned baseline. (2) *Degraded telemetry:* the learned policy remains
 ahead (+0.033 [+0.018, +0.049] on average over tuner seeds, 15 wins / 9 ties / 0 losses; +0.021 [+0.010, +0.034] for the selected seed), but by less than
-against the original heuristic (+0.075). (3) *Tail risk:* the learned policy's p99 regret (0.017-0.019) is lower than every re-tuned heuristic's
-(0.036-0.093) in every profile, so even where the heuristic is better on average, it is worse in the tail. Tuner-seed spread is material
+against the original heuristic (+0.075). (3) *Tail risk:* the learned policy's mean p99 regret (0.017-0.019) is lower than the re-tuned heuristic's (averaged over tuner seeds
+0.036, 0.036, 0.077, 0.092 for ideal, rich, SNMP, degraded). The difference (heuristic minus learned) is +0.018 [+0.000, +0.039] (ideal), +0.018 [+0.004, +0.035] (rich),
++0.060 [+0.027, +0.101] (SNMP) and +0.073 [+0.038, +0.113] (degraded), bootstrap over graphs, but the learned policy has the lower p99 on only 9, 10, 13 and 13
+of the 24 graphs: the mean difference comes from a minority of graphs on which the heuristic has a large tail, so "lower tail regret" means lower on average, driven by those graphs, and not
+a uniform advantage. Tuner-seed spread is material
 (e.g. SNMP dScore from -0.053 to -0.072), so a single tuning run, as used elsewhere in this paper, can move a comparison by about as much as
 the differences reported. The real-trace comparison, the guard evaluation and the stress scenarios were repeated with the re-tuned heuristic (the
 seed with the best tuning score per profile, `configs/tuned_heuristic_v2.yaml`; Sections 6.2 and 6.5 and below) and give the same
@@ -424,6 +427,9 @@ policy has median gain 36.5% and is never worse than ECMP, while the tuned heuri
 -50.8% under degraded telemetry); in 3 overloaded windows the tuned heuristic gains 45-49% and the learned policy 9-21%
 (worse than ECMP in one of three; worst case +3 to +7 in absolute max-util). The guard lifts the learned policy to 20-27%
 in those windows (`table_overload.md`). Tail statistics pooled over windows are therefore dominated by a few surges.
+Repeated with the re-tuned heuristic (`table_overload_v2.md`, same 30 windows): typical windows, ideal telemetry, heuristic median gain 41.1% (worst 8.6%) vs learned 36.5% (worst 2.1%);
+degraded telemetry, heuristic 28.6% (worst -21.5%) vs learned 35.3% (worst +1.4%, never below ECMP); overloaded windows (3), heuristic 49.0% (ideal) and 42.5% (degraded)
+vs learned 9.1% and 20.8%, lifted by the guard to 19.9% and 26.8%. The qualitative picture is unchanged: the heuristic is better on average with ideal telemetry and in overloaded windows, the learned policy is better and safer under degraded telemetry.
 
 ### 6.5 Guard
 
@@ -482,16 +488,21 @@ absolute difference 0.017 and the bias +0.010; per-run time-series correlation i
 | policy [telemetry] | max-util | flow-mods/min | loop ms |
 |---|---|---|---|
 | ECMP | 0.866 | 0 | 9 |
-| tuned [SNMP] | 0.798 | 33 | 9 |
-| tuned [degraded] | 0.808 | 30 | 9 |
+| original tuned heuristic [SNMP] | 0.798 | 33 | 9 |
+| original tuned heuristic [degraded] | 0.808 | 30 | 9 |
+| re-tuned heuristic [SNMP] | 0.772 | 140 | 14 |
+| re-tuned heuristic [degraded] | 0.806 | 139 | 14 |
 | learned [SNMP] | 0.763 | 270 | 12 |
 | learned [degraded] | 0.772 | 332 | 14 |
 | learned [degraded], threshold 0.2 | 0.790 | 76 | 12 |
 | learned + guard (L2, eps -0.06) [degraded] | 0.794 | 258 | 12 |
 
-The learned policy gives lower max-utilisation than the tuned heuristic but reprograms about ten times more flows; a 20%
-update threshold cuts updates 4.4-fold (332 to 76 per minute) at a cost of 0.018 in max-util, leaving it ahead of the tuned
-heuristic under degraded telemetry (0.790 vs 0.808). In the emulator the guard costs more than in simulation (0.794 vs 0.772
+The re-tuned heuristic rows come from a re-run of the same four scenarios (`table_emu3.md`, 8 runs; sim-vs-emu correlation 1.00, mean
+|emu - sim| 0.018). The re-tuned heuristic is much better than the original one under SNMP telemetry (0.772 vs 0.798, close to the learned policy's 0.763) but reprograms
+about 140 flows per minute instead of 30, so the learned policy reprograms about two times more flows than the re-tuned heuristic (270-332 vs 139), not ten times. Under degraded telemetry the learned
+policy is ahead (0.772 vs 0.806, loss 0.0080 vs 0.0095) in all four scenarios (by only 0.001 in emu10_s0); under SNMP the
+two are level on average (per scenario the learned policy is lower in three and higher in one). A 20% update threshold cuts the learned policy's updates 4.4-fold (332 to 76 per minute) at a cost of 0.018 in max-util, leaving
+it ahead of the re-tuned heuristic under degraded telemetry (0.790 vs 0.806). In the emulator the guard costs more than in simulation (0.794 vs 0.772
 max-util, and packet loss 0.0143 vs 0.0080 against the unguarded policy). Loop times were measured with the host otherwise
 idle; capacities are scaled down and traffic is synthetic, so absolute rates do not transfer.
 
@@ -504,11 +515,12 @@ networks above about 50 nodes with all-pairs demands.
 ### 6.7 Audit tool
 
 Run on four real networks with degraded telemetry (polling every 5 intervals, delay 3, noise 0.2, loss 0.1; 6 trace windows;
-`reports/*.html`): Abilene: use the learned policy (29.8%, 95% interval [26.4, 33.4]; best-case headroom 56.5%), not
-distinguishable from the guarded tuned heuristic; Germany50: use the learned policy (33.9% [30.7, 36.8]), not distinguishable from
-its guarded version; GEANT: use the guarded tuned heuristic (25.8% [14.0, 37.3], the paired interval separates it from the learned policy on these six windows; in Section 6.2 the learned policy beats the
-*unguarded* tuned heuristic on GEANT, and the guarded heuristic was not part of that comparison, so six windows do not settle this close call); Brain: stay on ECMP, flagged provisional because six windows cannot rule out the rare surge window
-in which the learned policy gained 21%. The tool therefore reports intervals and ties, not only a winner, and says when the sample
+`reports/*.html`), using the re-tuned heuristic. Abilene: use the tuned heuristic (30.6%, 95% interval [27.2, 34.1]; best-case headroom 56.5%), not
+distinguishable from the learned policy or its guarded version on these six windows; GEANT: use the learned policy (37.5% [23.1, 51.0]), with a warning that the
+heuristic is worse than ECMP in 7% of intervals and that no method keeps p99 regret under 0.02; Germany50: use the learned policy (33.9% [30.7, 36.8]), not distinguishable from
+its guarded version; Brain: stay on ECMP, flagged provisional because six windows cannot rule out the rare surge window
+in which the learned policy gained 21%. With the original heuristic the Abilene and GEANT recommendations were the opposite (learned and guarded heuristic respectively;
+`reports/v1_original_heuristic/`): with six windows and a close call, the recommendation depends on the heuristic's tuning, which is the paper's own point and a reason to run the tool on more windows. The tool therefore reports intervals and ties, not only a winner, and says when the sample
 is too small. It remains an offline estimate; its verdicts have not been validated against any operator decision.
 
 ## 7 Negative results
@@ -537,7 +549,32 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
   policy's fine-tuning variants receive) was not tested.
 * Not claimed: a general performance win; being first to show degradation under delay (LOGGIA); production readiness.
 
-## 9 Reproducibility
+## 9 Reproducibility and availability
 
-`pip install -e ".[dev]"`, `python -m pytest -q`; real data from SNDlib (public), prepared by
-`python -m stale_but_safe.env.real prepare`; one script per table in `experiments/`; emulation in `docs/howto.md`.
+Code, configuration, trained policies and result tables are in the project repository. **Repository URL and commit hash: [to be added by
+the authors at submission; the repository is currently local only, with no public remote].** Environment: Python 3.9+ (tested 3.13, Windows 11
+and the Docker images), `pip install -e ".[dev,rl]"` (torch CPU), `python -m pytest -q` (39 tests). Data: the SNDlib matrices are public
+(sndlib.put.poznan.pl; Abilene, GEANT, Germany17/50, Brain) and are *not* redistributed in the repository; they are downloaded and prepared with
+`python -m stale_but_safe.env.real prepare`. Topology Zoo graphs are bundled under their original licence terms (to be checked for
+redistribution before release). Each table has one script in `experiments/` (listed in `README.md`, with job queues in `runs/*.sh`); seeds, window
+selection (random 100-interval windows by integer seed), tuner seeds (100-104), the model-selection rule (heuristic: best tuning score on four
+synthetic graphs; learned: fixed training schedule, no selection on test data) and the bootstrap procedures (percentile, 4000 resamples,
+fixed seed) are in the scripts and Section 5. Emulation (Docker, Mininet, Ryu) is described in `docs/howto.md` and needs an otherwise idle
+machine because it runs in real time. A clean-environment reproduction check is recorded in `docs/reproduction_check.md`.
+
+## References
+
+Entries below were checked against publisher, proceedings or arXiv pages on 2026-10-14.
+
+1. Y. Perry, F. V. Frujeri, C. Hoch, S. Kandula, I. Menache, M. Schapira, A. Tamar. DOTE: Rethinking (Predictive) WAN Traffic Engineering. *NSDI*, 2023, pp. 1557-1581. arXiv:2303.00735.
+2. Z. Xu, F. Y. Yan, R. Singh, J. T. Chiu, A. M. Rush, M. Yu. Teal: Learning-Accelerated Optimization of WAN Traffic Engineering. *ACM SIGCOMM*, 2023, pp. 378-393. doi:10.1145/3603269.3604857; arXiv:2210.13763.
+3. J. Zhang, M. Ye, Z. Guo, C.-Y. Yen, H. J. Chao. CFR-RL: Traffic Engineering with Reinforcement Learning in SDN. *IEEE JSAC* 38(10), 2020, pp. 2249-2259. doi:10.1109/JSAC.2020.3000371.
+4. A. Boltres, N. Freymuth, B. Schichtholz, M. Koenig, G. Neumann. Towards Near-Real-Time Telemetry-Aware Routing with Neural Routing Algorithms. *TMLR*, 2026. arXiv:2604.02927.
+5. W. Jia, J. Wang, Z. Yan, T. Liu, Y. Ren, K. Lei. EnvelopeTC: Hierarchical Intra-Path Learning for Adaptive Traffic Control. *IEEE JCC*, 2026. doi:10.1109/JCC72984.2026.00071; arXiv:2605.09473.
+6. F. Gui, S. Wang, D. Li, L. Chen, K. Gao, C. Min, Y. Wang. RedTE: Mitigating Subsecond Traffic Bursts with Real-time and Distributed Traffic Engineering. *ACM SIGCOMM*, 2024. doi:10.1145/3651890.3672231.
+7. H. Mao, M. Schwarzkopf, H. He, M. Alizadeh. Towards Safe Online Reinforcement Learning in Computer Systems ("Training Wheels"). *NeurIPS 2019* (workshop paper; the PDF footer names the 33rd NeurIPS, Vancouver).
+8. M. Ye, J. Zhang, Z. Guo, H. J. Chao. FlexDATE: Flexible and Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM Trans. Networking*, 2022 (online; issue 2023). doi:10.1109/TNET.2022.3217083.
+9. M. Ye, J. Zhang, Z. Guo, H. J. Chao. Roracle: Enabling Lookahead Routing for Scalable Traffic Engineering with Supervised Learning. *IEEE ICNP*, 2023. doi:10.1109/ICNP59255.2023.10355645.
+10. X. Liu, S. Zhao, Y. Cui, X. Wang. FIGRET: Fine-Grained Robustness-Enhanced Traffic Engineering. *ACM SIGCOMM*, 2024. arXiv:2405.04932.
+11. M. Ye, J. Zhang, Z. Guo, H. J. Chao. DATE: Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM IWQoS*, 2021. doi:10.1109/IWQOS52092.2021.9521343. (Located 2026-10-14 via the authors' publication page; the paper itself has not been opened, so it is cited only as the conference precursor of FlexDATE.)
+12. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010 (data source; verify citation details before release).

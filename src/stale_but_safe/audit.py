@@ -116,7 +116,7 @@ def ood_notes(t: TelemetryCfg) -> list[str]:
 
 
 def audit(topo, trace, user_tele: TelemetryCfg, load: float, horizon: int, seeds: int, model: str | None):
-    tuned = yaml.safe_load(open(ROOT / "configs" / "tuned_heuristic.yaml"))
+    tuned = yaml.safe_load(open(ROOT / "configs" / "tuned_heuristic_v2.yaml"))
     learned = None
     if model and Path(model).exists():
         from .models.learned import LearnedPolicy, load as load_model

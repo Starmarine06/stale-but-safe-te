@@ -18,7 +18,9 @@ from stale_but_safe.models.learned import LearnedPolicy, load
 net = sys.argv[1] if len(sys.argv) > 1 else "abilene"
 ld = float(sys.argv[2]) if len(sys.argv) > 2 else 0.8
 topo, trace = real.load(net)
-tuned = yaml.safe_load(open("configs/tuned_heuristic.yaml"))
+CFG = sys.argv[3] if len(sys.argv) > 3 else "configs/tuned_heuristic.yaml"
+TAG = sys.argv[4] if len(sys.argv) > 4 else ""
+tuned = yaml.safe_load(open(CFG))
 models = {f"learned-s{i}": load(p) for i, p in enumerate(["runs/ours_dfm_final.pt", "runs/ours_dfm_final_s1.pt", "runs/ours_dfm_final_s2.pt", "runs/ours_dfm_final_s3.pt"])}
 G2 = GuardCfg(eps=-0.06, layers=(True, True, False))
 seeds = list(range(8000, 8030))
@@ -36,7 +38,7 @@ for prof in ("ideal", "degraded"):
         rows[(prof, s)] = rec
     print(prof, "done", flush=True)
 out = {f"{p}-{s}": r for (p, s), r in rows.items()}
-json.dump(out, open(f"experiments/final/overload_{net}_{ld}.json", "w"))
+json.dump(out, open(f"experiments/final/overload_{net}_{ld}{TAG}.json", "w"))
 print("| telemetry | window type | windows | tuned gain % (median, worst) | learned gain % (median over seeds, worst) | learned s0+guard (median, worst) | learned worse than ECMP in |")
 print("|---|---|---|---|---|---|---|")
 for prof in ("ideal", "degraded"):

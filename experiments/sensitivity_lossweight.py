@@ -4,10 +4,16 @@ import json
 from collections import defaultdict
 import numpy as np
 
+import sys
+TUNED_FILE = sys.argv[1] if len(sys.argv) > 1 else None      # e.g. experiments/final/results_v2_zoo.json (re-tuned heuristic)
 rows = json.load(open("experiments/final/results_ours.json"))["results"]
 by = defaultdict(dict)
 for r in rows:
     by[(r["profile"], r["topo"])][r["method"]] = r
+if TUNED_FILE:
+    for r in json.load(open(TUNED_FILE))["results"]:
+        if r["method"] == "tuned":
+            by[(r["profile"], r["topo"])]["tuned"] = r
 print("| telemetry | w | tuned dScore | learned dScore | learned beats tuned on |")
 print("|---|---|---|---|---|")
 for prof in ("ideal", "rich", "snmp", "degraded"):

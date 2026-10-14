@@ -1,0 +1,519 @@
+{
+ "seeds": 6,
+ "ood": [],
+ "network": "brain",
+ "nodes": 161,
+ "links": 332,
+ "demands": 600,
+ "traffic": "real trace",
+ "load": 0.8,
+ "user_telemetry": {
+  "P": 5,
+  "d": 3,
+  "sigma": 0.2,
+  "p": 0.1
+ },
+ "results": {
+  "ideal": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   },
+   "tuned": {
+    "gain_pct": 0.011108978512025525,
+    "gain_ci_pct": [
+     0.00503125464730673,
+     0.01656137490977927
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.02,
+     0.017,
+     0.004,
+     0.018,
+     0.007
+    ],
+    "top_window_share": 0.29508106622224467,
+    "p99_regret": 5.717648576819405e-17,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1130603086821439
+   },
+   "learned": {
+    "gain_pct": 0.139259600810913,
+    "gain_ci_pct": [
+     0.03535591940370675,
+     0.24098682147002579
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.38081235253977164,
+    "p99_regret": 1.1102230246251565e-15,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09279743555347399
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1143457747888627
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   }
+  },
+  "snmp": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   },
+   "tuned": {
+    "gain_pct": 0.008292349304038032,
+    "gain_ci_pct": [
+     0.003250667137318549,
+     0.013708257921738834
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.019,
+     0.011,
+     0.003,
+     0.013,
+     0.004
+    ],
+    "top_window_share": 0.38547599939306754,
+    "p99_regret": 4.440892098500626e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.1117832365380305
+   },
+   "learned": {
+    "gain_pct": 0.13925960081089817,
+    "gain_ci_pct": [
+     0.03535591940368084,
+     0.24098682146999986
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.38081235253978557,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09282714437326645
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   }
+  },
+  "degraded": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   },
+   "tuned": {
+    "gain_pct": 0.0799351173682202,
+    "gain_ci_pct": [
+     -0.0020085480844959465,
+     0.18219973622263425
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     -0.0,
+     0.154,
+     0.309,
+     0.032,
+     0.014,
+     -0.029
+    ],
+    "top_window_share": 0.6084598189754281,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.09607064751479821
+   },
+   "learned": {
+    "gain_pct": 0.13925960081090744,
+    "gain_ci_pct": [
+     0.0353559194037012,
+     0.24098682147000913
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.38081235253976026,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09286121839230231
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11430654317754459
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11433030442976332
+   }
+  },
+  "yours": {
+   "ecmp": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.114404268739678
+   },
+   "tuned": {
+    "gain_pct": 0.0799351173682202,
+    "gain_ci_pct": [
+     -0.0020085480844959465,
+     0.18219973622263425
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     -0.0,
+     0.154,
+     0.309,
+     0.032,
+     0.014,
+     -0.029
+    ],
+    "top_window_share": 0.6084598189754281,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.16666666666666669,
+    "loss": 0.09607064751479821
+   },
+   "learned": {
+    "gain_pct": 0.13925960081090744,
+    "gain_ci_pct": [
+     0.0353559194037012,
+     0.24098682147000913
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.38081235253976026,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09286121839230231
+   },
+   "learned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11430654317754459
+   },
+   "tuned+guard": {
+    "gain_pct": 0.0,
+    "gain_ci_pct": [
+     0.0,
+     0.0
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "top_window_share": 0.0,
+    "p99_regret": 0.0,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.11433030442976332
+   }
+  }
+ },
+ "headroom": null,
+ "polling_sweep": {
+  "method": "learned",
+  "rows": {
+   "1": {
+    "gain_pct": 0.13925960081090555,
+    "gain_ci_pct": [
+     0.035355919403684544,
+     0.24098682147001838
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.3808123525397919,
+    "p99_regret": 1.1102230246251565e-15,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09282950887466017
+   },
+   "2": {
+    "gain_pct": 0.1392596008109,
+    "gain_ci_pct": [
+     0.035355919403684544,
+     0.24098682146999617
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.3808123525397672,
+    "p99_regret": 8.903988657493735e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.0928539415969875
+   },
+   "5": {
+    "gain_pct": 0.13925960081090744,
+    "gain_ci_pct": [
+     0.0353559194037012,
+     0.24098682147000913
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.38081235253976026,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09286121839230231
+   },
+   "10": {
+    "gain_pct": 0.1392596008109,
+    "gain_ci_pct": [
+     0.035355919403684544,
+     0.24098682146999617
+    ],
+    "windows": 6,
+    "window_gains_pct": [
+     0.0,
+     0.154,
+     0.318,
+     0.032,
+     0.312,
+     0.019
+    ],
+    "top_window_share": 0.3808123525397672,
+    "p99_regret": 8.881784197001252e-16,
+    "worse_than_ecmp_pct": 0.0,
+    "loss": 0.09283739547372068
+   }
+  }
+ },
+ "verdict": {
+  "action": "Stay on ECMP.",
+  "reasons": [
+   "No method we tested, even with perfect telemetry, gains only 0.1% max-utilisation here (95% interval over 6 windows [0.0, 0.2]), so a TE controller is not worth its operational risk.",
+   "Provisional: only 6 trace windows were evaluated, and gains can be confined to rare surge windows that a short sample misses (on the real Brain trace one window in a dozen gained 21%). Evaluate more windows before ruling TE out."
+  ]
+ }
+}

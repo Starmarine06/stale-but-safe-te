@@ -39,7 +39,7 @@ def make_policy(a, topo):
         m, c = load(a.model)
         pol = LearnedPolicy(m, c, "gnn")
     else:
-        tp = yaml.safe_load(open(Path(__file__).resolve().parents[2] / "configs" / "tuned_heuristic.yaml"))
+        tp = yaml.safe_load(open(Path(__file__).resolve().parents[2] / "configs" / "tuned_heuristic_v2.yaml"))
         pol = TunedHeuristic(**tp[prof]["params"])
     return Guard(pol, GuardCfg(eps=a.eps)) if not a.no_guard else pol
 
