@@ -35,7 +35,7 @@ LOGGIA 2604.02927; EnvelopeTC 2605.09473; Training Wheels (MLSys'19); Roracle; T
 Almasan et al. 2022; rliable (Agarwal et al., NeurIPS'21) for statistics.
 
 ## Full-text verification pass (agent-assisted; spot-check before submission)
-Read in full text: LOGGIA, EnvelopeTC, DOTE, CFR-RL, Training Wheels, RedTE. Teal: grep only. **Not verified:**
+Read in full text: LOGGIA, EnvelopeTC, DOTE, CFR-RL, Training Wheels, RedTE. Teal: full text read 2026-10-14 (pdftotext of arXiv 2210.13763). **Not verified:**
 FlexDATE/DATE, Roracle, FIGRET (abstract/snippet level).
 
 * LOGGIA (Boltres et al., TMLR 2026, arXiv 2604.02927): centralised *and* distributed modes, B4/GEANT/synthetic, ns-3,
@@ -46,7 +46,12 @@ FlexDATE/DATE, Roracle, FIGRET (abstract/snippet level).
   disables reroutes, rollback/audit; no ranking claim; no SNDlib/Zoo.
 * DOTE (Perry et al., NSDI 2023): direct optimisation of split ratios from the last 12 demand matrices; GEANT/Abilene/
   Microsoft traces; tests multiplicative demand noise up to +-35% only. **Training-method antecedent of ours; cite as such.**
-* Teal (Xu et al., SIGCOMM 2023, arXiv 2210.13763): delay = solver latency only.
+* Teal (Xu et al., SIGCOMM 2023, arXiv 2210.13763), full text: staleness = solver run time only (an allocation persists until the
+  scheme finishes computing; LP-all at 585 s reuses stale routes from several 5-min intervals, satisfied demand 87.2% vs Teal 90.6%).
+  Objectives: total flow / MLU on a Microsoft-style WAN (ASN) trace; baselines LP-all, LP-top (demand pinning), NCFlow, POP; no ECMP,
+  no tuned reactive heuristic, no telemetry impairment (noise, drops, polling, delay of counters), and the authors state Teal "overfits" the
+  topology and degrades on out-of-distribution demands. Not a baseline for our setting (different objective and action space, trained
+  per topology, assumes accurate TMs); we do not compare against it and say so.
 * CFR-RL (Zhang et al., IEEE JSAC 2020, arXiv 2004.11986): no staleness analysis; RL beats rule heuristics.
 * RedTE (Gui et al., SIGCOMM 2024): centralised control-loop latency; moves decisions to routers.
 * Training Wheels (Mao et al., NeurIPS 2019): safe-fallback precedent.
@@ -62,4 +67,4 @@ FlexDATE (IEEE/ACM ToN 31(4), 2023; DATE = IWQoS 2021, DATE paper itself unopene
 arXiv 2405.04932) read in full: none studies delayed/noisy/sampled/missing telemetry as a variable, none compares a tuned reactive
 heuristic under impairment. Roracle is adjacent ("routing computed on the current TM goes stale; learned lookahead resists",
 datasets include Abilene, GEANT, Brain). Closest 2023-2026 staleness papers (abstract level only): arXiv 2605.16187 (online TE,
-control-loop latency), Teal, arXiv 2410.16846 (safe load balancing, two loops). Still to do: Scholar check, open the DATE paper.
+control-loop latency), Teal, arXiv 2410.16846 (safe load balancing, two loops). Still to do: Scholar check; the DATE paper (IWQoS 2021) could not be located by web search on 2026-10-14 (search returned an unrelated DATE: Distributed Adaptive TE, JSAC 2007) and remains unopened.
