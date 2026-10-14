@@ -1,3 +1,22 @@
 abilene: train 33667 intervals, test 14429 intervals
   dote[ideal] epoch 0 loss 0.8827
   dote[ideal] epoch 5 loss 0.6983
+  dote[ideal] epoch 10 loss 0.6901
+  dote[ideal] epoch 15 loss 0.6869
+  dote[ideal] epoch 20 loss 0.6844
+  dote[ideal] epoch 24 loss 0.6837
+  dote[degraded] epoch 0 loss 0.8830
+  dote[degraded] epoch 5 loss 0.7098
+  dote[degraded] epoch 10 loss 0.7019
+  dote[degraded] epoch 15 loss 0.6980
+  dote[degraded] epoch 20 loss 0.6953
+  dote[degraded] epoch 24 loss 0.6931
+abilene load=0.6 ideal    done t=71s
+abilene load=0.6 snmp     done t=119s
+abilene load=0.6 degraded done t=175s
+abilene load=0.8 ideal    done t=229s
+abilene load=0.8 snmp     done t=281s
+abilene load=0.8 degraded done t=333s
+abilene load=1.0 ideal    done t=408s
+abilene load=1.0 snmp     done t=496s
+abilene load=1.0 degraded done t=583s

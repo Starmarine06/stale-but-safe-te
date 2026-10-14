@@ -1,3 +1,22 @@
 geant: train 8021 intervals, test 3439 intervals
   dote[ideal] epoch 0 loss 0.7335
   dote[ideal] epoch 5 loss 0.6857
+  dote[ideal] epoch 10 loss 0.6835
+  dote[ideal] epoch 15 loss 0.6827
+  dote[ideal] epoch 20 loss 0.6820
+  dote[ideal] epoch 24 loss 0.6817
+  dote[degraded] epoch 0 loss 0.7336
+  dote[degraded] epoch 5 loss 0.6872
+  dote[degraded] epoch 10 loss 0.6846
+  dote[degraded] epoch 15 loss 0.6834
+  dote[degraded] epoch 20 loss 0.6828
+  dote[degraded] epoch 24 loss 0.6825
+geant load=0.6 ideal    done t=98s
+geant load=0.6 snmp     done t=195s
+geant load=0.6 degraded done t=315s
+geant load=0.8 ideal    done t=443s
+geant load=0.8 snmp     done t=559s
+geant load=0.8 degraded done t=671s
+geant load=1.0 ideal    done t=787s
+geant load=1.0 snmp     done t=911s
+geant load=1.0 degraded done t=1017s

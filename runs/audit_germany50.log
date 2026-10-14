@@ -1,0 +1,5 @@
+Use learned.
+  The best method tested gains 33.0% with perfect telemetry (exact optimum not computed above 25 nodes); with your telemetry learned captures 33.9% (95% interval [30.7, 36.8]).
+  Not distinguishable from learned+guard (paired 95% interval over 6 windows includes 0); prefer the simplest of these that meets your tail-risk needs.
+  Polling rate barely matters for learned here (gain varies only 0.2 points between 1 and 10 intervals).
+wrote reports\germany50.html

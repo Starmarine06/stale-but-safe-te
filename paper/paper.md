@@ -1,6 +1,6 @@
 # The Cost of Stale Telemetry in Traffic Engineering: Learned Policies, Re-Tuned Heuristics and ECMP
 
-*Draft v3. All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
+*Draft v3.1 (GNN-vs-MLP seeds complete). All numbers come from scripts in `experiments/`; raw results are in `experiments/final/`. Items marked
 **[PENDING]** depend on experiments still running when this draft was written. Protocol deviations are tabulated in
 `docs/eval_protocol.md`; claims and their status are in Section 8.*
 
@@ -11,8 +11,9 @@ reactive heuristic re-tuned for each telemetry condition, and a learned split-ra
 graphs, under one impairment model shared by a fluid simulator and an emulated SDN (Ryu, Open vSwitch, Mininet), on 24
 held-out Topology Zoo graphs and on replayed SNDlib traces under controlled load scaling. The answer depends on conditions that
 we identify. With clean telemetry the heuristic is competitive and sometimes better. As telemetry delay and polling period grow,
-a heuristic re-tuned for each delay keeps pace up to about three intervals of delay and then falls 10-20 points of gain behind,
-while the learned policy's gain does not change; measurement noise and missing counters hardly matter. Other conditions
+a heuristic re-tuned for each condition is as good or better only when polling is frequent (every interval) and delay is at most three
+intervals, and is otherwise behind the learned policy by 0.5-17 points of gain (a delay x polling grid; the heuristic's re-tuned
+gain is noisy and not monotone in delay), while the learned policy's gain hardly changes; measurement noise and missing counters hardly matter. Other conditions
 change the picture: a model trained on a network's own history does substantially better than the zero-shot policy, the
 heuristic wins in rare overloaded windows, and on some networks ECMP is sufficient. Ablations show that model-based fluid
 features, not graph message passing, carry the learned policy. Operationally the learned policy reprograms about ten times more
@@ -101,7 +102,7 @@ telemetry. *DOTE-style:* an MLP on the last three impaired demand estimates, tra
 trace (ideal-telemetry and degraded-telemetry variants) with our differentiable loss; evaluated on the last 30%.
 *LP oracle:* perfect information, graphs with n <= 25 only; a reference bound, not a deployable method.
 
-**Learned policy.** A GNN on the link graph with path pooling. Inputs: impaired utilisation and demand history (H = 3),
+**Learned policy.** A graph network on the link graph with path pooling (Section 6.3 shows the message passing is not what matters; a per-link MLP with the same inputs does as well or better). Inputs: impaired utilisation and demand history (H = 3),
 telemetry age, and model-based fluid features (ECMP-predicted utilisation, utilisation predicted for the current
 configuration, per-path what-if bottleneck). Training is direct optimisation through a differentiable fluid model: the
 policy sees the impaired observation, the loss uses the true next demand, `smoothmax(util)/ecmp_mu + 5 loss + 0.1 churn`.
@@ -122,7 +123,7 @@ distance); the number of updates per interval is the flow/group modifications a 
 **Audit tool.** `stale-but-safe audit` takes a topology, optional traffic and telemetry parameters and reports best-case
 headroom (LP oracle where n <= 25), gain with a 95% bootstrap interval over trace windows and tail regret for each
 method under the user's telemetry, a polling sweep, and one of three outcomes: stay on ECMP, use a named method, or
-insufficient evidence (too few windows, interval straddling the 5% threshold, or gain concentrated in one window). It
+insufficient evidence (too few windows, interval straddling the 5% threshold, or gain concentrated in one window). "ECMP is enough" is declared only when the upper end of the 95% interval of the best method's gain under perfect telemetry is below a prespecified 5% max-utilisation tolerance, never from a non-significant difference alone; the 5% value is a practical choice that operators can change, not a derived constant. It
 flags telemetry values outside the evaluated range. Its output is an offline estimate, not a deployment recommendation.
 
 ## 5 Protocol
@@ -131,7 +132,12 @@ Topology Zoo: 263 graphs split into train/validation/test (`configs/splits.yaml`
 5 evaluation seeds, horizon 100, load 0.8; paired bootstrap 95% CI, IQM and Holm-corrected Wilcoxon over graphs.
 Real traces: four networks with headroom plus Brain, loads {0.6, 0.8, 1.0}, four profiles; two independent evaluation
 runs (4 windows, then 10 fresh windows per cell, 12 for Brain at load 0.8). Tuning and model selection never use test
-graphs or windows. Deviations from the planned protocol (4 instead of 10 training seeds, 5-12 instead of 20 evaluation
+graphs or windows. Interval methodology: Zoo intervals are paired bootstrap
+over graphs on seed-averaged scores, so they capture graph variability but not training-seed variability (reported separately as
+seed SD, 0.001-0.002; the GNN-vs-MLP and fluid-feature comparisons use four matched training seeds each, averaged per graph before
+resampling). Real-trace intervals are paired bootstrap over evaluation windows for one trained model and one trace, so they do
+not generalise to other days or networks. The 5% ECMP tolerance is applied identically everywhere: "ECMP is enough" requires the
+interval's upper end to be below 5%; a lower end below 5% gives "insufficient evidence". Deviations from the planned protocol (4 instead of 10 training seeds, 5-12 instead of 20 evaluation
 seeds, single-seed ablations, post-hoc baselines and analyses) are listed in `docs/eval_protocol.md`.
 
 ## 6 Results
@@ -205,12 +211,32 @@ graphs); the learned policy is the mean of four training seeds. Mean gain %, loa
 | Zoo (10 graphs) | 10 | 0.0 | 0.0 | 2.8 | 4.2 |
 
 Two conclusions. First, a heuristic whose parameters are frozen collapses with delay (to about zero at d >= 5), but this is largely
-an artefact of mis-tuning: re-tuned at each delay it keeps most of its gain. Second, even a re-tuned heuristic falls behind the
-learned policy as delay grows: it matches it up to d = 3 intervals (Abilene 34.7 vs 34.2, GEANT 43.6 vs 42.5, Zoo 3.2 vs 4.3) and is
-10-20 points of gain behind at d = 5 and d = 10 (Abilene 23.2 and 21.0 vs about 34.6; GEANT 23.2 and 24.9 vs about 42). The learned
-policy's gain does not depend on d. The re-tuning budget is modest (40 trials, synthetic graphs, other impairments ideal), so a
+an artefact of mis-tuning: re-tuned at each delay it keeps most of its gain. Second, a re-tuned heuristic matches the
+learned policy at small delay (d = 3: Abilene 34.7 vs 34.2, GEANT 43.6 vs 42.5, Zoo 3.2 vs 4.3) and is behind at d = 5 and d = 10
+in this table (Abilene 23.2 and 21.0 vs about 34.6; GEANT 23.2 and 24.9 vs about 42). The learned policy's gain does not depend on d.
+The interaction grid below shows that this is not a clean monotone crossover. The re-tuning budget is modest (40 trials, synthetic graphs, other impairments ideal), so a
 stronger tuned baseline might narrow the gap; this is not tested. The per-profile comparisons of Sections 6.1-6.2 use heuristics
-re-tuned for each profile, so they are not affected by the frozen-parameter artefact. **[PENDING: delay x polling interaction grid.]**
+re-tuned for each profile, so they are not affected by the frozen-parameter artefact. 
+
+*Delay x polling grid* (`table_delay_part2.md`; heuristic re-tuned in every cell, learned = mean of 4 seeds; mean gain %, no
+window-level intervals in this experiment). Learned minus re-tuned heuristic, in points of gain:
+
+| case | d=0, P=1 | d=0, P=5 | d=0, P=20 | d=3, P=1 | d=3, P=5 | d=3, P=20 | d=10, P=1 | d=10, P=5 | d=10, P=20 |
+|---|---|---|---|---|---|---|---|---|---|
+| Zoo (10 graphs) | -0.3 | +1.4 | +1.8 | +1.1 | +0.2 | +0.5 | +1.4 | +5.1 | +2.1 |
+| Abilene | -7.4 | +0.5 | +0.6 | -0.4 | +7.8 | +10.1 | +13.7 | +4.7 | +4.0 |
+| GEANT | -3.0 | +7.3 | +7.0 | -1.2 | +7.8 | +11.3 | +16.9 | +3.8 | +4.2 |
+
+The re-tuned heuristic is ahead of the learned policy in 4 of 18 real-trace cells (Abilene and GEANT at P = 1, d <= 3, by 0.4-7.4
+points) and behind in the other 14 (by 0.5-16.9 points); on Zoo graphs the two are within 0.3 points at one cell and the learned policy
+is ahead in the other eight (by 0.2-5.1). The learned policy's gain varies by under 2 points across the grid on each case. The
+heuristic's re-tuned gain, in contrast, is not monotone in delay: Abilene at P = 20 gives 33.8, 24.6 and 30.0 for d = 0, 3, 10, and at
+d = 10 the heuristic does better with P = 5 or 20 (29.9, 30.0) than with P = 1 (21.0). A heuristic cannot sensibly gain from more
+delay, so this variation is evidence that the 40-trial re-tuning is itself noisy by roughly 5-10 points of gain, comparable to many of the
+differences above. What the grid supports is therefore weaker than a sharp threshold: the heuristic is best when telemetry is fresh and
+frequent, the learned policy is better or equal elsewhere, and the size of the margin in individual cells should not be
+over-interpreted. A stronger search (more trials, repeated tuning with different seeds) is needed to locate any crossover precisely;
+we have not run it.
 
 *One-at-a-time sweep with frozen parameters* (`table_telemetry_sweep.md`; heuristic parameters are those tuned for the nearest
 standard profile, so the collapse is exaggerated as described above; 10 Zoo graphs with n <= 25, Abilene and GEANT at load 0.8;
@@ -255,10 +281,15 @@ and static LP -38.6% (traffic is not stationary). Hence: (a) with per-network hi
 zero-shot GNN, and fine-tuning recovers most of the difference on Abilene but little on GEANT; (b) robustness to
 telemetry is a property of any policy that does not rely on fresh counters, not specific to our GNN; (c) what the
 zero-shot policy offers is no need for per-network training data.
-Ablations (24 Zoo graphs, one seed each; `table_ablations.md`): removing the fluid-model features costs +0.008 (ideal) and
-+0.013 (degraded) dScore and raises p99 regret from 0.019 to 0.030; removing history costs +0.003 at ideal telemetry only;
-removing the age input is ~0; replacing the GNN with a per-link MLP is slightly better (-0.005, -0.004). The model-based
-features, not message passing, carry the result.
+Ablations (24 Zoo graphs; `table_ablations.md`, one seed, and `table_gnn_vs_mlp.md`, four training seeds each for the full
+model, the per-link MLP and the no-fluid-feature model): removing history costs +0.003 at ideal telemetry only; removing the age
+input is ~0. **Matched-seed GNN vs MLP:** the per-link MLP (no message passing) has mean dScore -0.068 (ideal) / -0.063 (degraded)
+against -0.065 / -0.061 for the full graph model; seed-averaged paired difference -0.0031 [-0.0054, -0.0011] and -0.0020
+[-0.0040, -0.0002], the MLP better on 14 of 24 graphs in both profiles. Its p99 regret is slightly worse under degraded telemetry
+(0.022 vs 0.019). So message passing does not help; the effect sizes are small and we claim only "no benefit", not that MLPs
+are better. **Fluid-model features:** removing them costs +0.0082 [+0.0048, +0.0121] (ideal) and +0.0144 [+0.0085, +0.0206]
+(degraded) and worsens p99 regret (0.018 to 0.029 degraded); the full model is better on 21-22 of 24 graphs. The model-based
+features, not the graph architecture, carry the result.
 Training with randomised telemetry versus ideal-only: the mean differences are within seed noise (~0.002), but the
 randomised model has a lower p99 regret under degraded telemetry (0.019 vs 0.027 over four seeds).
 
@@ -345,7 +376,7 @@ is too small. It remains an offline estimate; its verdicts have not been validat
 
 LP-teacher distillation (DAgger) produced a weak student (6.4% gain vs 15.0% for the tuned heuristic on training graphs); PPO
 fine-tuning did not change it; direct optimisation through the fluid model fixed this. Randomised-telemetry training did not
-improve mean performance over ideal-only training. A per-link MLP did as well as the GNN. Static LP routing is excellent on
+improve mean performance over ideal-only training. A per-link MLP did as well as the GNN, with four matched seeds each (Section 6.3). Static LP routing is excellent on
 a stationary network (Abilene) and disastrous on a non-stationary one (GEANT).
 
 ## 8 Limitations and status of claims

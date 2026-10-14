@@ -1,0 +1,4 @@
+iter 0 samples=4000 loss=1.0880 mu=1.019 fluid_loss=0.0279 lr=2.00e-04 t=22s
+iter 1 samples=8000 loss=1.0978 mu=1.032 fluid_loss=0.0328 lr=1.74e-04 t=52s
+iter 2 samples=12000 loss=1.0863 mu=1.031 fluid_loss=0.0324 lr=1.10e-04 t=98s
+iter 3 samples=12000 loss=1.0861 mu=1.049 fluid_loss=0.0338 lr=4.64e-05 t=145s

@@ -1,0 +1,6 @@
+brain: kept 600 heaviest demands = 90.2% of sampled traffic
+brain 2000
+brain 4000
+brain 6000
+brain 8000
+X:\CN Project\stale-but-safe-te\data\real\brain.npz

@@ -1,0 +1,5 @@
+Use tuned+guard.
+  Best-case headroom (LP oracle) is 53.7%; with your telemetry tuned+guard captures 25.8% (95% interval [14.0, 37.3]).
+  The tuned heuristic is fragile under your telemetry: it is worse than ECMP in 11% of intervals (p99 regret +0.19).
+  Polling rate barely matters for learned here (gain varies only 0.5 points between 1 and 10 intervals).
+wrote reports\geant.html

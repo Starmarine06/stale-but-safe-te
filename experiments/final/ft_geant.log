@@ -1,0 +1,15 @@
+iter 0 loss 0.8465 t=52s
+iter 1 loss 1.0144 t=104s
+iter 2 loss 0.8607 t=153s
+iter 3 loss 1.2625 t=204s
+iter 4 loss 0.9997 t=251s
+iter 5 loss 0.5981 t=294s
+geant 0.6 ideal ecmp=0.0 tuned=16.5 gnn-zeroshot=16.4 gnn-finetuned=18.1
+geant 0.6 snmp ecmp=0.0 tuned=9.2 gnn-zeroshot=16.0 gnn-finetuned=16.9
+geant 0.6 degraded ecmp=0.0 tuned=2.2 gnn-zeroshot=15.0 gnn-finetuned=15.8
+geant 0.8 ideal ecmp=0.0 tuned=20.8 gnn-zeroshot=17.4 gnn-finetuned=18.9
+geant 0.8 snmp ecmp=0.0 tuned=13.2 gnn-zeroshot=16.7 gnn-finetuned=17.4
+geant 0.8 degraded ecmp=0.0 tuned=-0.2 gnn-zeroshot=15.8 gnn-finetuned=16.2
+geant 1.0 ideal ecmp=0.0 tuned=23.5 gnn-zeroshot=17.9 gnn-finetuned=19.4
+geant 1.0 snmp ecmp=0.0 tuned=14.7 gnn-zeroshot=17.0 gnn-finetuned=17.6
+geant 1.0 degraded ecmp=0.0 tuned=-0.1 gnn-zeroshot=16.2 gnn-finetuned=16.8
