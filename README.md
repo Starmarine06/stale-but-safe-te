@@ -54,6 +54,13 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
 * **Audit tool:** `stale-but-safe audit` gives headroom, per-method gains with 95% intervals, and one of: stay on ECMP / use X /
   insufficient evidence. An offline estimate, not a deployment recommendation.
 
+## Data and availability
+Repository URL: **to be added at submission (local repository only for now)**. The SNDlib archives are public and not redistributed; download them from
+`https://sndlib.put.poznan.pl/download/<archive>.tgz` (archive names in `src/stale_but_safe/env/real.py` and `docs/howto.md`) into `data/real/`, then run
+`python -m stale_but_safe.env.real prepare <name>`. A clean-environment check is in `docs/reproduction_check.md`. The default heuristic parameters for the audit tool
+are `configs/tuned_heuristic_v2.yaml` (re-tuned, 5 tuner seeds x 80 trials); `configs/tuned_heuristic.yaml` is the original 40-trial heuristic kept for
+reproducing earlier tables.
+
 ## Reproduce
 | Step | Command |
 |---|---|
@@ -77,6 +84,6 @@ See `docs/architecture.md`. Short version: `src/stale_but_safe/{env,baselines,mo
 
 ## Limitations
 Fluid model (no TCP/packet dynamics); empirical (not formal) safety bound; Mininet capacities scaled down;
-synthetic traffic only; Topology Zoo graphs have no real capacities (degree-based rule); results from simulation
+real SNDlib traces are scaled to a target load and telemetry faults are modelled, not measured; Topology Zoo graphs have no real capacities (degree-based rule); results from simulation
 and emulation do not certify production safety. Never run experiments on a campus or production network
 without written permission; use shadow mode for real telemetry.
