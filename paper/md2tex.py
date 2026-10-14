@@ -217,7 +217,7 @@ head = r"""\documentclass[journal]{IEEEtran}
 \begin{document}
 \title{""" + inline(title, refs=False) + r"""}
 \author{Dev~Nambiar,~\IEEEmembership{Vellore Institute of Technology, Vellore, India}%
-\thanks{Corresponding e-mail: [author e-mail to be added].}}
+\thanks{Corresponding e-mail: devnambiar06@gmail.com.}}
 \markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 """
