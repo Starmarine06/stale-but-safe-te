@@ -55,7 +55,7 @@ Germany17, Germany50, Brain) are scaled to a target load; telemetry faults are m
   insufficient evidence. An offline estimate, not a deployment recommendation.
 
 ## Data and availability
-Repository URL: **to be added at submission (local repository only for now)**. The SNDlib archives are public and not redistributed; download them from
+Repository: https://github.com/Starmarine06/stale-but-safe-te (currently private; make it public before submission). The SNDlib archives are public and not redistributed; download them from
 `https://sndlib.put.poznan.pl/download/<archive>.tgz` (archive names in `src/stale_but_safe/env/real.py` and `docs/howto.md`) into `data/real/`, then run
 `python -m stale_but_safe.env.real prepare <name>`. A clean-environment check is in `docs/reproduction_check.md`. The default heuristic parameters for the audit tool
 are `configs/tuned_heuristic_v2.yaml` (re-tuned, 5 tuner seeds x 80 trials); `configs/tuned_heuristic.yaml` is the original 40-trial heuristic kept for
