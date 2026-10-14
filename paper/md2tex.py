@@ -145,6 +145,8 @@ while i < len(blocks):
             mf = re.match(r"^\*\*Figure (\d+)\.\*\*\s*(.*)$", blocks[i].strip(), flags=re.S)
             fid, cap = mf.group(1), mf.group(2).replace("\n", " ")
             i += 1
+        if (root / fn).with_suffix(".pdf").exists():
+            fn = fn[:-4]
         wide = "fig1" in fn or "fig3" in fn
         star = "*" if wide else ""
         w = r"0.8\textwidth" if wide else r"\columnwidth"

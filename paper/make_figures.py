@@ -7,9 +7,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 F = "experiments/final/"; OUT = "paper/figures/"
-plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False, "figure.dpi": 150, "font.family": "DejaVu Sans"})
+plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False, "figure.dpi": 150, "savefig.dpi": 300, "pdf.fonttype": 42, "legend.fontsize": 8, "font.family": "DejaVu Sans"})
 LEARN, HEUR, OLD = "#1b6ca8", "#d9822b", "#9aa5b1"
 rng = np.random.default_rng(0)
+def save(fig, name):
+    fig.savefig(OUT + name + ".png"); fig.savefig(OUT + name + ".pdf")
 def boot(x, n=4000):
     x = np.asarray(x); b = [x[rng.integers(0, len(x), len(x))].mean() for _ in range(n)]; return np.percentile(b, [2.5, 97.5])
 
@@ -39,8 +41,8 @@ for k, (name, col) in enumerate([("learned", LEARN), ("re-tuned heuristic", HEUR
             a.bar(x[j] + (k - 0.5) * w, v.mean(), w, color=col, label=name if j == 0 else None, yerr=[[v.mean() - lo], [hi - v.mean()]], capsize=2, error_kw={"lw": 0.8})
 ax[0].axhline(0, color="k", lw=0.6); ax[0].set_ylabel("dScore vs ECMP (lower = better)"); ax[1].set_ylabel("p99 regret vs ECMP (lower = better)")
 for a in ax: a.set_xticks(x); a.set_xticklabels(lab); a.set_xlabel("telemetry profile")
-ax[0].legend(frameon=False, fontsize=7.5, loc="upper left"); ax[0].set_title("(a) mean score", fontsize=9); ax[1].set_title("(b) tail risk", fontsize=9)
-fig.tight_layout(); fig.savefig(OUT + "fig1_zoo.png"); plt.close(fig)
+h, l_ = ax[0].get_legend_handles_labels(); fig.legend(h, l_, loc="upper center", ncol=2, frameon=False, fontsize=8.5); ax[0].set_title("(a) mean score", fontsize=9); ax[1].set_title("(b) tail risk", fontsize=9)
+fig.tight_layout(rect=(0, 0, 1, 0.92)); save(fig, "fig1_zoo"); plt.close(fig)
 
 # ---------- Fig 2: real traces, learned minus re-tuned heuristic, window-level CIs
 cells = {}
@@ -60,7 +62,7 @@ for i, (n, ld) in enumerate(rows):
         ax.text(j, i, f"{m:+.1f}\n{mark}", ha="center", va="center", fontsize=7, color="white" if abs(m) > 8 else "black")
 ax.set_xticks(range(4)); ax.set_xticklabels(lab); ax.set_yticks(range(9)); ax.set_yticklabels([f"{n} @{ld}" for n, ld in rows])
 ax.set_title("Learned minus re-tuned heuristic, gain points\nblue = learned ahead (L), red = heuristic ahead (H), = tie", fontsize=8)
-fig.colorbar(im, ax=ax, shrink=0.8, label="points of gain"); fig.tight_layout(); fig.savefig(OUT + "fig2_real.png"); plt.close(fig)
+fig.colorbar(im, ax=ax, shrink=0.8, label="points of gain"); fig.tight_layout(); save(fig, "fig2_real"); plt.close(fig)
 
 # ---------- Fig 3: delay x polling grid with window-level CIs
 ci = json.load(open(F + "delay_ci.json"))
@@ -74,6 +76,7 @@ for a, net in zip(axs, ["abilene", "geant"]):
             xs.append(d + {1: -0.25, 5: 0, 20: 0.25}[P]); ms.append(df.mean()); los.append(df.mean() - lo); his.append(hi - df.mean())
         a.errorbar(xs, ms, yerr=[los, his], fmt="o-", color=col, capsize=2, lw=1, ms=3.5, label=f"polling P={P}")
     a.axhline(0, color="k", lw=0.6); a.set_xticks([0, 3, 10]); a.set_xlabel("telemetry delay d (intervals)"); a.set_title({"abilene": "Abilene", "geant": "GEANT"}[net], fontsize=9)
-axs[0].set_ylabel("learned minus heuristic (gain points)"); axs[1].legend(frameon=False, fontsize=7.5, loc="lower right")
-fig.tight_layout(); fig.savefig(OUT + "fig3_delay.png"); plt.close(fig)
+axs[0].set_ylabel("learned minus heuristic (gain points)")
+h, l_ = axs[0].get_legend_handles_labels(); fig.legend(h, l_, loc="upper center", ncol=3, frameon=False, fontsize=8.5)
+fig.tight_layout(rect=(0, 0, 1, 0.92)); save(fig, "fig3_delay"); plt.close(fig)
 print("figures written")
