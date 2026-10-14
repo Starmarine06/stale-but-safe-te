@@ -280,6 +280,35 @@ contradicts the earlier Abilene point estimates (learned ahead by 5-8 points at 
 without intervals), so the Abilene "learned advantage at high staleness" in the preceding table is window-sample dependent and not an
 established result. It is also in tension with the profile-level real-trace results of Section 6.2 (learned ahead on Abilene under degraded telemetry in a 12-window sample with a heuristic tuned per profile); both samples are small, and we cannot say from this evidence how much of the Abilene difference is window sampling and how much is heuristic tuning. The tuner saw only synthetic graphs, never a real trace or evaluation window.
 
+*Audit of the Abilene discrepancy* (`table_abilene_audit.md`; `experiments/abilene_audit.py`). Both experiments use the same four model
+checkpoints, the same trace loader and scaling, the same gain definition (1 - max-util / ECMP max-util), the same environment and
+horizon, and random 100-interval windows chosen by seed; they differ in the window sample (seeds 20000+, 12 windows, versus 15000+, 16
+windows), the telemetry (named profiles with noise and drops versus clean delay/polling) and the heuristic parameters (per-profile,
+40 trials, one run, versus best-of-5 80-trial). We evaluated both heuristic parameter sets under the same telemetry on both window
+samples (load 0.8, learned minus heuristic, points, bootstrap 95% over windows):
+
+| telemetry | window set | heuristic params | heuristic % | learned % | learned - heuristic [95% CI over windows] |
+|---|---|---|---|---|---|
+| snmp | A (20000+, 12 windows) | yaml (per-profile, 40 trials) | 27.9 | 36.3 | +8.4 [+4.2, +12.3] |
+| snmp | A (20000+, 12 windows) | grid best-of-5 (d=3,P=5) | 17.7 | 36.3 | +18.6 [+5.7, +32.0] |
+| snmp | B (15000+, 16 windows) | yaml (per-profile, 40 trials) | 32.7 | 31.4 | -1.3 [-18.5, +9.9] |
+| snmp | B (15000+, 16 windows) | grid best-of-5 (d=3,P=5) | 29.3 | 31.4 | +2.1 [-16.0, +15.0] |
+| degraded | A (20000+, 12 windows) | yaml (per-profile, 40 trials) | 17.0 | 36.1 | +19.1 [+9.0, +30.2] |
+| degraded | A (20000+, 12 windows) | grid best-of-5 (d=3,P=5) | 31.2 | 36.1 | +4.9 [+1.3, +9.0] |
+| degraded | B (15000+, 16 windows) | yaml (per-profile, 40 trials) | 24.2 | 28.6 | +4.5 [-14.3, +19.0] |
+| degraded | B (15000+, 16 windows) | grid best-of-5 (d=3,P=5) | 35.5 | 28.6 | -6.8 [-23.6, +5.6] |
+| clean d=3,P=5 | A (20000+, 12 windows) | grid best-of-5 (d=3,P=5) | 37.0 | 36.6 | -0.4 [-2.5, +1.8] |
+| clean d=3,P=5 | B (15000+, 16 windows) | grid best-of-5 (d=3,P=5) | 40.9 | 28.6 | -12.3 [-31.9, +0.3] |
+
+Two sources of variation are visible. (1) *Window sample:* with identical policies and telemetry (clean, d = 3, P = 5) the learned policy
+is level with the heuristic on set A (-0.4 [-2.5, +1.8]) and 12.3 points behind on set B, and under the SNMP profile with the same
+parameters the difference moves from +8.4 [+4.2, +12.3] on A to -1.3 [-18.5, +9.9] on B; the learned policy's own gain moves from 36 to
+29-31%. (2) *Heuristic parameters:* under the degraded profile the grid-selected parameters reach 31.2% on A against 17.0% for the per-profile
+parameters, so the profile-level advantage of the learned policy on Abilene partly reflects a weakly tuned baseline in that table. We
+found no inconsistency in implementation or preprocessing, and we cannot attribute the remaining discrepancy beyond these two
+sources. Abilene conclusions are therefore limited to "the sign depends on the window sample and on the heuristic's tuning"; the
+Section 6.2 per-profile Abilene results should be read with this caveat.
+
 
 *One-at-a-time sweep with frozen parameters* (`table_telemetry_sweep.md`; heuristic parameters are those tuned for the nearest
 standard profile, so the collapse is exaggerated as described above; 10 Zoo graphs with n <= 25, Abilene and GEANT at load 0.8;
