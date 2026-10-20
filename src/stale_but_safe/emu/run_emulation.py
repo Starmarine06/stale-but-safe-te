@@ -26,7 +26,8 @@ def tag_of(spec: str, profile: str) -> str:
             + "__" + profile)
 
 
-def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, net="sbsnet", timeout=400, hyst=0.05):
+def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, net="sbsnet", timeout=400, hyst=0.05,
+            proto="udp", nflows=16):
     tag = tag_of(spec, profile)
     shared = outdir / tag
     if shared.exists():
@@ -52,6 +53,7 @@ def run_one(root: Path, scenario: Path, spec: str, profile: str, outdir: Path, n
         r = sh("docker", "run", "--rm", "--privileged", "--network", net, "-v", f"{shared}:/shared",
                "-e", "PYTHONPATH=/app/src", "sbs-mininet", "python3", "-m", "stale_but_safe.emu.mn_runner",
                "--scenario", "/shared/scenario.json", "--ctrl", ryu_name, "--shared", "/shared",
+               "--proto", proto, "--nflows", str(nflows),
                check=False, timeout=timeout)
         (shared / "mininet.log").write_text(r.stdout + "\n" + r.stderr)
         for _ in range(20):
@@ -73,6 +75,8 @@ def main():
     ap.add_argument("--run", action="append", required=True)
     ap.add_argument("--out", default="runs/emu")
     ap.add_argument("--hyst", type=float, default=0.05, help="controller per-demand update threshold")
+    ap.add_argument("--proto", choices=["udp", "tcp"], default="udp")
+    ap.add_argument("--nflows", type=int, default=16)
     a = ap.parse_args()
     root = Path.cwd()
     out = Path(a.out).resolve()
@@ -80,7 +84,7 @@ def main():
     sh("docker", "network", "create", "sbsnet", check=False)
     for r in a.run:
         spec, profile = r.rsplit(":", 1)
-        run_one(root, Path(a.scenario).resolve(), spec, profile, out, hyst=a.hyst)
+        run_one(root, Path(a.scenario).resolve(), spec, profile, out, hyst=a.hyst, proto=a.proto, nflows=a.nflows)
 
 
 if __name__ == "__main__":

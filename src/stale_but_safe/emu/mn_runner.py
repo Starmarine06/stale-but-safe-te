@@ -26,6 +26,7 @@ def main():
     ap.add_argument("--ctrl", default="ryu")
     ap.add_argument("--shared", default="/shared")
     ap.add_argument("--nflows", type=int, default=16)
+    ap.add_argument("--proto", choices=["udp", "tcp"], default="udp")
     a = ap.parse_args()
     setLogLevel("warning")
     sc = S.load(a.scenario)
@@ -71,12 +72,12 @@ def main():
         json.dump(rates, open(sp, "w"))
         rx = os.path.join(a.shared, f"rx_{d}.json")
         rxfiles[d] = rx
-        procs.append(hosts[t_].popen(["python3", "-m", "stale_but_safe.emu.udp_tools", "recv",
+        procs.append(hosts[t_].popen(["python3", "-m", f"stale_but_safe.emu.{a.proto}_tools", "recv",
                                       str(5000 + d), rx, str(delta), str(start), str(steps)]))
     time.sleep(1.0)
     for d in sc["active"]:
         s_, t_ = topo.demands[d]
-        procs.append(hosts[s_].popen(["python3", "-m", "stale_but_safe.emu.udp_tools", "send",
+        procs.append(hosts[s_].popen(["python3", "-m", f"stale_but_safe.emu.{a.proto}_tools", "send",
                                       S.host_ip(t_), str(5000 + d), os.path.join(a.shared, f"sched_{d}.json"),
                                       str(delta), str(start), str(a.nflows)]))
     time.sleep(max(0.0, start + steps * delta + 5 - time.time()))

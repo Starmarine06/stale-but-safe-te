@@ -1,4 +1,4 @@
-"""Convert paper/paper.md (the subset of Markdown it uses) to paper/tnsm/main.tex in IEEEtran journal format.
+﻿"""Convert paper/paper.md (the subset of Markdown it uses) to paper/tnsm/main.tex in IEEEtran journal format.
   python paper/md2tex.py
 Conventions in paper.md: '**Table N.** caption' directly before a table, '**Figure N.** caption' after an image, headings '## 6 Title' and
 '### 6.1 Title' (numbers become \\label{sec:6.1}), '## Appendix A: Title'. Text references 'Table N', 'Fig. N', 'Section 6.1', 'Appendix A'
@@ -222,7 +222,7 @@ head = r"""\documentclass[journal]{IEEEtran}
 \title{""" + inline(title, refs=False) + r"""}
 \author{Dev~Nambiar,~\IEEEmembership{Vellore Institute of Technology, Vellore, India}%
 \thanks{Corresponding e-mail: devnambiar06@gmail.com.}}
-\markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
+\markboth{IEEE/ACM Transactions on Networking}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 """
 body = "\n".join(out).replace("%ABSTRACT%", abs_tex).replace("%REFS%", ack + "\n" + bib)
