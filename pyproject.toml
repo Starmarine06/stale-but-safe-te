@@ -7,6 +7,7 @@ name = "stale-but-safe-te"
 version = "0.0.1"
 description = "Delay-robust and safety-guarded graph RL for traffic engineering in SDN"
 requires-python = ">=3.9"
+license = {text = "MIT"}
 dependencies = ["numpy", "scipy", "networkx", "pyyaml"]
 
 [project.scripts]
