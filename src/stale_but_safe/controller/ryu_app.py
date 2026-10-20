@@ -5,6 +5,7 @@ Env vars:
   SBS_POLICY    ecmp | spf | tuned:<profile> | model:<path>      (optionally prefixed guard<eps>@)
   SBS_PROFILE   ideal | rich | snmp | degraded   (telemetry impairment layered on real counters)
   SBS_TAG       run label, SBS_HYST  min per-demand split change (L1) to re-program a group
+  SBS_SHADOW    1 = shadow mode: the policy runs and is logged but nothing is installed (ECMP keeps running)
 
 Measurement model: every `delta` seconds the controller reads port/flow counters (real OpenFlow
 stats replies, with real jitter) giving true per-interval link utilisation and demand rates. Those
@@ -85,6 +86,7 @@ class TEApp(app_manager.RyuApp):
         self.shared = e.get("SBS_SHARED", "/shared")
         self.tag = e.get("SBS_TAG", "run")
         self.hyst = float(e.get("SBS_HYST", "0.05"))
+        self.shadow = e.get("SBS_SHADOW", "0") == "1"
         self.topo = S.topo_from_dict(self.sc["topo"])
         self.out_port = {int(k): v for k, v in self.sc["ports"]["out_port"].items()}
         self.delta, self.steps = self.sc["delta"], self.sc["steps"]
@@ -258,6 +260,12 @@ class TEApp(app_manager.RyuApp):
         self.flow_tx.update(self.cur_flow)
         return util, dem, have_base
 
+    def _predict(self, obs, splits):
+        """Fluid-model max utilisation of `splits` and of what is installed, on the observed (impaired) state."""
+        topo, up = self.topo, obs["link_up"]
+        f = lambda sp: float((topo.inc @ (obs["demand"][:, None] * sp).ravel() / topo.cap)[up].max())
+        return f(np.asarray(splits, float)), f(self.installed)
+
     def _safe_act(self, obs):
         """Policy call that can never take the controller down: any exception, NaN or malformed
         proposal becomes ECMP and is counted (this is the L1 'malformed action' rule at the edge)."""
@@ -319,7 +327,10 @@ class TEApp(app_manager.RyuApp):
                 fb = int(getattr(self.policy, "stats", {}).get("fallback", 0))
                 row["fallback"] = int(fb > self.prev_fb or err)     # 1 when this tick ran ECMP
                 self.prev_fb = fb
-                row["changed"] = self._apply(splits)
+                if self.shadow:
+                    row["shadow_prop_mu"], row["shadow_base_mu"] = self._predict(obs, splits)
+                else:
+                    row["changed"] = self._apply(splits)
                 row["missing_links"] = self.missing
                 inner = getattr(self.policy, "policy", self.policy)
                 if hasattr(inner, "feat"):
