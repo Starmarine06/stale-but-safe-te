@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Which traffic-engineering controller should a network run when its polled link counters are stale, noisy and incomplete? We ask when a learned split-ratio policy beats a well-tuned reactive heuristic. A graph policy is trained only on 40 small synthetic graphs by direct optimisation through a differentiable fluid model, with observations corrupted by delay, noise and dropped counters, and is applied zero-shot to 24 held-out Topology Zoo graphs and to replayed SNDlib traces. The baseline is a reactive heuristic re-tuned for every observation condition, plus ECMP; a small SDN emulation checks the controller against real counters. That check supports the simulator (emulated and simulated utilisation correlate at 0.97) and the gain of reactive control over ECMP, but at packet level with TCP the learned policy and the heuristic are level on nine scenarios with three runs each, so the learned policy's lead is established in simulation and trace replay, not in emulation. The answer depends on observation quality. With clean or moderately impaired observations the re-tuned heuristic matches or beats the learned policy. With delay, noise and drops together the learned policy is ahead: +0.033 dScore (95% interval [+0.018, +0.049]), losing on none of the 24 graphs, and ahead in all nine real-trace cells. Its mean p99 regret is lower in every profile (0.017 to 0.019 against 0.036 to 0.092), but on only 9 to 13 of 24 graphs. In a delay and polling grid the heuristic's gain falls as both grow while the learned policy's stays flat; the effect is clear on GEANT and needs 48 evaluation windows on Abilene. An ECMP-fallback runtime guard roughly halves tail regret in simulation, but at packet level it costs the same mean utilisation (about 0.016) and no longer reduces the tail. Ablations show that model-based fluid features carry the result and message passing does not. Two evaluation findings matter beyond this task: a single tuning run of the baseline can move a comparison as much as the effects reported, and a policy that avoids fresh inputs is robust regardless of architecture. Faults are modelled, not measured, so this is not a production validation.
+When a traffic-engineering controller sees stale, noisy and incomplete link counters, should it run a learned split-ratio policy or a well-tuned reactive heuristic? We train a graph policy only on 40 small synthetic graphs, by direct optimisation through a differentiable fluid model under corrupted observations, and apply it zero-shot to 24 held-out Topology Zoo graphs and to replayed SNDlib traces, against a heuristic re-tuned for every telemetry condition. With clean or moderately impaired telemetry the heuristic matches or beats the learned policy. With delay, noise and drops together the learned policy is ahead (+0.033 dScore, 95% interval [+0.018, +0.049]; no loss on any of the 24 graphs; ahead in all nine real-trace cells) and has lower mean tail regret, but on only 9 to 13 of 24 graphs. An SDN emulation agrees with the simulator (correlation 0.97), but at packet level with TCP the learned policy and the heuristic are level on nine scenarios. An ECMP-fallback guard halves tail regret in simulation but not at packet level. Model-based fluid features, not message passing, carry the result, and a single tuning run of the baseline can move a comparison as much as the effects reported. Faults are modelled, not measured.
 
 ## 1 Introduction
 
@@ -17,7 +17,7 @@ We contribute (i) a shared observation-impairment model for the simulator and co
 *Learned TE.* DOTE [1] trains a network on recent demand matrices to output split ratios over
 candidate paths by directly minimising maximum link utilisation; our training method is of this family, and we add a
 differentiable fluid model with a packet-loss term and training under impaired observations. FIGRET [2]
-adds burst robustness to this family; FlexDATE [3] choose
+adds burst robustness to this family; FlexDATE [3] chooses
 critical flows with RL and reroute them by LP, with INT/SNMP telemetry assumed timely; Teal [4] and
 CFR-RL [5] target scale or rerouting. None of these treats telemetry staleness, noise or missing
 counters as an experimental variable (full texts read; DOTE tests demand noise up to +-35% only; Teal's delay is solver
@@ -31,14 +31,14 @@ axis and has no safety mechanism. EnvelopeTC [8] bounds agent actions and disabl
 staleness limit in a hierarchical data-centre setting. RedTE [9] removes centralised control-loop latency
 by moving decisions to routers. *Safe fallback.* Training Wheels [10] falls back to a simple policy in
 unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing [11] pursue related goals
-by different means. *Surveys and robust TE.* Deep-RL approaches to TE are surveyed in [14]. Robust TE under demand uncertainty predates learning: COYOTE [15] configures traffic splitting for uncertain demands (we have read only its abstract). Those works address demand uncertainty in the planned configuration, not the age and fidelity of the telemetry a reactive controller sees. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
+by different means. *Surveys and robust TE.* Deep-RL approaches to TE are surveyed in [12]. Robust TE under demand uncertainty predates learning: COYOTE [13] configures traffic splitting for uncertain demands (we have read only its abstract). Those works address demand uncertainty in the planned configuration, not the age and fidelity of the telemetry a reactive controller sees. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
 staleness). What we add is an empirical result: in a controlled impairment sweep that holds all other factors fixed and compares
 against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
 reactive heuristic or a learned policy is the better choice, on real topologies and traces. In our literature search we found no paper that sweeps polling period, delay, noise, missing counters and install latency together for centralised split-ratio TE. This is a search result and not proof of absence.
 
 Table 15 sets the closest works side by side. Datasets differ as well: LOGGIA uses a five-node toy network, B4, the 2001 GEANT graph from the Topology Zoo and synthetic graphs with generated TCP/UDP traffic [7]; Roracle evaluates on Abilene, GEANT and Brain among others [6]; we use 24 Zoo graphs with synthetic demands plus real traces on Abilene, GEANT and Germany17.
 
-**Table 15.** Closest prior work compared with this study (from the full texts of [4], [6] and [7] and the text of [1] as read earlier; entries for other works are not tabulated because we did not verify them).
+**Table 15.** Closest prior work compared with this study (from the full texts of [4], [6] and [7] and the text of [1]; entries for other works are not tabulated because we did not verify them).
 
 | Work | Control setting | Staleness or impairment studied | Baselines | Safety mechanism |
 |---|---|---|---|---|
@@ -54,7 +54,7 @@ Table 15 sets the closest works side by side. Datasets differ as well: LOGGIA us
 
 **Network and traffic.** A topology with link capacities and k = 4 candidate paths per demand; the policy outputs split
 ratios each interval. Traffic is synthetic (gravity base, diurnal cycle, bursts, hotspots, shifts, flash crowds) or a
-replayed SNDlib trace [13] (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
+replayed SNDlib trace [14] (Abilene, 5-min, 48,096 matrices; GEANT, 15-min, 11,460; Germany17 and Germany50, 5-min, 288 each;
 Brain, 1-min, 9,723, restricted to its 600 heaviest demands = 90% of sampled traffic). Each (network, load) pair uses one
 scale factor so that the median ECMP max-link-utilisation over the trace equals 0.6, 0.8 or 1.0. This is *real-trace
 evaluation under controlled load scaling*: temporal and spatial structure are real, absolute load is not. The scale factors are
@@ -113,7 +113,7 @@ flags telemetry values outside the evaluated range. Its output is an offline est
 
 ## 5 Protocol
 
-Topology Zoo [12]: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
+Topology Zoo [15]: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
 5 evaluation seeds per graph, horizon 100, load 0.8; paired bootstrap 95% CI, IQM and Holm-corrected Wilcoxon over graphs.
 Real traces: four networks with headroom plus Brain, loads {0.6, 0.8, 1.0}, four profiles; two independent evaluation
 runs (4 windows, then 10 fresh windows per cell, 12 for Brain at load 0.8). Tuning and model selection never use test
@@ -122,7 +122,7 @@ over graphs on seed-averaged scores, so they capture graph variability but not t
 seed SD, 0.001-0.002; the GNN-vs-MLP and fluid-feature comparisons use four matched training seeds each, averaged per graph before
 resampling). Real-trace intervals are paired bootstrap over evaluation windows for one trained model and one trace, so they do
 not generalise to other days or networks. The 5% ECMP tolerance is applied identically everywhere: "ECMP is enough" requires the
-interval's upper end to be below 5%; a lower end below 5% gives "insufficient evidence". Evaluation uses 5 seeds per Zoo graph and 12 to 16 random windows per real-trace cell, fewer than the 20 seeds we planned. We train four policy seeds, not ten, and some ablations use one seed. Several baselines and analyses were added after the first results (the re-tuned heuristic, the delay grid and the window-level intervals), and a list of deviations from the original protocol is in the supplementary material.
+interval's upper end to be below 5%; a lower end below 5% gives "insufficient evidence". Evaluation uses 5 seeds per Zoo graph and 12 to 16 random windows per real-trace cell, fewer than the 20 seeds we planned. We train four policy seeds, not ten, and some ablations use one seed. Several baselines and analyses were added after the first results (the re-tuned heuristic, the delay grid and the window-level intervals), and a list of deviations from the original protocol is in `docs/eval_protocol.md` in the repository.
 
 ## 6 Results
 
@@ -223,7 +223,7 @@ A heuristic with frozen parameters collapses to about zero gain at delays of fiv
 | Abilene | -7.2 | -2.9 | +5.4 | -2.7 | -1.8 | +8.5 | +3.5 | +6.3 | +6.2 |
 | GEANT | -1.7 | +1.8 | +12.5 | +0.7 | +3.8 | +15.5 | +5.0 | +11.3 | +15.0 |
 
-The heuristic is ahead in 5 of 18 real-trace cells (Abilene with d at most 3 and P at most 5; GEANT at d = 0, P = 1), within one point in two more, and behind in the rest by up to 15.5 points. Even against the best of the five tuner seeds, an oracle on evaluation data that favours the heuristic, the learned policy stays 2.9 to 9.5 points ahead in the cells with P = 20 or d = 10, with one tie. On Zoo graphs the two are within 0.4 points at d = 0 with P at most 5, and the learned policy is ahead by 0.9 to 1.9 points elsewhere. The learned policy's gain varies by less than two points across the grid, while the heuristic's gain falls with both delay and polling period (Abilene: 41.7% at d = 0, P = 1 down to 27.8% at d = 10, P = 20). The spread over tuner seeds inside one cell is up to about 10 points (GEANT at d = 10, P = 1: 24.4 to 36.8), so margins smaller than that should not be over-read. The pattern is a gradient. No delay value flips the ranking independently of the polling period and the network.
+The heuristic is ahead in 5 of 18 real-trace cells (Abilene with d at most 3 and P at most 5; GEANT at d = 0, P = 1), within one point in one more, and behind in the rest by up to 15.5 points. Even against the best of the five tuner seeds, an oracle on evaluation data that favours the heuristic, the learned policy stays 2.9 to 9.5 points ahead in all ten cells with P = 20 or d = 10. On Zoo graphs the two are within 0.4 points at d = 0 with P at most 5, and the learned policy is ahead by 0.9 to 1.9 points elsewhere. The learned policy's gain varies by less than two points across the grid, while the heuristic's gain falls with both delay and polling period (Abilene: 41.7% at d = 0, P = 1 down to 27.8% at d = 10, P = 20). The spread over tuner seeds inside one cell is up to about 12 points (GEANT at d = 10, P = 1: 24.4 to 36.8), so margins smaller than that should not be over-read. The pattern is a gradient. No delay value flips the ranking independently of the polling period and the network.
 
 *Window-level uncertainty.* Table 6 evaluates the selected heuristic on 16 fresh windows per cell (14 on GEANT after skipping zero-traffic windows), paired with the mean of four learned seeds, with bootstrap intervals over windows (Fig. 3).
 
@@ -458,7 +458,7 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT). T
 * Real traffic is scaled to a target load by factors from 0.02 to 23 (Section 3). Trace capacities for Germany17 and Germany50 are not meaningful in absolute terms, and some traces contain extreme outlier intervals. The conclusion is insensitive to the scaling rule (Section 6.2b), but the absolute numbers are not.
 * Telemetry faults are modelled, not measured on a deployed network.
 * We train four policy seeds. The history and age ablations and the DOTE-style and fine-tuned models use one seed. Evaluation uses 5 seeds per Zoo graph and 12 to 16 windows per real-trace cell.
-* The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs. Tuner-seed spread reaches about 0.02 dScore on Zoo graphs and about 10 points of gain in the delay grid, so single-run comparisons are fragile. We did not test tuning the heuristic on a network's own history, which the fine-tuned learned variants receive.
+* The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs. Tuner-seed spread reaches about 0.02 dScore on Zoo graphs and about 12 points of gain in the delay grid, so single-run comparisons are fragile. We did not test tuning the heuristic on a network's own history, which the fine-tuned learned variants receive.
 * Germany50, Brain and the history-based comparison (Table 12) use a single-run heuristic (Appendix A) and were not repeated with the re-tuned heuristic.
 * The DOTE-style and fine-tuned models need per-network history, and only Abilene and GEANT have enough. Germany17 and Germany50 have one day of data, and their windows overlap.
 * Out-of-range overload hurts the zero-shot policy (Section 6.4).
@@ -490,7 +490,7 @@ Two networks were evaluated only with the single-run heuristic. On Germany50 (50
 
 1. Y. Perry, F. V. Frujeri, C. Hoch, S. Kandula, I. Menache, M. Schapira, A. Tamar. DOTE: Rethinking (Predictive) WAN Traffic Engineering. *NSDI*, 2023, pp. 1557-1581. arXiv:2303.00735.
 2. X. Liu, S. Zhao, Y. Cui, X. Wang. FIGRET: Fine-Grained Robustness-Enhanced Traffic Engineering. *ACM SIGCOMM*, 2024. arXiv:2405.04932.
-3. M. Ye, J. Zhang, Z. Guo, H. J. Chao. FlexDATE: Flexible and Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM Trans. Networking* 31(4), 2023. doi:10.1109/TNET.2022.3217083.
+3. M. Ye, J. Zhang, Z. Guo, H. J. Chao. FlexDATE: Flexible and Disturbance-Aware Traffic Engineering with Reinforcement Learning in Software-Defined Networks. *IEEE/ACM Trans. Networking* 31(4), 2023, pp. 1433-1448. doi:10.1109/TNET.2022.3217083.
 4. Z. Xu, F. Y. Yan, R. Singh, J. T. Chiu, A. M. Rush, M. Yu. Teal: Learning-Accelerated Optimization of WAN Traffic Engineering. *ACM SIGCOMM*, 2023, pp. 378-393. doi:10.1145/3603269.3604857; arXiv:2210.13763.
 5. J. Zhang, M. Ye, Z. Guo, C.-Y. Yen, H. J. Chao. CFR-RL: Traffic Engineering with Reinforcement Learning in SDN. *IEEE JSAC* 38(10), 2020, pp. 2249-2259. doi:10.1109/JSAC.2020.3000371.
 6. M. Ye, J. Zhang, Z. Guo, H. J. Chao. Roracle: Enabling Lookahead Routing for Scalable Traffic Engineering with Supervised Learning. *IEEE ICNP*, 2023. doi:10.1109/ICNP59255.2023.10355645.
@@ -499,7 +499,7 @@ Two networks were evaluated only with the single-run heuristic. On Germany50 (50
 9. F. Gui, S. Wang, D. Li, L. Chen, K. Gao, C. Min, Y. Wang. RedTE: Mitigating Subsecond Traffic Bursts with Real-time and Distributed Traffic Engineering. *ACM SIGCOMM*, 2024. doi:10.1145/3651890.3672231.
 10. H. Mao, M. Schwarzkopf, H. He, M. Alizadeh. Towards Safe Online Reinforcement Learning in Computer Systems ("Training Wheels"). *NeurIPS 2019* (workshop paper; the PDF footer names the 33rd NeurIPS, Vancouver).
 11. L. Dinh, P. T. A. Quang, J. Leguay. Safe Load Balancing in Software-Defined-Networking. *Computer Communications*, 2024. arXiv:2410.16846.
-12. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775.
-13. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010 (data source).
-14. Y. Xiao, J. Liu, J. Wu, N. Ansari. Leveraging Deep Reinforcement Learning for Traffic Engineering: A Survey. *IEEE Commun. Surveys Tuts.* 23(4), 2021, pp. 2064-2097. doi:10.1109/COMST.2021.3102580.
-15. M. Chiesa, G. Retvari, M. Schapira. Lying Your Way to Better Traffic Engineering. *ACM CoNEXT*, 2016. doi:10.1145/2999572.2999585; arXiv:1610.02728.
+12. Y. Xiao, J. Liu, J. Wu, N. Ansari. Leveraging Deep Reinforcement Learning for Traffic Engineering: A Survey. *IEEE Commun. Surveys Tuts.* 23(4), 2021, pp. 2064-2097. doi:10.1109/COMST.2021.3102580.
+13. M. Chiesa, G. Retvari, M. Schapira. Lying Your Way to Better Traffic Engineering. *ACM CoNEXT*, 2016. doi:10.1145/2999572.2999585; arXiv:1610.02728.
+14. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010, pp. 276-286. doi:10.1002/net.20371 (data source).
+15. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775. doi:10.1109/JSAC.2011.111002.

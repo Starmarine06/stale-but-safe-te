@@ -222,7 +222,7 @@ head = r"""\documentclass[journal]{IEEEtran}
 \title{""" + inline(title, refs=False) + r"""}
 \author{Dev~Nambiar,~\IEEEmembership{Vellore Institute of Technology, Vellore, India}%
 \thanks{Corresponding e-mail: devnambiar06@gmail.com.}}
-\markboth{IEEE/ACM Transactions on Networking}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
+\markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 """
 body = "\n".join(out).replace("%ABSTRACT%", abs_tex).replace("%REFS%", ack + "\n" + bib)
