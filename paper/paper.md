@@ -14,38 +14,22 @@ We contribute (i) a shared observation-impairment model for the simulator and co
 
 ## 2 Related work
 
-*Learned TE.* DOTE [1] trains a network on recent demand matrices to output split ratios over
-candidate paths by directly minimising maximum link utilisation; our training method is of this family, and we add a
-differentiable fluid model with a packet-loss term and training under impaired observations. FIGRET [2]
-adds burst robustness to this family; FlexDATE [3] chooses
-critical flows with RL and reroute them by LP, with INT/SNMP telemetry assumed timely; Teal [4] and
-CFR-RL [5] target scale or rerouting. None of these treats telemetry staleness, noise or missing
-counters as an experimental variable. *Staleness.* Roracle [6] is the closest in spirit: it shows that LP-optimal routing computed on
-the current matrix degrades as it ages (about 20% in MLU over a five-step horizon) and that a learned lookahead resists this;
-the staleness there is routing-computation delay and traffic drift, there is no telemetry-impairment sweep and no tuned reactive
-baseline, and it evaluates on Abilene, GEANT and Brain among others. LOGGIA [7] models
-communication and inference delay for neural link-weight routing in a packet-level simulator and reports that neural baselines
-stop beating static shortest-path routing under delay; it compares with default shortest-path protocols, studies one impairment
-axis and has no safety mechanism. EnvelopeTC [8] bounds agent actions and disables reroutes after a
-staleness limit in a hierarchical data-centre setting. RedTE [9] removes centralised control-loop latency
-by moving decisions to routers. *Safe fallback.* Training Wheels [10] falls back to a simple policy in
-unsafe states; our guard applies this idea, and FIGRET's hedging and Safe Load Balancing [11] pursue related goals
-by different means. *Surveys and robust TE.* Deep-RL approaches to TE are surveyed in [12]. Robust TE under demand uncertainty predates learning: COYOTE [13] configures static traffic-splitting ratios that are optimised over operator-specified uncertainty bounds, for networks without online traffic measurement. Those works address demand uncertainty in the planned configuration, not the age and fidelity of the telemetry a reactive controller sees. *Novelty.* We do not claim to be first to observe that stale inputs hurt (LOGGIA, Roracle, Teal all touch
-staleness). What we add is an empirical result: in a controlled impairment sweep that holds all other factors fixed and compares
-against a heuristic re-tuned per condition, telemetry delay and polling period, but not noise or missing counters, decide whether a
-reactive heuristic or a learned policy is the better choice, on real topologies and traces. In our literature search we found no paper that sweeps polling period, delay, noise, missing counters and install latency together for centralised split-ratio TE. This is a search result and not proof of absence.
+*Learned TE.* DOTE [1] and FIGRET [2] train networks on demand history to output split ratios over candidate paths by minimising maximum link utilisation; our training method is of this family, and we add a differentiable fluid model with a packet-loss term and training under impaired observations. They test demand noise or bursts, not stale or missing counters. FlexDATE [3] selects critical flows with RL and reroutes them by LP, assuming timely INT/SNMP telemetry; Teal [4] and CFR-RL [5] target scale or rerouting. *Staleness and delay.* Roracle [6] shows that LP-optimal routing computed on the current matrix degrades as the matrix ages (about 20% in MLU over five steps) and that a learned lookahead resists this; its staleness is routing-computation delay and traffic drift, with no telemetry-impairment sweep and no tuned reactive baseline. LOGGIA [7] models communication and inference delay for neural link-weight routing in a packet-level simulator and reports that neural baselines stop beating static shortest-path routing under delay and that fully local deployment works best; it varies one impairment axis, compares with default shortest-path protocols and has no safety mechanism. EnvelopeTC [8] bounds edge-agent actions and disables reroutes when its policy envelope is older than a staleness limit, but staleness is a safety rule there, not a studied variable. RedTE [9] removes centralised control-loop latency by moving decisions to routers. *Safe fallback.* Training Wheels [10] falls back to a simple policy in unsafe states, and Safe Load Balancing [11] shields a DRL agent with a control barrier function against capacity violations; our guard applies the fallback idea. *Surveys and robust TE.* Deep-RL approaches to TE are surveyed in [12]. Robust TE under demand uncertainty predates learning: COYOTE [13] configures static traffic-splitting ratios that are optimised over operator-specified uncertainty bounds, for networks without online traffic measurement. Those works address demand uncertainty in the planned configuration, not the age and fidelity of the telemetry a reactive controller sees.
 
-Table 1 sets the closest works side by side. Datasets differ as well: LOGGIA uses a five-node toy network, B4, the 2001 GEANT graph from the Topology Zoo and synthetic graphs with generated TCP/UDP traffic [7]; Roracle evaluates on Abilene, GEANT and Brain among others [6]; we use 24 Zoo graphs with synthetic demands plus real traces on Abilene, GEANT and Germany17.
+*What is new.* That delay hurts neural routing is not new (LOGGIA, Roracle). What none of the works in Table 1 combines is (a) centralised split-ratio TE, (b) a five-axis telemetry channel (polling period, delay, noise, dropped counters, install latency) applied identically in simulation and to real OpenFlow counters, (c) a heuristic baseline re-tuned for every impairment profile, with its tuning-seed variability reported, and (d) real topologies and traces with a packet-level check. The findings differ in kind: the ranking of learned and heuristic control depends on telemetry quality and on how the baseline is tuned, and the learned policy's lead is not established at packet level.
 
-**Table 1.** Closest prior work compared with this study (from the full texts of [4], [6] and [7] and the text of [1]; entries for other works are not tabulated because we did not verify them).
+**Table 1.** Closest prior work compared with this study (entries checked against the cited texts; FlexDATE, CFR-RL and RedTE are not tabulated).
 
 | Work | Control setting | Staleness or impairment studied | Baselines | Safety mechanism |
 |---|---|---|---|---|
 | DOTE [1] | Split ratios over paths, minutes scale | Demand noise up to +-35% | LP-based TE schemes | None |
+| FIGRET [2] | Split ratios over paths | Demand bursts; telemetry not varied | DOTE, desensitisation-based and LP-based TE | None |
 | Teal [4] | Split ratios, WAN scale | Solver time only | LP solvers | None |
 | Roracle [6] | Lookahead routing | Age of the traffic matrix (routing computation delay) | Optimal routing on the current matrix | None |
 | LOGGIA [7] | Link weights, per-router or central, packet-level, sub-second | Communication and inference delay (one axis) | Shortest-path routing, neural baselines | None |
-| This study | Split ratios, centralised, fluid model plus a small emulation | Polling period, delay, noise, missing counters, install latency | ECMP and a heuristic re-tuned per condition | Guard falling back to ECMP |
+| EnvelopeTC [8] | Controller envelopes, edge agents | Staleness bound used as a safety rule | Static ECMP, centralised TE, threshold reroute, learned agents | Envelope, disable when stale |
+| Safe LB [11] | DRL load balancing, packet-level simulator | Not varied | Non-RL load balancers | Control barrier function |
+| This study | Split ratios, centralised, fluid model plus emulation | Polling period, delay, noise, missing counters, install latency | ECMP and a heuristic re-tuned per condition | Guard falling back to ECMP |
 
 **Comparison with LOGGIA.** We did not run LOGGIA, and a like-for-like comparison is not possible with the present setup: it optimises goodput by link-weight routing in a packet-level simulator at sub-second time scales, while we optimise maximum link utilisation by split ratios at the time scale of telemetry polls, in a fluid model. Our results are therefore a statement about split-ratio TE under impaired telemetry, not a ranking against LOGGIA. Adding our re-tuned heuristic and ECMP as baselines inside its public framework is future work.
 
@@ -69,6 +53,8 @@ median. Such intervals dominate pooled tail statistics and are the likely source
 intervals. Profiles: ideal (1,0,0,0), rich (1,1,0.03,0), SNMP-like (5,1,0.05,0.02), degraded (5,3,0.2,0.1). The same
 channel is applied to real OpenFlow counters in the emulated controller.
 
+**Where the profiles come from.** They are stylised, not fitted: we had no operational telemetry logs. They are informed by published measurements: byte counters in the devices tested by Caria and Jukan [15] reach the MIB only every 0.5 s, 1 s or 10 s (a Cisco 2811 router by default), so polls shorter than that return stale values, and a case study of SNMP collection [16] found most link-load errors small but with a heavy tail, a few as large as the measurement. Our noise and drops are lighter-tailed than that, so Section 6.2c tests gross errors, lost poll rounds and poll jitter on top of the degraded profile. The profiles should be read as a sweep over axes, not as a calibration.
+
 **Metrics.** We report separately: gain (reduction of mean max-link-utilisation vs ECMP), fluid packet loss, tail
 regret (p99 of per-interval max-util minus ECMP's; positive = worse than ECMP) and flow-update rate. The composite score
 (max-util ratio + 5 x loss, paired difference to ECMP, "dScore") is a convenience; conclusions do not depend on the
@@ -78,13 +64,7 @@ windows inside it; windows within one day-long trace overlap and are not treated
 
 ## 4 Methods
 
-**Baselines.** *ECMP.* *Tuned heuristic:* EWMA-smoothed bottleneck soft-min over candidate paths with hysteresis, damped
-updates and age-based shrinkage of stale readings; five parameters tuned per telemetry profile by a 40-trial random
-search on four synthetic graphs disjoint from training and test graphs (it therefore knows the telemetry profile, a
-favourable baseline). *Static LP:* LP-optimal splits for the mean traffic matrix of the training part of a trace, no
-telemetry. *DOTE-style:* an MLP on the last three impaired demand estimates, trained per network on the first 70% of its
-trace (ideal-telemetry and degraded-telemetry variants) with our differentiable loss; evaluated on the last 30%.
-*LP oracle:* perfect information, graphs with n <= 25 only; a reference bound, not a deployable method.
+**Baselines and tuning budgets.** *ECMP* and *static LP* (LP-optimal splits for the mean traffic matrix of the first 70% of a trace, no telemetry) have nothing to tune. *Tuned heuristic:* EWMA-smoothed bottleneck soft-min over candidate paths with hysteresis, damped updates and age-based shrinkage of stale readings; five parameters tuned per telemetry profile by random search, 80 trials per tuner seed, on four synthetic graphs disjoint from training and test graphs, repeated with five independent tuner seeds (100 to 104). The main comparisons average over tuner seeds, and Section 6.1 reports how often the verdict changes with the seed. The heuristic knows the telemetry profile, which favours it. *DOTE-style:* an MLP on the last three impaired demand estimates, trained per network on the first 70% of its trace (60 episodes per load at three loads, 25 epochs, Adam 1e-3, one seed, ideal- and degraded-telemetry variants) with our differentiable loss, and evaluated on the last 30%. *LP oracle:* perfect information, graphs with n <= 25 only; a reference bound, not a deployable method. The learned policy has a fixed schedule (12 iterations of 40 episodes at learning rate 1e-3, then 4 at 2e-4) and four training seeds; no baseline or model is selected on test graphs or windows.
 
 **Learned policy.** A graph network on the link graph with path pooling (Section 6.3 shows the message passing is not what matters; a per-link MLP with the same inputs does as well or better). Inputs: impaired utilisation and demand history (H = 3),
 telemetry age, and model-based fluid features (ECMP-predicted utilisation, utilisation predicted for the current
@@ -112,7 +92,7 @@ flags telemetry values outside the evaluated range. Its output is an offline est
 
 ## 5 Protocol
 
-Topology Zoo [15]: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
+Topology Zoo [17]: 263 graphs split into train/validation/test; we report the 24-graph `test_subset`,
 5 evaluation seeds per graph, horizon 100, load 0.8; paired bootstrap 95% CI, IQM and Holm-corrected Wilcoxon over graphs.
 Real traces: four networks with headroom plus Brain, loads {0.6, 0.8, 1.0}, four profiles; two independent evaluation
 runs (4 windows, then 10 fresh windows per cell, 12 for Brain at load 0.8). Tuning and model selection never use test
@@ -148,7 +128,7 @@ Table 2 and Fig. 1 give three results.
 
 *Tail risk is lower for the learned policy on average, but not on every graph.* Its mean p99 regret is lower in every profile, and the interval of the difference excludes zero for rich, SNMP and degraded telemetry (for ideal telemetry the lower end is 0.000). However, the learned policy has the lower p99 on only 9 to 13 of the 24 graphs. The average gap comes from a minority of graphs on which the heuristic has a large tail. We therefore describe the advantage as lower on average, not as a uniform improvement.
 
-*Tuning variation is large.* Under SNMP telemetry the heuristic's dScore ranges from -0.072 to -0.053 across tuner seeds, which is as large as the differences in Table 2. A comparison based on one tuning run can therefore change sign.
+*Tuning variation is large.* Under SNMP telemetry the heuristic's dScore ranges from -0.072 to -0.053 across tuner seeds, which is as large as the differences in Table 2. A comparison based on one tuning run can therefore change sign. Repeating the comparison for every tuner seed, and for each of the four training seeds separately (20 pairs), the verdict never reverses from one side to the other at any profile: under degraded telemetry the learned policy is ahead for all 5 tuner seeds (20 of 20 pairs); under SNMP telemetry all 5 seeds give a tie, although the sign of the mean difference changes with the seed (-0.010 to +0.009); under ideal and rich telemetry the heuristic is ahead for 3 and 4 of the 5 seeds and tied for the rest (`experiments/final/table_ranking_stability.md`). The ranking is therefore stable at the two ends of the telemetry range, and tuner-seed variability decides only whether the middle is a tie.
 
 The ranking does not depend on the loss weight in the score. At weight 0 (pure maximum utilisation) the heuristic still wins at ideal telemetry (dScore -0.061 against -0.043) and the learned policy wins at degraded telemetry (-0.040 against -0.030). At weight 20 the learned policy wins on 21 of 24 graphs under degraded telemetry, and the heuristic stays ahead under ideal, rich and SNMP telemetry. The heuristic is tuned with weight 5 in all cases.
 
@@ -191,30 +171,13 @@ The oracle gain (for graphs with at most 25 nodes) is 47% to 58% on Abilene and 
 
 ### 6.2a Which impairment drives the ranking?
 
-*Delay and the heuristic's parameters.* We first vary only the telemetry delay d, with everything else ideal, and run the heuristic in three ways: with parameters frozen at the values tuned for clean telemetry, frozen at the values tuned for degraded telemetry, and re-tuned at each delay (one 40-trial run on four synthetic graphs). The learned policy is the mean of four training seeds (Table 5).
-
-**Table 5.** Mean gain (%) over ECMP versus delay d at load 0.8 for the heuristic with frozen and re-tuned parameters and the learned policy. Zoo rows are averages over 10 graphs.
-
-| case | d | heuristic, frozen (clean-tuned) | heuristic, frozen (degraded-tuned) | heuristic, re-tuned at d | learned |
-|---|---|---|---|---|---|
-| Abilene | 0 | 34.0 | 16.4 | 41.9 | 34.5 |
-| Abilene | 3 | 6.4 | 20.7 | 34.7 | 34.2 |
-| Abilene | 5 | 0.0 | 22.5 | 23.2 | 34.5 |
-| Abilene | 10 | 0.0 | 0.0 | 21.0 | 34.7 |
-| GEANT | 0 | 37.6 | 38.2 | 45.6 | 42.6 |
-| GEANT | 3 | 1.9 | 31.9 | 43.6 | 42.5 |
-| GEANT | 5 | 0.0 | 24.2 | 23.2 | 42.5 |
-| GEANT | 10 | 0.0 | 0.0 | 24.9 | 41.8 |
-| Zoo | 0 | 4.8 | 0.9 | 5.1 | 4.8 |
-| Zoo | 3 | 0.7 | 0.5 | 3.2 | 4.3 |
-| Zoo | 5 | 0.0 | 2.2 | 2.3 | 4.3 |
-| Zoo | 10 | 0.0 | 0.0 | 2.8 | 4.2 |
+*Delay and the heuristic's parameters.* We first vary only the telemetry delay d, with everything else ideal, and run the heuristic in three ways: with parameters frozen at the values tuned for clean telemetry, frozen at the values tuned for degraded telemetry, and re-tuned at each delay (one 40-trial run on four synthetic graphs). The learned policy is the mean of four training seeds. Mean gain over ECMP at load 0.8 for d = 0, 3, 5 and 10: Abilene, frozen clean-tuned parameters 34.0, 6.4, 0.0, 0.0%, re-tuned 41.9, 34.7, 23.2, 21.0%, learned 34.5, 34.2, 34.5, 34.7%; GEANT, frozen 37.6, 1.9, 0.0, 0.0%, re-tuned 45.6, 43.6, 23.2, 24.9%, learned 42.6, 42.5, 42.5, 41.8%.
 
 A heuristic with frozen parameters collapses to about zero gain at delays of five intervals or more. This mostly reflects mis-tuning: when re-tuned at each delay, the heuristic keeps most of its gain. It matches the learned policy at small delay (at d = 3: Abilene 34.7 against 34.2, GEANT 43.6 against 42.5) and is behind at d = 5 and d = 10. The learned policy's gain does not depend on d. Because a single tuning run is noisy, the comparisons in the rest of this paper use re-tuned heuristics, and the grid below uses repeated tuning.
 
-*Delay and polling period together.* We re-tune the heuristic five times in each (d, P) cell, with independent tuner seeds and 80 trials each, where P is the polling period. The reported heuristic is the seed with the best tuning score, so selection never uses evaluation data. Table 6 shows the learned policy's gain minus the heuristic's, in points.
+*Delay and polling period together.* We re-tune the heuristic five times in each (d, P) cell, with independent tuner seeds and 80 trials each, where P is the polling period. The reported heuristic is the seed with the best tuning score, so selection never uses evaluation data. Table 5 shows the learned policy's gain minus the heuristic's, in points.
 
-**Table 6.** Learned minus re-tuned heuristic gain (points) over the delay d and polling period P grid. Positive favours the learned policy. Zoo values average 10 graphs; Abilene and GEANT use the same evaluation windows as Table 5.
+**Table 5.** Learned minus re-tuned heuristic gain (points) over the delay d and polling period P grid. Positive favours the learned policy. Zoo values average 10 graphs; Abilene and GEANT use the same evaluation windows as the delay comparison above.
 
 | case | d=0 P=1 | d=0 P=5 | d=0 P=20 | d=3 P=1 | d=3 P=5 | d=3 P=20 | d=10 P=1 | d=10 P=5 | d=10 P=20 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -224,33 +187,19 @@ A heuristic with frozen parameters collapses to about zero gain at delays of fiv
 
 The heuristic is ahead in 5 of 18 real-trace cells (Abilene with d at most 3 and P at most 5; GEANT at d = 0, P = 1), within one point in one more, and behind in the rest by up to 15.5 points. Even against the best of the five tuner seeds, an oracle on evaluation data that favours the heuristic, the learned policy stays 2.9 to 9.5 points ahead in all ten cells with P = 20 or d = 10. On Zoo graphs the two are within 0.4 points at d = 0 with P at most 5, and the learned policy is ahead by 0.9 to 1.9 points elsewhere. The learned policy's gain varies by less than two points across the grid, while the heuristic's gain falls with both delay and polling period (Abilene: 41.7% at d = 0, P = 1 down to 27.8% at d = 10, P = 20). The spread over tuner seeds inside one cell is up to about 12 points (GEANT at d = 10, P = 1: 24.4 to 36.8), so margins smaller than that should not be over-read. The pattern is a gradient. No delay value flips the ranking independently of the polling period and the network.
 
-*Window-level uncertainty.* Table 7 evaluates the selected heuristic on 16 fresh windows per cell (14 on GEANT after skipping zero-traffic windows), paired with the mean of four learned seeds, with bootstrap intervals over windows (Fig. 3).
-
-**Table 7.** Paired window-level comparison over the delay and polling grid at load 0.8, GEANT (the nine Abilene cells are in Fig. 3, left, and in `experiments/final/table_delay_ci.md`). Gains in %; difference is learned minus heuristic in points with a 95% bootstrap interval over windows. Verdict: L learned ahead, H heuristic ahead, = tie.
-
-| network | d | P | heuristic % | learned % | difference [95% CI] | verdict | windows |
-|---|---|---|---|---|---|---|---|
-| GEANT | 0 | 1 | 38.5 | 34.4 | -4.1 [-5.2, -3.0] | H | 14 |
-| GEANT | 0 | 5 | 33.9 | 34.2 | +0.4 [-1.1, +1.9] | = | 14 |
-| GEANT | 0 | 20 | 22.2 | 32.9 | +10.7 [+8.3, +12.8] | L | 14 |
-| GEANT | 3 | 1 | 33.8 | 34.3 | +0.5 [-1.6, +2.9] | = | 14 |
-| GEANT | 3 | 5 | 31.7 | 34.2 | +2.5 [+1.0, +4.2] | L | 14 |
-| GEANT | 3 | 20 | 20.4 | 32.7 | +12.3 [+9.3, +15.0] | L | 14 |
-| GEANT | 10 | 1 | 29.5 | 33.2 | +3.7 [+1.1, +6.4] | L | 14 |
-| GEANT | 10 | 5 | 23.6 | 32.9 | +9.2 [+7.3, +10.9] | L | 14 |
-| GEANT | 10 | 20 | 20.5 | 31.4 | +10.9 [+7.9, +13.5] | L | 14 |
+*Window-level uncertainty.* The selected heuristic is evaluated on 16 fresh windows per cell (14 on GEANT after skipping zero-traffic windows), paired with the mean of four learned seeds, with bootstrap intervals over windows (Fig. 3).
 
 ![Figure 3](figures/fig3_delay.png)
 
-**Figure 3.** Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points, with 95% bootstrap intervals over windows. Left: Abilene, the 16-window sample used in Table 7. Middle: Abilene, the 48 additional windows of Table 8. Right: GEANT, 16 windows (14 after skipping zero-traffic windows). The two Abilene panels use different window samples, so they are not repeated measurements of one estimate.
+**Figure 3.** Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points, with 95% bootstrap intervals over windows. Left: Abilene, the 16-window sample. Middle: Abilene, the 48 additional windows of Table 6. Right: GEANT, 16 windows (14 after skipping zero-traffic windows). The two Abilene panels use different window samples, so they are not repeated measurements of one estimate.
 
-On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows (Table 8). The tuner saw only synthetic graphs and never a real trace or evaluation window.
+On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows (Table 6). The tuner saw only synthetic graphs and never a real trace or evaluation window.
 
 *Why the Abilene result depends on the sample.* The Abilene results depend on which windows are drawn and on how the heuristic is tuned. We evaluated two window samples (A: 12 windows, B: 16 windows) with two heuristic parameter sets (the per-profile set and the grid-selected set) under the same telemetry. Both experiments use the same model checkpoints, trace loader, scaling, gain definition and 100-interval windows chosen by seed.
 
-The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36% to 29%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2% against 17.0% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Because the 16-window result could not be resolved, we evaluated the same selected heuristic on 48 new windows (seeds not used before) in each Abilene cell (Table 8).
+The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36% to 29%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2% against 17.0% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Because the 16-window result could not be resolved, we evaluated the same selected heuristic on 48 new windows (seeds not used before) in each Abilene cell (Table 6).
 
-**Table 8.** Abilene at load 0.8 on 48 new windows per cell. Gains in %; difference is learned minus heuristic in points with a 95% bootstrap interval over windows. Verdict: L learned ahead, H heuristic ahead, = tie.
+**Table 6.** Abilene at load 0.8 on 48 new windows per cell. Gains in %; difference is learned minus heuristic in points with a 95% bootstrap interval over windows. Verdict: L learned ahead, H heuristic ahead, = tie.
 
 | d | P | heuristic % | learned % | difference [95% CI] | verdict | windows |
 |---|---|---|---|---|---|---|
@@ -272,11 +221,15 @@ We scaled each real trace so that the median, the mean or the 95th percentile of
 
 Under ideal telemetry the heuristic is ahead in all nine cells, by 3.6 to 9.9 points (for example Abilene with median scaling: 40.2% against 30.3%). Under degraded telemetry the learned policy is ahead in all nine cells, by 1.2 to 13.7 points; the smallest margin is Abilene with the 95th-percentile rule (20.3% against 21.5%), the largest Germany17 with mean scaling (1.5% against 15.2%). The conclusion therefore does not depend on the scaling rule, although the absolute numbers do.
 
+### 6.2c Impairments closer to measured collection
+
+The stylised profiles lack heavy-tailed errors, lost poll rounds and timing jitter. On 10 Zoo graphs (n <= 25) we added each to the degraded profile (2% or 5% of readings replaced by the reading scaled by U(0, 2); 10% of poll rounds lost; poll interval jittered by one interval with probability 0.3) and all three together, without retraining the learned models. The learned policy's gain stays at 4.1% to 4.2% and it stays ahead of the heuristic by 1.9 to 2.8 points (every interval excludes zero), with p99 regret 0.059 to 0.079 against 0.261 to 0.477. Re-tuning the heuristic for the two harsher variants (two tuner seeds) does not close the gap (3.5 and 3.2 points). This is a Zoo-only check at degraded telemetry, and the heuristic's absolute gain is small there (0.7% to 2.3%), so it supports robustness to these impairment types, not a calibration to any network (`experiments/final/table_telemetry_realism.md`).
+
 ### 6.3 What carries the result: baselines and ablations
 
-Table 9 compares the zero-shot policy with models that use a network's own history, on held-out windows (the last 30% of the trace).
+Table 7 compares the zero-shot policy with models that use a network's own history, on held-out windows (the last 30% of the trace).
 
-**Table 9.** Held-out gain (%) on Abilene at load 0.8. The heuristic column is the single-run heuristic of Appendix A, not the re-tuned one.
+**Table 7.** Held-out gain (%) on Abilene at load 0.8. The heuristic column is the single-run heuristic of Appendix A, not the re-tuned one.
 
 | Abilene @0.8 | single-run heuristic | static LP | DOTE-style (degraded-trained) | GNN zero-shot | GNN fine-tuned |
 |---|---|---|---|---|---|
@@ -302,9 +255,9 @@ randomised model has a lower p99 regret under degraded telemetry (0.019 vs 0.027
 
 ### 6.4 Where it fails: overload
 
-Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table 10). Of these, 27 are typical and 3 are overloaded.
+Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table 8). Of these, 27 are typical and 3 are overloaded.
 
-**Table 10.** Typical and overloaded Abilene windows at load 0.8 (30 windows). Gain over ECMP in %: median and worst window.
+**Table 8.** Typical and overloaded Abilene windows at load 0.8 (30 windows). Gain over ECMP in %: median and worst window.
 
 | telemetry | window type | windows | heuristic gain (median, worst) | learned gain (median over seeds, worst) | learned + guard (median, worst) | learned worse than ECMP in |
 |---|---|---|---|---|---|---|
@@ -319,9 +272,9 @@ In typical windows the heuristic is better under ideal telemetry, and the learne
 
 Definitions (per interval, using the true demand, simulator only): *beneficial* proposal = true max-util below 0.99 x ECMP's,
 *harmful* = above 1.01 x; false rejection = beneficial proposals among fallbacks; harm caught = harmful proposals replaced.
-Table 11 reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.
+Table 9 reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.
 
-**Table 11.** Guard behaviour on 10 Zoo graphs. Fallback is the share of intervals replaced by ECMP; false rejection is the share of fallbacks where the proposal was beneficial; harm caught is the share of harmful proposals replaced; gain kept compares the guarded with the unguarded gain.
+**Table 9.** Guard behaviour on 10 Zoo graphs. Fallback is the share of intervals replaced by ECMP; false rejection is the share of fallbacks where the proposal was beneficial; harm caught is the share of harmful proposals replaced; gain kept compares the guarded with the unguarded gain.
 
 | scenario | fallback | false rejection | harm caught | gain kept | p99 regret raw -> guarded |
 |---|---|---|---|---|---|
@@ -337,9 +290,9 @@ at degraded telemetry (average of per-graph p99), while the pooled p99 above fal
 the typical tail but misses harmful proposals concentrated in a few graphs. The guard is most effective under link failures.
 It falls back often (71% to 80%) yet keeps 74% to 91% of the gain because fallback occurs mostly in low-gain intervals. On real traces the validation-chosen guard barely affects the learned policy (0.0 to 0.8 points of gain).
 
-Table 12 applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.
+Table 10 applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.
 
-**Table 12.** Guard applied to the learned policy and to the re-tuned heuristic (24 Zoo graphs, layer 2 only, eps = -0.06). Each cell gives mean dScore and mean per-graph p99 regret.
+**Table 10.** Guard applied to the learned policy and to the re-tuned heuristic (24 Zoo graphs, layer 2 only, eps = -0.06). Each cell gives mean dScore and mean per-graph p99 regret.
 
 | telemetry | learned | learned + guard | re-tuned heuristic | heuristic + guard |
 |---|---|---|---|---|
@@ -367,9 +320,9 @@ Emulation: Mininet with Open vSwitch and a Ryu controller reading real OpenFlow 
 update threshold (28 runs). Simulator and emulator agree: across the 24
 runs at the default 5% threshold the correlation between emulated and simulated mean max-utilisation is 0.99, the mean
 absolute difference 0.017 and the bias +0.010; per-run time-series correlation is 0.83-0.98; the policy ranking agrees
-(Kendall tau 0.47-0.73 per scenario). Table 13 gives means over the four scenarios.
+(Kendall tau 0.47-0.73 per scenario). Table 11 gives means over the four scenarios.
 
-**Table 13.** Emulation results, means over four scenarios: emulated max-utilisation, flow-mods per minute and controller loop time.
+**Table 11.** Emulation results, means over four scenarios: emulated max-utilisation, flow-mods per minute and controller loop time.
 
 | policy [telemetry] | max-util | flow-mods/min | loop ms |
 |---|---|---|---|
@@ -413,7 +366,7 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT). T
 * Telemetry faults are modelled, not measured on a deployed network, and overload far outside the training range hurts the zero-shot policy (Section 6.4).
 * We train four policy seeds. The history and age ablations and the DOTE-style and fine-tuned models use one seed. Evaluation uses 5 seeds per Zoo graph and 12 to 16 windows per real-trace cell.
 * The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs. Tuner-seed spread reaches about 0.02 dScore on Zoo graphs and about 12 points of gain in the delay grid, so single-run comparisons are fragile. We did not test tuning the heuristic on a network's own history, which the fine-tuned learned variants receive.
-* Germany50, Brain and the history-based comparison (Table 9) use a single-run heuristic (Appendix A) and were not repeated with the re-tuned heuristic.
+* Germany50, Brain and the history-based comparison (Table 7) use a single-run heuristic (Appendix A) and were not repeated with the re-tuned heuristic.
 * The DOTE-style and fine-tuned models need per-network history, and only Abilene and GEANT have enough. Germany17 and Germany50 have one day of data, and their windows overlap.
 * We do not compare with Teal or other published systems: Teal treats staleness only as solver run time and is not a like-for-like baseline for telemetry impairments. Our DOTE-style model is a re-implementation of the idea, not the authors' code.
 * We do not claim a general performance win, being first to show degradation under delay (LOGGIA), or production readiness.
@@ -424,11 +377,7 @@ Code, configuration, trained policies and result tables are in the project repos
 
 ## Appendix A: Single-run heuristic results
 
-Our first comparisons used a heuristic tuned once per profile (40 trials, one run). We report them here because they differ from the re-tuned results in the main text, and the difference is itself a finding: a single tuning run can favour the learned policy by a wide margin.
-
-On the 24 Zoo graphs the single-run heuristic's difference to the learned policy (heuristic minus learned dScore, 95% interval over graphs) was -0.016 [-0.030, -0.005] at ideal telemetry and -0.004 [-0.014, +0.004] at rich telemetry, but +0.013 [+0.003, +0.023] under SNMP telemetry and +0.075 [+0.036, +0.120] under degraded telemetry, where the learned policy won on 14 graphs, tied on 10 and lost on none; its p99 regret was 0.183 against 0.019 for the learned policy. So with the single-run heuristic the learned policy appeared ahead under SNMP telemetry and ahead by more than twice the re-tuned margin under degraded telemetry. On real traces (Abilene, GEANT and Germany17, 12 windows per cell, 36 cells), the learned policy appeared ahead in 32 cells, the heuristic ahead in 2 and tied in 2. Recomputing the heuristic column with the re-tuned parameters on the same windows gives 12, 17 and 7 (Table 4). The single-run heuristic also fell below ECMP under degraded telemetry on Germany17 (3% to 4% worse) and in individual Abilene windows (by up to 51%).
-
-Two networks were evaluated only with the single-run heuristic. On Germany50 (50 nodes, larger than any training graph) the learned policy gained 33% to 36% against 9% to 31% for the heuristic. On Brain the gain was about 0.3% for every method in 12 windows. The overload analysis and the emulation also used the single-run heuristic; the qualitative conclusions match those in the main text.
+Our first comparisons used a heuristic tuned once per profile (40 trials, one run). They differ from the re-tuned results in the main text, and the difference is itself a finding. On the 24 Zoo graphs the single-run heuristic's difference to the learned policy (heuristic minus learned dScore, 95% interval over graphs) was -0.016 [-0.030, -0.005] at ideal telemetry and -0.004 [-0.014, +0.004] at rich telemetry, but +0.013 [+0.003, +0.023] under SNMP telemetry and +0.075 [+0.036, +0.120] under degraded telemetry (learned policy wins on 14 graphs, ties 10, loses none; heuristic p99 regret 0.183 against 0.019), more than twice the re-tuned margin of +0.033. On real traces (12 windows per cell, 36 cells) the learned policy appeared ahead in 32 cells, the heuristic ahead in 2 and tied in 2, against 12, 17 and 7 with the re-tuned heuristic (Table 4); the single-run heuristic also fell 3% to 4% below ECMP on Germany17 under degraded telemetry and up to 51% below in individual Abilene windows. Germany50 (50 nodes, larger than any training graph) and Brain were evaluated only with the single-run heuristic: on Germany50 the learned policy gained 33% to 36% against 9% to 31%, and on Brain every method gained about 0.3% in 12 windows. The overload analysis and the emulation also used the single-run heuristic; the qualitative conclusions match the main text.
 
 ## References
 
@@ -446,4 +395,6 @@ Two networks were evaluated only with the single-run heuristic. On Germany50 (50
 12. Y. Xiao, J. Liu, J. Wu, N. Ansari. Leveraging Deep Reinforcement Learning for Traffic Engineering: A Survey. *IEEE Commun. Surveys Tuts.* 23(4), 2021, pp. 2064-2097. doi:10.1109/COMST.2021.3102580.
 13. M. Chiesa, G. Retvari, M. Schapira. Lying Your Way to Better Traffic Engineering. *ACM CoNEXT*, 2016. doi:10.1145/2999572.2999585; arXiv:1610.02728.
 14. S. Orlowski, R. Wessaely, M. Pioro, A. Tomaszewski. SNDlib 1.0: Survivable Network Design Library. *Networks* 55(3), 2010, pp. 276-286. doi:10.1002/net.20371 (data source).
-15. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775. doi:10.1109/JSAC.2011.111002.
+15. M. Caria, A. Jukan. On the IP Traffic Matrix Problem in Hybrid SDN/OSPF Networks. arXiv:1610.08256, 2016.
+16. M. Roughan. A Case Study of the Accuracy of SNMP Measurements. *J. Electr. Comput. Eng.*, vol. 2010, art. 812979. doi:10.1155/2010/812979.
+17. S. Knight, H. X. Nguyen, N. Falkner, R. Bowden, M. Roughan. The Internet Topology Zoo. *IEEE JSAC* 29(9), 2011, pp. 1765-1775. doi:10.1109/JSAC.2011.111002.

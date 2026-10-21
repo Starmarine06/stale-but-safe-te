@@ -78,3 +78,34 @@ Everything below differs from the protocol above or was added after seeing resul
 | 8 | Tuned heuristic tuned per profile | 40-trial random search on four synthetic graphs per telemetry profile; **not** re-tuned for real traces | Real-trace results favour neither side by design, but the heuristic may be under-tuned for real traffic |
 | 9 | Emulation: multiple scenarios | See `experiments/final/table_emu*.md` for the scenarios and seeds actually run | |
 | 10 | Telemetry faults measured | **Modelled** (P, d, sigma, p, L); parameters from common SNMP practice, not from a deployed network | Main external-validity limit |
+
+## Baseline tuning budgets (added 2026-10-22 so that every baseline has a documented budget)
+
+| Method | Tuned or trained on | Budget | Seeds | Selection rule |
+|---|---|---|---|---|
+| ECMP | - | none | - | - |
+| Static LP | mean traffic matrix of the first 70% of a trace | one LP | - | - |
+| Tuned heuristic (main text) | four synthetic graphs (`eval/tune.py` TUNE_TOPOS), per telemetry profile | random search, 80 trials per tuner seed | 5 tuner seeds (100 to 104) | main comparisons average over tuner seeds; best-by-tuning-score reported separately; never selected on test data |
+| Tuned heuristic (Appendix A, first runs) | same | 40 trials | 1 | single run; superseded by the row above |
+| DOTE-style MLP | first 70% of the network's trace | 60 episodes per load at 3 loads, 25 epochs, Adam 1e-3 | 1 | none |
+| Learned policy (headline) | 40 synthetic graphs | 12 iterations x 40 episodes at 1e-3, then 4 at 2e-4 | 4 training seeds | fixed schedule; no selection on test data |
+| GNN fine-tuned | first 70% of the network's trace | 6 iterations | 1 | none |
+
+Ranking stability under tuning (`experiments/ranking_stability.py`, output `experiments/final/table_ranking_stability.md`): the verdict is recomputed for every tuner seed and for every tuner-seed x training-seed pair.
+
+## Telemetry parameter provenance
+The impairment parameters are stylised. No operational telemetry logs were available, so delay, polling period, noise and missing-counter distributions are **not** fitted to a deployed network. Published measurements that informed the ranges: MIB counter update intervals of 0.5 s, 1 s and 10 s on tested switches and a Cisco 2811 router (Caria and Jukan, arXiv 1610.08256, Fig. 4; checked in the PDF) and a heavy-tailed error distribution in SNMP link-load collection (Roughan, J. Electr. Comput. Eng. 2010, 812979; read at abstract level only). `experiments/telemetry_realism.py` adds three impairments the stylised profiles lack (gross errors, lost poll rounds, poll jitter) and re-checks the ranking.
+
+## Prespecified versus exploratory
+
+| Analysis | Status |
+|---|---|
+| Zoo comparison learned vs re-tuned heuristic (Table 2, 5 x 80 re-tuning protocol in `experiments/retune_profiles.py`) | Protocol frozen before evaluation (see its docstring); the re-tuning itself was added after the first single-run results, so the *decision to re-tune* is post hoc |
+| Ranking stability across tuner and training seeds | Post hoc, computed from the frozen runs |
+| Real-trace comparison (36 cells) | Cell grid fixed in advance; windows chosen by integer seed; heuristic re-tuned parameters added later |
+| Delay x polling grid, window-level intervals, 48-window Abilene rerun | Exploratory; the 48-window rerun was run because the 16-window sample could not resolve Abilene |
+| Ablations (history, age, GNN, fluid features) | Fluid-feature and GNN-vs-MLP ablations: four matched seeds; history and age: one seed, exploratory |
+| Guard (headline L2 eps = -0.06) | eps chosen on validation graphs, evaluated once on test; guard audit and emulation analysis exploratory |
+| TCP emulation batch 1 (9 scenarios x 3 runs) | Scenarios fixed in advance; guard variants and hysteresis variants exploratory |
+| TCP emulation batch 2 (18 scenarios) | Prespecified: design, primary outcome and simulator prediction committed before any run (`docs/tcp_batch2_design.md`, commit abbfdab) |
+| Telemetry-realism variants | Exploratory; variants and tuner seeds fixed in the script before running |

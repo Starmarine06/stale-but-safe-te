@@ -1,6 +1,6 @@
 # Related work notes (literature pass, Oct 2026)
 
-**Status:** found by web search, **read at abstract/snippet level only**. Read each in full before citing.
+**Status:** found by web search; the detailed comparison below was checked against the full texts (see its own status line).
 This is not a systematic review.
 
 ## Closest to our claim — reposition against these
@@ -75,3 +75,21 @@ control-loop latency), Teal, arXiv 2410.16846 (safe load balancing, two loops). 
   no paper found that sweeps telemetry impairments with a re-tuned heuristic and ECMP. Only new adjacent hit: arXiv 2212.11155
   (Robust Path Selection in SD-WANs using DRL: path-update overhead and route computation, not telemetry quality). Keyword search on arXiv is
   weak (exact-match), so this is absence of evidence, not proof of novelty; a manual Scholar/ACM/IEEE Xplore pass is still needed.
+
+
+## Detailed comparison (2026-10-22; PDFs read with pdftotext, entries below checked against the text)
+Read in full or in the relevant sections: LOGGIA (arXiv 2604.02927v3), Roracle (ICNP 2023 PDF), DOTE (earlier pass), FIGRET (arXiv 2405.04932, baselines and robustness sections), EnvelopeTC (arXiv 2605.09473v2), Safe Load Balancing (arXiv 2410.16846).
+
+| | This study | LOGGIA [7] | Roracle [6] | DOTE [1] | FIGRET [2] | EnvelopeTC [8] | Safe LB [11] |
+|---|---|---|---|---|---|---|---|
+| Control problem | Centralised split ratios over k = 4 candidate paths, one decision per telemetry interval | Link weights (single-path), centralised or per-router, sub-second | Lookahead routing: predict a routing for future TMs from the last TMs | Split ratios over paths from recent demand matrices | Split ratios with burst-aware robustness | Controller envelopes + edge agents (metering, queueing, reroute) | DRL load balancing with a safety shield |
+| Observation model | Utilisation and demand counters through a channel with polling period, delay, noise, dropped entries, install latency | INT-based snapshots with propagation, communication and inference delay; no noise or loss of counters | Measured TMs; staleness = routing computation delay and traffic drift | Demand matrices (ideal); multiplicative demand noise tested up to +-35% | Demand matrices (ideal) | sFlow/INT-style telemetry, 500 ms staleness bound on envelopes | Network statistics (ideal) |
+| Impairment varied as an experimental variable | Five axes, one at a time and jointly, plus delay-by-polling grid | One axis (inference delay scaling; deployment mode fixes communication delay) | Age of the routing (how long a stale routing is applied) | Demand noise | None for telemetry | None (staleness bound is a rule) | None |
+| Baselines | ECMP, heuristic re-tuned per profile (5 tuner seeds x 80 trials), static LP, DOTE-style, LP oracle | OSPF/EIGRP/RIP shortest-path variants (static), neural routers | Optimal routing on the current TM and other TE schemes | LP-based TE schemes | DOTE, desensitisation-based and LP-based TE | Static ECMP, centralised TE (500 ms loop), threshold reroute, learned agents | Non-RL load balancers |
+| Evaluation level | Fluid simulator on 24 Zoo graphs + SNDlib traces; Mininet/Ryu with UDP and TCP | ns-3 packet-level, TCP/UDP traffic, synthetic and real topologies | Trace-driven (Abilene, CERNET, GEANT, BRAIN) | Trace-driven (GEANT, Abilene, production traces) | Trace-driven (WAN and data-centre) | 1,024-host software SDN testbed | Packet-based simulator |
+| Objective | Max link utilisation (+ loss in the score) | Goodput | Max link utilisation | Max link utilisation | Max link utilisation | Utilisation, FCT, SLA | End-to-end delay under capacity safety |
+| Main finding | Ranking depends on telemetry quality and on baseline tuning; learned lead not established at packet level | Neural baselines no longer beat shortest-path under delay; fully local deployment works best | Stale routing degrades by more than 20% MLU; lookahead resists it | Direct optimisation matches or beats LP-based TE | Fine-grained robustness reduces burst-case MLU | Edge learning inside envelopes beats centralised TE | CBF keeps DRL inside the safe region |
+
+**Exact novelty claim.** Not new: that delayed or stale inputs degrade learned routing (LOGGIA, Roracle); learned split-ratio TE trained by direct optimisation (DOTE, FIGRET); safe fallback (Training Wheels, EnvelopeTC, Safe LB). New is the combination of (a) a five-axis telemetry channel shared by the simulator and a real controller reading OpenFlow counters, (b) a heuristic baseline re-tuned per impairment profile with tuning-seed variability reported and ranking stability measured, (c) zero-shot evaluation on 24 held-out Zoo graphs and replayed SNDlib traces with a packet-level TCP check, and (d) the resulting findings: the ranking changes with telemetry quality, a poorly tuned baseline can flip a conclusion, and the simulated lead is not established at packet level. The contribution is an evaluation, not an algorithm.
+
+**What would weaken it.** A paper that varies several telemetry axes against a per-condition re-tuned heuristic for centralised TE; or a re-run of LOGGIA inside our setting showing the same ranking dependence. LOGGIA's code is public; running it with our heuristic and ECMP as baselines is listed as future work, not done.
