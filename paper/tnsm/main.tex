@@ -17,7 +17,7 @@
 \markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 \begin{abstract}
-When a traffic-engineering controller sees stale, noisy and incomplete link counters, should it run a learned split-ratio policy or a well-tuned reactive heuristic? We train a graph policy only on 40 small synthetic graphs, by direct optimisation through a differentiable fluid model under corrupted observations, and apply it zero-shot to 24 held-out Topology Zoo graphs and to replayed SNDlib traces, against a heuristic re-tuned for every telemetry condition. With clean or moderately impaired telemetry the heuristic matches or beats the learned policy. With delay, noise and drops together the learned policy is ahead (+0.033 dScore, 95\% interval [+0.018, +0.049]; no loss on any of the 24 graphs; ahead in all nine real-trace cells) and has lower mean tail regret, but on only 9 to 13 of 24 graphs. An SDN emulation agrees with the simulator (correlation 0.97), but at packet level with TCP the learned policy and the heuristic are level on nine scenarios. An ECMP-fallback guard halves tail regret in simulation but not at packet level. Model-based fluid features, not message passing, carry the result, and a single tuning run of the baseline can move a comparison as much as the effects reported. Faults are modelled, not measured.
+When a traffic-engineering controller reads stale, noisy and incomplete link counters, does a learned split-ratio policy beat a tuned reactive heuristic? We train a graph policy on 40 small synthetic graphs by optimising through a differentiable fluid model under corrupted observations, and apply it zero-shot to 24 held-out Topology Zoo graphs and replayed SNDlib traces, against a heuristic re-tuned per telemetry condition. Under the tested conditions the answer depends on telemetry quality: with clean or moderately impaired telemetry the heuristic matches or beats the learned policy; with delay, noise and drops together the learned policy is ahead (+0.033 dScore, 95\% interval [+0.018, +0.049]; no loss on any of 24 graphs; ahead in all nine real-trace cells and for all five tuner seeds). In TCP emulation (27 scenarios) the simulator predicts only a small lead; the emulation agrees in direction, not with statistical confidence. A fallback guard halves simulated tail regret, not packet-level tail regret. Model-based fluid features, not message passing, carry the result; a single tuning run of the baseline can move a comparison as much as the effects reported. Impairments are modelled, not measured; poor telemetry does not by itself make a learned policy the better choice.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -32,7 +32,7 @@ Centralised traffic engineering (TE) sets split ratios over candidate paths from
 For a given network and telemetry quality, does a learned policy that generalises zero-shot to unseen topologies outperform a heuristic re-tuned for the same conditions, what does each cost in tail risk and controller activity, and which components of the policy are responsible?
 \end{quote}
 
-We contribute (i) a shared observation-impairment model for the simulator and controller, and a like-for-like comparison against a heuristic re-tuned for every impairment profile; (ii) evidence from 24 held-out Topology Zoo graphs and replayed real traces that the ranking depends on observation quality, including the conditions where it does not (clean observations, overload, per-network training data); (iii) an ablation and baseline study showing that model-based fluid features, not graph message passing, carry the result, and that a per-link MLP does as well; (iv) an evaluation of an ECMP-fallback runtime guard, which cuts tail regret in simulation but not at packet level, and of a rate limiter; and (v) an audit tool that applies the measurements to a user's network. We also report the negative results (LP-teacher distillation, PPO fine-tuning) and show how much a single baseline tuning run can change a conclusion.
+\textbf{What is and is not new.} Not new: that delay degrades neural routing (LOGGIA \cite{r7}, Roracle \cite{r6}), learned split-ratio TE (DOTE \cite{r1}, FIGRET \cite{r2}) or falling back to a safe policy \cite{r10}, \cite{r11}. This is an evaluation, not a new learning algorithm, and the combination is what is new: (i) one five-parameter telemetry channel (polling period, delay, noise, dropped counters, install latency) applied identically in a fluid simulator and to real OpenFlow counters in an emulated controller; (ii) a baseline protocol in which the heuristic is re-tuned for every impairment profile with five independent tuner seeds, so that rankings come with their stability under tuning; (iii) a zero-shot comparison on 24 held-out Topology Zoo graphs and replayed SNDlib traces, with a 27-scenario TCP emulation; (iv) the finding that the ranking depends on telemetry quality and on baseline tuning, while the learned policy's lead is small and not established at packet level; (v) an ablation showing that model-based fluid features, not message passing, carry the result; (vi) an ECMP-fallback guard that cuts tail regret in simulation but not at packet level; and (vii) an audit tool that applies the measurements to a user's network. We also report negative results (LP-teacher distillation, PPO fine-tuning). We do not claim that poor telemetry makes learned routing the better choice in general.
 
 \section{Related work}
 \label{sec:2}
@@ -226,39 +226,15 @@ The heuristic is ahead in 5 of 18 real-trace cells (Abilene with d at most 3 and
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.68\textwidth]{figures/fig3_delay}
-\caption{Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points, with 95\% bootstrap intervals over windows. Left: Abilene, the 16-window sample. Middle: Abilene, the 48 additional windows of Table~\ref{tab:6}. Right: GEANT, 16 windows (14 after skipping zero-traffic windows). The two Abilene panels use different window samples, so they are not repeated measurements of one estimate.}
+\caption{Delay and polling grid with the re-tuned heuristic: learned minus heuristic gain in points, with 95\% bootstrap intervals over windows. Left: Abilene, the 16-window sample. Middle: Abilene, the 48 additional windows. Right: GEANT, 16 windows (14 after skipping zero-traffic windows). The two Abilene panels use different window samples, so they are not repeated measurements of one estimate.}
 \label{fig:3}
 \end{figure*}
 
-On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows (Table~\ref{tab:6}). The tuner saw only synthetic graphs and never a real trace or evaluation window.
+On GEANT the pattern is clear. The heuristic is ahead only at d = 0, P = 1 (-4.1 [-5.2, -3.0]), two cells are ties, and the learned policy is ahead in the other six, by 2.5 to 12.3 points. Its advantage grows with delay and polling period. On Abilene this 16-window sample did not resolve the result. The heuristic's point estimate is ahead in all nine cells, by 3.0 to 14.0 points, the interval excludes zero in three cells (heuristic ahead) and includes zero in six, and the interval half-widths are 10 to 15 points. We therefore ran 48 further windows. The tuner saw only synthetic graphs and never a real trace or evaluation window.
 
 \textit{Why the Abilene result depends on the sample.} The Abilene results depend on which windows are drawn and on how the heuristic is tuned. We evaluated two window samples (A: 12 windows, B: 16 windows) with two heuristic parameter sets (the per-profile set and the grid-selected set) under the same telemetry. Both experiments use the same model checkpoints, trace loader, scaling, gain definition and 100-interval windows chosen by seed.
 
-The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36\% to 29\%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2\% against 17.0\% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Because the 16-window result could not be resolved, we evaluated the same selected heuristic on 48 new windows (seeds not used before) in each Abilene cell (Table~\ref{tab:6}).
-
-\begin{table*}[!t]
-\caption{Abilene at load 0.8 on 48 new windows per cell. Gains in \%; difference is learned minus heuristic in points with a 95\% bootstrap interval over windows. Verdict: L learned ahead, H heuristic ahead, = tie.}
-\label{tab:6}
-\centering
-\scriptsize
-\renewcommand{\arraystretch}{1.05}
-\adjustbox{max width=\textwidth}{%
-\begin{tabular}{lllcccc}
-\hline
-d & P & heuristic \% & learned \% & difference [95\% CI] & verdict & windows \\
-\hline
-0 & 1 & 43.1 & 35.8 & -7.3 [-10.9, -4.7] & H & 48 \\
-0 & 5 & 38.0 & 34.6 & -3.3 [-7.9, +0.2] & = & 48 \\
-0 & 20 & 33.9 & 35.3 & +1.4 [-2.7, +5.1] & = & 48 \\
-3 & 1 & 40.2 & 35.9 & -4.3 [-7.8, -1.6] & H & 48 \\
-3 & 5 & 38.3 & 35.8 & -2.5 [-6.1, +0.4] & = & 48 \\
-3 & 20 & 31.3 & 36.4 & +5.1 [+1.5, +8.3] & L & 48 \\
-10 & 1 & 33.3 & 36.5 & +3.3 [+0.0, +6.2] & L & 48 \\
-10 & 5 & 32.6 & 35.7 & +3.1 [-0.7, +6.7] & = & 48 \\
-10 & 20 & 30.0 & 36.3 & +6.2 [+2.7, +9.0] & L & 48 \\
-\hline
-\end{tabular}}
-\end{table*}
+The window sample matters most. With identical policies and telemetry (clean, d = 3, P = 5) the learned policy is level with the heuristic on set A and 12.3 points behind on set B, and the learned policy's own gain moves from 36\% to 29\%. Heuristic parameters also matter: under degraded telemetry on set A the grid-selected parameters reach 31.2\% against 17.0\% for the per-profile parameters. We found no implementation inconsistency, and we cannot attribute the remaining difference beyond these two sources. Because the 16-window result could not be resolved, we evaluated the same selected heuristic on 48 new windows (seeds not used before) in each Abilene cell (per-cell values in \texttt{experiments/final/abilene\_more.json}).
 
 With 48 windows the Abilene pattern resembles GEANT's. The heuristic is ahead with fresh and frequent telemetry (d = 0 and d = 3 with P = 1), the learned policy is ahead in three cells with stale or infrequent telemetry (d = 3 with P = 20, d = 10 with P = 1, and d = 10 with P = 20, by 3.3 to 6.2 points), and four cells are ties. The learned policy's gain is stable across the grid (34.6\% to 36.5\%), while the heuristic's gain falls from 43.1\% to 30.0\%. The earlier 16-window sample showed the heuristic ahead everywhere, so Abilene results depend on the window sample, and we treat 16 windows as too few for this network. Even with 48 windows several cells remain ties, and the ranking in a single cell should not be over-read.
 
@@ -274,11 +250,11 @@ The stylised profiles lack heavy-tailed errors, lost poll rounds and timing jitt
 
 \subsection{What carries the result: baselines and ablations}
 \label{sec:6.3}
-Table~\ref{tab:7} compares the zero-shot policy with models that use a network's own history, on held-out windows (the last 30\% of the trace).
+Table~\ref{tab:6} compares the zero-shot policy with models that use a network's own history, on held-out windows (the last 30\% of the trace).
 
 \begin{table}[!t]
 \caption{Held-out gain (\%) on Abilene at load 0.8. The heuristic column is the single-run heuristic of Appendix~\ref{app:A}, not the re-tuned one.}
-\label{tab:7}
+\label{tab:6}
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
@@ -298,11 +274,11 @@ On GEANT the DOTE-style model reaches about 18\% in every profile, the zero-shot
 
 \subsection{Where it fails: overload}
 \label{sec:6.4}
-Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table~\ref{tab:8}). Of these, 27 are typical and 3 are overloaded.
+Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table~\ref{tab:7}). Of these, 27 are typical and 3 are overloaded.
 
 \begin{table*}[!t]
 \caption{Typical and overloaded Abilene windows at load 0.8 (30 windows). Gain over ECMP in \%: median and worst window.}
-\label{tab:8}
+\label{tab:7}
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
@@ -323,11 +299,11 @@ In typical windows the heuristic is better under ideal telemetry, and the learne
 
 \subsection{Guard}
 \label{sec:6.5}
-Definitions (per interval, using the true demand, simulator only): \textit{beneficial} proposal = true max-util below 0.99 $\times$ ECMP's, \textit{harmful} = above 1.01 x; false rejection = beneficial proposals among fallbacks; harm caught = harmful proposals replaced. Table~\ref{tab:9} reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.
+Definitions (per interval, using the true demand, simulator only): \textit{beneficial} proposal = true max-util below 0.99 $\times$ ECMP's, \textit{harmful} = above 1.01 x; false rejection = beneficial proposals among fallbacks; harm caught = harmful proposals replaced. Table~\ref{tab:8} reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.
 
 \begin{table}[!t]
 \caption{Guard behaviour on 10 Zoo graphs. Fallback is the share of intervals replaced by ECMP; false rejection is the share of fallbacks where the proposal was beneficial; harm caught is the share of harmful proposals replaced; gain kept compares the guarded with the unguarded gain.}
-\label{tab:9}
+\label{tab:8}
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
@@ -346,11 +322,11 @@ demand shift, degraded & 73\% & 18\% & 53\% & 74\% & +0.084 $\rightarrow$ +0.058
 
 On real Abilene and GEANT traces (load 0.8, three typical windows each) the guard fires in only 0--2\% of intervals because the learned policy's proposals are essentially never harmful there (0.0\% of accepted intervals harmful; raw p99 regret already $\le$ 0); its value on real traces appears in overloaded windows (Section~\ref{sec:6.4}). On the 24 test graphs the per-graph p99 regret falls from 0.019 to 0.008 at degraded telemetry (average of per-graph p99), while the pooled p99 above falls only from +0.065 to +0.057: the guard cuts the typical tail but misses harmful proposals concentrated in a few graphs. The guard is most effective under link failures. It falls back often (71\% to 80\%) yet keeps 74\% to 91\% of the gain because fallback occurs mostly in low-gain intervals. On real traces the validation-chosen guard barely affects the learned policy (0.0 to 0.8 points of gain).
 
-Table~\ref{tab:10} applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.
+Table~\ref{tab:9} applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.
 
 \begin{table}[!t]
 \caption{Guard applied to the learned policy and to the re-tuned heuristic (24 Zoo graphs, layer 2 only, eps = -0.06). Each cell gives mean dScore and mean per-graph p99 regret.}
-\label{tab:10}
+\label{tab:9}
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
@@ -373,11 +349,11 @@ The guard roughly halves the p99 regret of both policies (learned 0.017--0.019 t
 \label{sec:6.6}
 Without a rate limiter the learned policy updates 91\% of demands every interval in simulation (Zoo, ideal telemetry); a 5\% threshold cuts this to 8\% and a 10\% threshold to 2.4\% with unchanged gain (3.1\%). On the real traces (degraded telemetry) the learned policy updates 98.5\% (Abilene) and 100\% (GEANT) of demands per interval without a limiter; thresholds of 5\%, 10\% and 20\% cut this to 5.1/1.7/0.9\% (Abilene) and 6.3/1.9/0.8\% (GEANT) while the gain stays or rises (Abilene 26.4 $\rightarrow$ 27.6/32.4/36.8\%, GEANT 37.9 $\rightarrow$ 38.2/38.5/37.7\%; thresholds of 0.5 lose gain).
 
-Emulation: Mininet with Open vSwitch and a Ryu controller reading real OpenFlow counters, 24 flows, four scenarios (three traffic seeds on a 10-node graph, one 12-node random graph), six policy/telemetry runs each plus a run with a 20\% update threshold (28 runs). Simulator and emulator agree: across the 24 runs at the default 5\% threshold the correlation between emulated and simulated mean max-utilisation is 0.99, the mean absolute difference 0.017 and the bias +0.010; per-run time-series correlation is 0.83--0.98; the policy ranking agrees (Kendall tau 0.47--0.73 per scenario). Table~\ref{tab:11} gives means over the four scenarios.
+Emulation: Mininet with Open vSwitch and a Ryu controller reading real OpenFlow counters, 24 flows, four scenarios (three traffic seeds on a 10-node graph, one 12-node random graph), six policy/telemetry runs each plus a run with a 20\% update threshold (28 runs). Simulator and emulator agree: across the 24 runs at the default 5\% threshold the correlation between emulated and simulated mean max-utilisation is 0.99, the mean absolute difference 0.017 and the bias +0.010; per-run time-series correlation is 0.83--0.98; the policy ranking agrees (Kendall tau 0.47--0.73 per scenario). Table~\ref{tab:10} gives means over the four scenarios.
 
 \begin{table}[!t]
 \caption{Emulation results, means over four scenarios: emulated max-utilisation, flow-mods per minute and controller loop time.}
-\label{tab:11}
+\label{tab:10}
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{1.05}
@@ -399,7 +375,9 @@ learned + guard (L2, eps -0.06) [degraded] & 0.794 & 258 & 12 \\
 
 The re-tuned heuristic runs agree with the simulator as well (8 runs, correlation 1.00, mean absolute difference 0.018). Under SNMP telemetry the re-tuned heuristic (0.772) is close to the learned policy (0.763), but it reprograms about 140 flows per minute against 270 to 332 for the learned policy, so the learned policy costs about twice the flow updates. Under degraded telemetry the learned policy is ahead (0.772 against 0.806, loss 0.0080 against 0.0095) in all four scenarios, by only 0.001 in one of them. Under SNMP the two are level on average; the learned policy is lower in three scenarios and higher in one. A 20\% update threshold cuts the learned policy's updates 4.4-fold (332 to 76 per minute) at a cost of 0.018 in max-utilisation, leaving it ahead of the re-tuned heuristic under degraded telemetry (0.790 against 0.806). In the emulator the guard raises max-utilisation and packet loss (0.794 against 0.772 max-utilisation, and loss 0.0143 against 0.0080 for the unguarded policy). Loop times were measured with the host otherwise idle. Capacities are scaled down and traffic is synthetic, so absolute rates do not transfer.
 
-\textbf{Packet-level check with TCP.} The runs above use paced UDP. We repeated a reduced experiment with long-lived TCP connections (16 per demand, application-limited at the scheduled rate, so the kernel's congestion control decides what is delivered) on nine scenarios (four 16-node Barabasi-Albert graphs, three 14-node geometric graphs and two Abilene scenarios), 60 demands, 90 one-second intervals, degraded telemetry. Every policy was run three times on every scenario; the learned policy is one of the three trained seeds, rotated across scenarios. Means over the nine scenarios (each the mean of three runs): goodput shortfall against the offered load 0.0247 for ECMP, 0.0126 for the re-tuned heuristic and 0.0164 for the learned policy; max-utilisation 0.934, 0.902 and 0.896. Both reactive controllers beat ECMP in max-utilisation (learned 0.039 lower, bootstrap interval [0.020, 0.059], lower in 9 of 9 scenarios, Wilcoxon p = 0.004; heuristic 0.032 lower, [0.012, 0.056], 8 of 9, p = 0.02). The learned policy and the heuristic are not distinguishable: the learned policy's max-utilisation is 0.0065 lower (interval [-0.019, +0.003], lower in 6 of 9, p = 0.50) and its shortfall is 0.0038 higher (interval [-0.005, +0.017], lower in 4 of 9, p = 0.73). Run-to-run variation is not small: the within-scenario standard deviation of max-utilisation is 0.0040 for ECMP, 0.0059 for the heuristic and 0.0111 for the learned policy (shortfall 0.0020, 0.0030 and 0.0085), so single-run comparisons of this kind should not be trusted; our first sample of one run per scenario gave the learned policy a shortfall of 0.0099 against 0.0164 on average. The learned policy reprograms about 448 flows per minute against 94 for the heuristic; with the 20\% update threshold used earlier (one run per scenario) it needs 56 and is level with the heuristic (max-utilisation 0.904 against 0.902, shortfall 0.0123 against 0.0126, p = 0.82 and 1.0). Across the 36 first-repeat runs the correlation between emulated and simulated max-utilisation is 0.97. The learned policy's advantage under degraded telemetry in the simulator and in the UDP emulation is therefore not reproduced at packet level. With nine scenarios the interval for max-utilisation excludes a learned advantage larger than about 0.02, but a smaller one cannot be excluded, and the shortfall is too noisy to say.
+\textbf{Packet-level check with TCP.} The runs above use paced UDP. We repeated a reduced experiment with long-lived TCP connections (16 per demand, application-limited at the scheduled rate, so the kernel's congestion control decides what is delivered), 60 demands, 90 one-second intervals, degraded telemetry, first on nine scenarios (four 16-node Barabasi-Albert graphs, three 14-node geometric graphs, two Abilene scenarios) with three runs per policy. Means over the nine scenarios: goodput shortfall 0.0247 for ECMP, 0.0126 for the re-tuned heuristic and 0.0164 for the learned policy; max-utilisation 0.934, 0.902 and 0.896. Both reactive controllers beat ECMP (learned 0.039 lower, bootstrap interval [0.020, 0.059], 9 of 9 scenarios, Wilcoxon p = 0.004; heuristic 0.032 lower, 8 of 9, p = 0.02), but the learned policy and the heuristic are not distinguishable (max-utilisation 0.0065 lower, interval [-0.019, +0.003], 6 of 9, p = 0.50; shortfall 0.0038 higher, [-0.005, +0.017]). Run-to-run variation is not small: the within-scenario standard deviation of max-utilisation is 0.0040 for ECMP, 0.0059 for the heuristic and 0.0111 for the learned policy, and the same comparison from the first run alone is +0.0020 instead of -0.0065, so single-run comparisons should not be trusted. The learned policy reprograms about 448 flows per minute against 94 for the heuristic; with a 20\% update threshold it needs 56 and is level with the heuristic (0.904 against 0.902). Emulated and simulated max-utilisation correlate at 0.97 across the 36 first-run measurements.
+
+\textit{Why nine scenarios could not settle it.} A simulator replay of the same nine scenarios (same demand schedule, capped counters) predicts a learned-minus-tuned max-utilisation of only -0.0063 [-0.0146, +0.0010], 7 of 9 lower, p = 0.13, and the emulation measured -0.0065 [-0.0194, +0.0033]: the emulation agrees with the simulator, and both intervals are wider than the effect. About 28 scenarios would be needed to detect it. We therefore declared 18 further scenarios in advance (design, primary outcome and simulator prediction committed before any run; \texttt{docs/tcp\_batch2\_design.md}): gravity traffic at load 0.6, 0.8 and 1.0, hotspots, demand shift and flash crowd on Barabasi-Albert and geometric graphs, and two Abilene scenarios, one run per policy each. The simulator predicted -0.0087 [-0.0156, -0.0030]. The emulation measured -0.0075 [-0.0155, -0.0007] (lower in 11 of 18, Wilcoxon p = 0.42; shortfall -0.0050 [-0.0118, -0.0007]) and, over all 27 scenarios, -0.0044 [-0.0105, +0.0008] (15 of 27, p = 0.71). Per-scenario agreement between simulator and emulation is moderate (Pearson r = 0.56; same sign in 15 of 27). The advantage sits where the simulator expects it: gravity traffic at load 0.6 and 0.8 and demand shifts (emulated -0.015 to -0.019, simulated -0.010 to -0.019), whereas in the hotspot and load-1.0 scenarios the learned policy gains nothing over ECMP, and on the two Abilene scenarios it is 0.006 above the heuristic. We read this as consistent with the simulator but too small, against run-to-run noise of the same size, to be established at packet level.
 
 \textbf{The guard at packet level.} The guard (eps = 0.05, all layers) raises max-utilisation over the unguarded learned policy in every scenario (+0.019, interval [0.009, 0.032], p = 0.004) without a detectable change in shortfall (-0.002, p = 0.13); the pre-action variant (eps = -0.06, one run per scenario) raises it by 0.022 ([0.008, 0.039], 1 of 9 lower). It replaces the policy with ECMP in 5\% to 98\% of intervals (35\% on average for eps = 0.05, mostly through the runtime monitor, which latched for 55 of 89 intervals in one scenario where the learned policy was clearly ahead of ECMP, 0.886 against 0.957), and the eps = -0.06 variant sat on ECMP for 98\% of intervals in four scenarios. It does not flap (2 to 10 switches between the two controllers per 89 intervals, except 30 in one scenario); the extra max-utilisation equals the learned gain given up in the rejected intervals (+0.0157 against +0.0150). Replaying the same nine scenarios in the simulator with the emulator's capped counters gives the same mean cost: guarded minus unguarded learned max-utilisation is +0.017 in simulation and +0.016 in emulation, higher in 7 and 8 of 9 scenarios. What differs is the tail: pooled p99 regret against ECMP falls from 0.083 to 0.033 in the replay but only from 0.095 to 0.091 in the emulator, and the share of intervals worse than ECMP by more than 0.02 is 9.2\% unguarded and 10.7\% guarded there (2.0\% and 1.3\% in simulation). The emulated tail is mostly events the fluid model does not predict: the guard's estimate of the proposal's improvement over ECMP correlates at -0.12 to +0.02 with the improvement measured in instrumented runs. That estimate is weakly informative in the simulator too (0.09 on average), so we did not isolate where the simulated tail gain comes from, and emulated per-interval regret contains run-to-run noise from comparing separate runs. A 20\% update threshold does not help (one run per scenario; guard 0.921, pre-action variant 0.920, unguarded 0.904; the guard is higher in 9 of 9 scenarios, +0.016 [0.009, 0.024], p = 0.004), and the guard still reprograms 238 flows per minute against 56. In the TCP emulation the guard therefore buys nothing.
 
@@ -413,17 +391,17 @@ We ran the audit tool on four real networks with degraded telemetry (polling eve
 
 \section{Negative results}
 \label{sec:7}
-LP-teacher distillation (DAgger) produced a weak student (6.4\% gain vs 15.0\% for the tuned heuristic on training graphs); PPO fine-tuning did not change it; direct optimisation through the fluid model fixed this. Randomised-telemetry training did not improve mean performance over ideal-only training. A per-link MLP did as well as the GNN, with four matched seeds each (Section~\ref{sec:6.3}). Static LP routing is excellent on a stationary network (Abilene) and disastrous on a non-stationary one (GEANT). The learned policy's advantage under degraded telemetry did not reproduce in the packet-level TCP emulation (nine scenarios, three runs each, Section~\ref{sec:6.6}).
+LP-teacher distillation (DAgger) produced a weak student (6.4\% gain vs 15.0\% for the tuned heuristic on training graphs); PPO fine-tuning did not change it; direct optimisation through the fluid model fixed this. Randomised-telemetry training did not improve mean performance over ideal-only training. A per-link MLP did as well as the GNN, with four matched seeds each (Section~\ref{sec:6.3}). Static LP routing is excellent on a stationary network (Abilene) and disastrous on a non-stationary one (GEANT). The learned policy's advantage under degraded telemetry was not established in the packet-level TCP emulation (27 scenarios, Section~\ref{sec:6.6}): the simulator predicts it to be small there, and the emulation agrees in direction but not with confidence.
 
 \section{Limitations and status of claims}
 \label{sec:8}
 \begin{itemize}
-\item The fluid model has no TCP, queueing or packet dynamics; a nine-scenario TCP emulation with three runs per policy (Section~\ref{sec:6.6}) checks only part of this, and in it the learned policy was not distinguishable from the heuristic and was the noisiest policy; the UDP emulation was run once per policy and scenario, and the shadow-mode check covers three scenarios. The guard offers no formal guarantee. It is an empirically evaluated filter, and it misses most harmful proposals under degraded telemetry on Zoo graphs. In the nine-scenario TCP emulation it cost the same mean max-utilisation as in the simulator replay but did not reduce the tail.
+\item The fluid model has no TCP, queueing or packet dynamics; a 27-scenario TCP emulation (nine scenarios with three runs per policy, eighteen with one) checks only part of this, and in it the learned policy was not distinguishable from the heuristic and was the noisiest policy (Section~\ref{sec:6.6}); the UDP emulation was run once per policy and scenario, and the shadow-mode check covers three scenarios. The guard offers no formal guarantee. It is an empirically evaluated filter, and it misses most harmful proposals under degraded telemetry on Zoo graphs. In the TCP emulation it cost the same mean max-utilisation as in the simulator replay but did not reduce the tail.
 \item Real traffic is scaled to a target load by factors from 0.02 to 23 (Section~\ref{sec:3}). Trace capacities for Germany17 and Germany50 are not meaningful in absolute terms, and some traces contain extreme outlier intervals. The conclusion is insensitive to the scaling rule (Section~\ref{sec:6.2b}), but the absolute numbers are not.
 \item Telemetry faults are modelled, not measured on a deployed network, and overload far outside the training range hurts the zero-shot policy (Section~\ref{sec:6.4}).
 \item We train four policy seeds. The history and age ablations and the DOTE-style and fine-tuned models use one seed. Evaluation uses 5 seeds per Zoo graph and 12 to 16 windows per real-trace cell.
 \item The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs. Tuner-seed spread reaches about 0.02 dScore on Zoo graphs and about 12 points of gain in the delay grid, so single-run comparisons are fragile. We did not test tuning the heuristic on a network's own history, which the fine-tuned learned variants receive.
-\item Germany50, Brain and the history-based comparison (Table~\ref{tab:7}) use a single-run heuristic (Appendix~\ref{app:A}) and were not repeated with the re-tuned heuristic.
+\item Germany50, Brain and the history-based comparison (Table~\ref{tab:6}) use a single-run heuristic (Appendix~\ref{app:A}) and were not repeated with the re-tuned heuristic.
 \item The DOTE-style and fine-tuned models need per-network history, and only Abilene and GEANT have enough. Germany17 and Germany50 have one day of data, and their windows overlap.
 \item We do not compare with Teal or other published systems: Teal treats staleness only as solver run time and is not a like-for-like baseline for telemetry impairments. Our DOTE-style model is a re-implementation of the idea, not the authors' code.
 \item We do not claim a general performance win, being first to show degradation under delay (LOGGIA), or production readiness.

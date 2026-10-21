@@ -29,3 +29,10 @@ emulation for the learned - tuned difference (Pearson r); results split by traff
 Simulator prediction for batch 2, computed before any batch-2 emulation run (`experiments/sim_replay_tcp_scenarios.py runs/emu_tcp_b b01 ... b18`,
 output `experiments/final/sim_replay_emu_tcp_b.json`): learned - tuned max-utilisation -0.0087 [-0.0156, -0.0030], lower in 12 of 18, Wilcoxon p = 0.021;
 learned - ECMP -0.0365; tuned - ECMP -0.0277.
+
+## Result of the first run (rep 0), analysed with `python experiments/emu_analyze_tcp_b.py 1`
+Batch 2 (18 scenarios, primary): learned - tuned max-utilisation -0.0075 [-0.0155, -0.0007], lower in 11 of 18, Wilcoxon p = 0.417; shortfall -0.0050 [-0.0118, -0.0007].
+All 27 scenarios: -0.0044 [-0.0105, +0.0008], 15 of 27, p = 0.714. Simulator vs emulation per scenario: Pearson r = +0.56, same sign 15 of 27.
+By pattern (learned - tuned, emulated / simulated): gravity 0.8 -0.0171 / -0.0164; demand shift -0.0150 / -0.0193; flash crowd -0.0049 / -0.0094; gravity 0.6 -0.0187 / -0.0103; hotspots -0.0014 / +0.0003; gravity 1.0 +0.0022 / 0.0000; Abilene +0.0061 / -0.0009.
+Note: while batch 2 ran, light single-core jobs (telemetry-realism simulations, document builds) ran at the lowest priority on the same 8-core machine; the emulation requires an otherwise idle machine, so this is a caveat on the timing. Repeats 1 and 2 (`runs/emu_tcp_b_r1`, `_r2`) were still running when the paper text was written; the paper reports one run per scenario for batch 2.
+

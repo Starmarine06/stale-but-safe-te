@@ -2,8 +2,9 @@
 Primary outcome (declared before the runs): paired max-utilisation difference learned - tuned over scenario means (mean of the available
 repeats, intervals 3 onward), bootstrap 95% interval and Wilcoxon. Also: shortfall difference, results by traffic pattern (descriptive),
 and agreement with the simulator replay (experiments/final/sim_replay_*.json) of the same scenarios.
-  python experiments/emu_analyze_tcp_b.py"""
+  python experiments/emu_analyze_tcp_b.py [n_repeats]   (default: all repeats present; pass 1 for the first run only)"""
 import json
+import sys
 from pathlib import Path
 import numpy as np
 from scipy import stats
@@ -15,6 +16,9 @@ B2 = {"roots": ["runs/emu_tcp_b", "runs/emu_tcp_b_r1", "runs/emu_tcp_b_r2"], "id
 PATTERN = {**{n: "batch 1 (gravity + bursts, load 0.8)" for n in B1["ids"]},
            **{f"b{i:02d}": ("gravity, load 0.8" if i <= 3 else "hotspots" if i <= 6 else "demand shift" if i <= 9 else "flash crowd" if i <= 12
                            else "gravity, load 0.6" if i in (13, 14) else "gravity, load 1.0" if i in (15, 16) else "Abilene hotspots/flash") for i in range(1, 19)}}
+
+
+NREP = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
 
 def model_of(root, n):
@@ -38,7 +42,7 @@ def collect(batch):
     for n in batch["ids"]:
         row = {}
         for pol, f in (("ecmp", lambda M: ("ecmp", "ideal")), ("tuned", lambda M: ("tunedv2:degraded", "degraded")), ("learned", lambda M: (f"model:{M}", "degraded"))):
-            ms = [m for r in batch["roots"] if (m := metric(r, n, *f(model_of(r, n)))) is not None]
+            ms = [m for r in batch["roots"][:NREP] if (m := metric(r, n, *f(model_of(r, n)))) is not None]
             row[pol] = (np.mean([m[0] for m in ms]), np.mean([m[1] for m in ms]), len(ms)) if ms else None
         if all(row.values()):
             out[n] = row

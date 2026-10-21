@@ -86,21 +86,24 @@ Each paper table is produced by one script and one result file under `experiment
 | Paper item | Script(s) | Result file |
 |---|---|---|
 | Table 2, single-run results of Appendix A, Fig. 1 | `experiments/retune_profiles.py`, `experiments/analyze_retune.py` | `table_retune.md` |
-| Table 3, Table 10 | `experiments/final_eval.py --tuned-only`, `experiments/analyze_v2_guard_stress.py` | `table_v2_guard_stress.md` |
+| Table 3, Table 9 | `experiments/final_eval.py --tuned-only`, `experiments/analyze_v2_guard_stress.py` | `table_v2_guard_stress.md` |
 | Table 4, Fig. 2 | `experiments/realci_v2.py`, `experiments/analyze_realci_v2.py` | `table_realci_v2.md` |
 | Delay with frozen vs re-tuned parameters (Section 6.2a prose) | `experiments/delay_controlled.py 1` | `table_delay_part1.md` |
 | Table 5 | `experiments/delay_tuning_repeat.py` | `table_delay_repeat.md` |
 | Fig. 3 (window-level delay grid; per-cell values in the result file) | `experiments/delay_grid_ci.py` | `table_delay_ci.md` |
 | Abilene window-sample analysis (Section 6.2a prose) | `experiments/abilene_audit.py` | `table_abilene_audit.md` |
-| Table 8 | `experiments/overload_windows.py abilene 0.8 configs/tuned_heuristic_v2.yaml _v2` | `table_overload_v2.md` |
-| Table 9 | `experiments/guard_audit.py` | `table_guard_audit.md` |
-| Table 11 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
+| Table 7 | `experiments/overload_windows.py abilene 0.8 configs/tuned_heuristic_v2.yaml _v2` | `table_overload_v2.md` |
+| Table 8 | `experiments/guard_audit.py` | `table_guard_audit.md` |
+| Table 10 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
 | TCP packet-level emulation (Section 6.6, prose) | `experiments/make_tcp_scenarios.py`, `runs/emu_tcp2.sh` (scenarios s1 to s3 and n14 to n19; `--proto tcp`), `experiments/emu_analyze_tcp.py` | `experiments/final/emu_tcp_rows.json` |
 | Controller shadow mode (Section 6.6, prose) | `runs/emu_shadow.sh` (`--shadow`, env `SBS_SHADOW=1`) | `runs/emu_shadow/*/*/ctrl_*.json` (not committed) |
+| TCP batch 2: 18 pre-declared scenarios, simulator replay and pooled analysis (Section 6.6, prose) | `docs/tcp_batch2_design.md`, `experiments/make_tcp_scenarios2.py`, `runs/emu_tcp_b.sh`, `experiments/sim_replay_tcp_scenarios.py`, `experiments/emu_analyze_tcp_b.py` | `experiments/final/sim_replay_emu_tcp*.json`; raw runs not committed |
+| Ranking stability across tuner and training seeds (Section 6.1, prose) | `experiments/ranking_stability.py` | `table_ranking_stability.md` |
+| Telemetry realism: gross errors, lost poll rounds, jitter (Section 6.2c, prose) | `experiments/telemetry_realism.py` | `table_telemetry_realism.md` |
 | TCP replication, 3 runs x 9 scenarios, guard-L2 and 20%-threshold variants (Section 6.6, prose) | `runs/emu_tcp3.sh`, `experiments/emu_analyze_tcp_reps.py` | `experiments/final/emu_tcp_reps.json` |
 | Guard in the TCP emulation (Section 6.6, prose) | `runs/emu_tcp4.sh` (guard with 20% threshold), `runs/emu_tcp5.sh` (instrumented `guard_trace` runs), `experiments/emu_analyze_guard_hyst.py`, `experiments/emu_guard_decompose.py`, `experiments/emu_guard_trace.py`, `experiments/guard_regret_sim_vs_emu.py` (simulator replay vs emulation, mean and tail) | printed tables; raw runs not committed |
-| Table 6 | `experiments/abilene_more_windows.py` | `abilene_more.json` |
-| Table 7 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
+| Abilene 48-window rerun (Fig. 3 middle; Section 6.2a prose) | `experiments/abilene_more_windows.py` | `abilene_more.json` |
+| Table 6 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
 | Load-scaling sensitivity (Section 6.2b prose) | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
 | GNN versus MLP, ablations | `experiments/analyze_gnn_vs_mlp.py`, `experiments/analyze_ablations.py` | `table_gnn_vs_mlp.md`, `table_ablations.md` |
 | Loss-weight sensitivity | `experiments/sensitivity_lossweight.py experiments/final/results_v2_zoo.json` | `table_lossweight_v2.md` |
