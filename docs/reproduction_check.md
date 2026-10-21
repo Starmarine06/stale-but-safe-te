@@ -13,3 +13,17 @@ Procedure: `git clone` of the local repository into an empty directory, new virt
 
 Not checked: the other four SNDlib archives (download URLs follow the same pattern), training from scratch (hours per model on CPU), and the Docker/Mininet/Ryu
 emulation on a second machine. The `zib.de` mirror in older documentation returns an error page; use the Poznan URL. A public repository URL does not exist yet.
+
+# Second check (2026-10-22): fresh clone, tests and table regeneration
+
+Procedure: `git clone` of the local repository at commit 9533d06 into an empty directory, new virtual environment (Python 3.13, Windows 11), CPU torch wheel, `pip install -e ".[dev]"`.
+
+| Check | Result |
+|---|---|
+| `python -m pytest -q` | 42 passed, 1 skipped (the skip needs a prepared real trace) |
+| `python experiments/reproduce_tables.py` (regenerates nine tables from the committed raw result files and compares them with the committed copies) | all nine identical |
+
+This check found and fixed one stale artefact: the committed `table_dote.md` lacked four rows that the raw files produce, and was regenerated.
+
+Still not re-run from scratch: simulations behind the raw result files (hours on CPU), the delay grid, the guard audit, the emulation runs (Docker, needs an otherwise idle machine) and the real-trace preparation. The clone was made from the local repository because the commit had not been pushed; repeat the two commands above against the GitHub URL after pushing.
+
