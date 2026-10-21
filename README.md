@@ -85,22 +85,23 @@ Each paper table is produced by one script and one result file under `experiment
 
 | Paper item | Script(s) | Result file |
 |---|---|---|
-| Table 1, Table A1, Fig. 1 | `experiments/retune_profiles.py`, `experiments/analyze_retune.py` | `table_retune.md` |
-| Table 2, Table 10 | `experiments/final_eval.py --tuned-only`, `experiments/analyze_v2_guard_stress.py` | `table_v2_guard_stress.md` |
-| Table 3, Fig. 2 | `experiments/realci_v2.py`, `experiments/analyze_realci_v2.py` | `table_realci_v2.md` |
-| Table 4 | `experiments/delay_controlled.py 1` | `table_delay_part1.md` |
-| Table 5 | `experiments/delay_tuning_repeat.py` | `table_delay_repeat.md` |
-| Table 6, Fig. 3 | `experiments/delay_grid_ci.py` | `table_delay_ci.md` |
-| Table 7 | `experiments/abilene_audit.py` | `table_abilene_audit.md` |
-| Table 8 | `experiments/overload_windows.py abilene 0.8 configs/tuned_heuristic_v2.yaml _v2` | `table_overload_v2.md` |
-| Table 9 | `experiments/guard_audit.py` | `table_guard_audit.md` |
-| Table 11 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
+| Table 2, single-run results of Appendix A, Fig. 1 | `experiments/retune_profiles.py`, `experiments/analyze_retune.py` | `table_retune.md` |
+| Table 3, Table 12 | `experiments/final_eval.py --tuned-only`, `experiments/analyze_v2_guard_stress.py` | `table_v2_guard_stress.md` |
+| Table 4, Fig. 2 | `experiments/realci_v2.py`, `experiments/analyze_realci_v2.py` | `table_realci_v2.md` |
+| Table 5 | `experiments/delay_controlled.py 1` | `table_delay_part1.md` |
+| Table 6 | `experiments/delay_tuning_repeat.py` | `table_delay_repeat.md` |
+| Table 7, Fig. 3 | `experiments/delay_grid_ci.py` | `table_delay_ci.md` |
+| Abilene window-sample analysis (Section 6.2a prose) | `experiments/abilene_audit.py` | `table_abilene_audit.md` |
+| Table 10 | `experiments/overload_windows.py abilene 0.8 configs/tuned_heuristic_v2.yaml _v2` | `table_overload_v2.md` |
+| Table 11 | `experiments/guard_audit.py` | `table_guard_audit.md` |
+| Table 13 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
 | TCP packet-level emulation (Section 6.6, prose) | `experiments/make_tcp_scenarios.py`, `runs/emu_tcp2.sh` (scenarios s1 to s3 and n14 to n19; `--proto tcp`), `experiments/emu_analyze_tcp.py` | `experiments/final/emu_tcp_rows.json` |
 | Controller shadow mode (Section 6.6, prose) | `runs/emu_shadow.sh` (`--shadow`, env `SBS_SHADOW=1`) | `runs/emu_shadow/*/*/ctrl_*.json` (not committed) |
 | TCP replication, 3 runs x 9 scenarios, guard-L2 and 20%-threshold variants (Section 6.6, prose) | `runs/emu_tcp3.sh`, `experiments/emu_analyze_tcp_reps.py` | `experiments/final/emu_tcp_reps.json` |
 | Guard in the TCP emulation (Section 6.6, prose) | `runs/emu_tcp4.sh` (guard with 20% threshold), `runs/emu_tcp5.sh` (instrumented `guard_trace` runs), `experiments/emu_analyze_guard_hyst.py`, `experiments/emu_guard_decompose.py`, `experiments/emu_guard_trace.py`, `experiments/guard_regret_sim_vs_emu.py` (simulator replay vs emulation, mean and tail) | printed tables; raw runs not committed |
-| Table 12 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
-| Table 13 | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
+| Table 8 | `experiments/abilene_more_windows.py` | `abilene_more.json` |
+| Table 9 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
+| Load-scaling sensitivity (Section 6.2b prose) | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
 | GNN versus MLP, ablations | `experiments/analyze_gnn_vs_mlp.py`, `experiments/analyze_ablations.py` | `table_gnn_vs_mlp.md`, `table_ablations.md` |
 | Loss-weight sensitivity | `experiments/sensitivity_lossweight.py experiments/final/results_v2_zoo.json` | `table_lossweight_v2.md` |
 

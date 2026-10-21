@@ -149,7 +149,7 @@ while i < len(blocks):
             fn = fn[:-4]
         wide = "fig1" in fn or "fig3" in fn
         star = "*" if wide else ""
-        w = r"0.8\textwidth" if wide else r"\columnwidth"
+        w = r"0.68\textwidth" if wide else r"0.9\columnwidth"
         out.append(f"\\begin{{figure{star}}}[!t]\n\\centering\n\\includegraphics[width={w}]{{{fn}}}\n\\caption{{{inline(cap)}}}\n\\label{{fig:{fid}}}\n\\end{{figure{star}}}\n")
         continue
     lines = b.splitlines()
