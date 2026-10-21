@@ -54,13 +54,22 @@ class Guard(Policy):
         self.backoff = self.cfg.backoff0
         self.good_since = 0
         self.stats = {"steps": 0, "fallback": 0, "L1": 0, "L2": 0, "L3": 0}
+        self.trace = []     # per-call diagnostics: [layer fired or 0, predicted proposal mu, predicted ECMP mu, mean excess, measured max util, counterfactual ECMP mu]
+        self._d = [0, np.nan, np.nan, np.nan, np.nan, np.nan]
 
     def _fallback(self, obs, why):
         self.stats["fallback"] += 1
         self.stats[why] += 1
+        self._d[0] = int(why[1])
         return ecmp_splits(self.topo, self.topo.valid_paths(obs["link_up"]))
 
     def act(self, obs, env):
+        self._d = [0, np.nan, np.nan, np.nan, np.nan, np.nan]
+        out = self._act(obs, env)
+        self.trace.append(self._d)
+        return out
+
+    def _act(self, obs, env):
         c, topo = self.cfg, self.topo
         self.stats["steps"] += 1
         up = obs["link_up"]
@@ -73,10 +82,12 @@ class Guard(Policy):
             cf = _pred_max_util(topo, dem, ecmp, up)
             meas = float(np.asarray(obs["util"])[up].max()) if up.any() else 0.0
             self.excess.append(meas - cf)
+            self._d[3], self._d[4], self._d[5] = float(np.mean(self.excess)), meas, cf
         if self.fallback_left > 0:
             self.fallback_left -= 1
             self.stats["fallback"] += 1
             self.stats["L3"] += 1
+            self._d[0] = 3
             return ecmp
 
         # L1 hard rules (pre-inference)
@@ -99,6 +110,7 @@ class Guard(Policy):
         if c.layers[1]:
             p = _pred_max_util(topo, dem, proposal, up)
             e = _pred_max_util(topo, dem, ecmp, up)
+            self._d[1], self._d[2] = p, e
             if p > e * (1 + c.eps) + 1e-9:
                 return self._fallback(obs, "L2")
 

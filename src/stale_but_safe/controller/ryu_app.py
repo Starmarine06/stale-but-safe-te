@@ -338,7 +338,7 @@ class TEApp(app_manager.RyuApp):
                 row["latency_ms"] = (time.time() - tick0) * 1000
             rows.append(row)
         stats = getattr(self.policy, "stats", {})
-        out = {"tag": self.tag, "rows": rows, "guard": stats, "policy_errors": self.errors, "policy": os.environ.get("SBS_POLICY"),
+        out = {"guard_trace": getattr(self.policy, "trace", None), "tag": self.tag, "rows": rows, "guard": stats, "policy_errors": self.errors, "policy": os.environ.get("SBS_POLICY"),
                "profile": os.environ.get("SBS_PROFILE")}
         json.dump(out, open(os.path.join(self.shared, f"ctrl_{self.tag}.json"), "w"))
         hub.sleep(1.0)
