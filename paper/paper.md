@@ -401,7 +401,7 @@ fallback rate is 78-84%. Its cost in average dScore is about +0.011 for the lear
 heuristic at ideal, rich and SNMP telemetry, but essentially nothing for the heuristic under degraded telemetry (-0.040 to -0.042), where it
 lowers p99 regret from 0.093 to 0.030. With the guard, the learned policy and the re-tuned heuristic have similar p99 regret at ideal and rich telemetry
 (0.008 vs 0.008, 0.009 vs 0.019) and the learned policy is lower elsewhere. The guard is therefore a tail-risk trade against mean
-performance for either policy, not a property that favours the learned one.
+performance for either policy, not a property that favours the learned one. These are simulator results: in the TCP emulation the guard cost the same mean utilisation but did not reduce the tail (Section 6.6).
 
 ### 6.6 Operational cost and emulation
 
