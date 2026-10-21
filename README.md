@@ -97,6 +97,8 @@ Each paper table is produced by one script and one result file under `experiment
 | Table 11 | `docs/howto.md` (emulation), `experiments/emu_analyze2.py`, `experiments/emu_analyze3.py` | `table_emu2.md`, `table_emu3.md` |
 | TCP packet-level emulation (Section 6.6, prose) | `experiments/make_tcp_scenarios.py`, `runs/emu_tcp2.sh` (scenarios s1 to s3 and n14 to n19; `--proto tcp`), `experiments/emu_analyze_tcp.py` | `experiments/final/emu_tcp_rows.json` |
 | Controller shadow mode (Section 6.6, prose) | `runs/emu_shadow.sh` (`--shadow`, env `SBS_SHADOW=1`) | `runs/emu_shadow/*/*/ctrl_*.json` (not committed) |
+| TCP replication, 3 runs x 9 scenarios, guard-L2 and 20%-threshold variants (Section 6.6, prose) | `runs/emu_tcp3.sh`, `experiments/emu_analyze_tcp_reps.py` | `experiments/final/emu_tcp_reps.json` |
+| Guard in the TCP emulation (Section 6.6, prose) | `runs/emu_tcp4.sh` (guard with 20% threshold), `runs/emu_tcp5.sh` (instrumented `guard_trace` runs), `experiments/emu_analyze_guard_hyst.py`, `experiments/emu_guard_decompose.py`, `experiments/emu_guard_trace.py`, `experiments/guard_regret_sim_vs_emu.py` (simulator replay vs emulation, mean and tail) | printed tables; raw runs not committed |
 | Table 12 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
 | Table 13 | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
 | GNN versus MLP, ablations | `experiments/analyze_gnn_vs_mlp.py`, `experiments/analyze_ablations.py` | `table_gnn_vs_mlp.md`, `table_ablations.md` |
