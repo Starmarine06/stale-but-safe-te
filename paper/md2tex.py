@@ -224,9 +224,10 @@ head = r"""\documentclass[journal]{IEEEtran}
 \sloppy
 \begin{document}
 \title{""" + inline(title, refs=False) + r"""}
-\author{Dev~Nambiar,~\IEEEmembership{Vellore Institute of Technology, Vellore, India}%
-\thanks{Corresponding e-mail: devnambiar06@gmail.com. ORCID: 0009-0007-5516-3316.}}
-\markboth{IEEE Transactions on Network and Service Management}{Nambiar: The Cost of Stale Telemetry in Traffic Engineering}
+\author{Dev~Nambiar and Jaya~Subalakshmi~Ramamoorthi%
+\thanks{D. Nambiar is with the Vellore Institute of Technology, Vellore, India (e-mail: devnambiar06@gmail.com; ORCID: 0009-0007-5516-3316).}%
+\thanks{J. S. Ramamoorthi is with the School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, India (e-mail: jayasubalakshmi.r@vit.ac.in; ORCID: 0000-0001-8350-2871).}}
+\markboth{IEEE Transactions on Network and Service Management}{Nambiar and Ramamoorthi: The Cost of Stale Telemetry in Traffic Engineering}
 \maketitle
 """
 body = "\n".join(out).replace("%ABSTRACT%", abs_tex).replace("%REFS%", ack + "\n" + bib)
