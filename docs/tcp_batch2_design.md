@@ -36,3 +36,9 @@ All 27 scenarios: -0.0044 [-0.0105, +0.0008], 15 of 27, p = 0.714. Simulator vs 
 By pattern (learned - tuned, emulated / simulated): gravity 0.8 -0.0171 / -0.0164; demand shift -0.0150 / -0.0193; flash crowd -0.0049 / -0.0094; gravity 0.6 -0.0187 / -0.0103; hotspots -0.0014 / +0.0003; gravity 1.0 +0.0022 / 0.0000; Abilene +0.0061 / -0.0009.
 Note: while batch 2 ran, light single-core jobs (telemetry-realism simulations, document builds) ran at the lowest priority on the same 8-core machine; the emulation requires an otherwise idle machine, so this is a caveat on the timing. Repeats 1 and 2 (`runs/emu_tcp_b_r1`, `_r2`) were still running when the paper text was written; the paper reports one run per scenario for batch 2.
 
+## Result of all three runs (`python experiments/emu_analyze_tcp_b.py`)
+Batch 2 (18 scenarios, primary): learned - tuned max-utilisation -0.0056 [-0.0116, -0.0006], lower in 12 of 18, Wilcoxon p = 0.181; shortfall -0.0046 [-0.0109, -0.0007]; simulator -0.0087, r = +0.78, same sign 10 of 18.
+All 27: -0.0059 [-0.0119, -0.0009], 18 of 27, p = 0.111; shortfall -0.0018 [-0.0071, +0.0042]; simulator -0.0079, r = +0.47, same sign 16 of 27.
+By pattern (emulated / simulated): gravity 0.8 -0.0156 / -0.0164; demand shift -0.0144 / -0.0193; flash crowd -0.0063 / -0.0094; gravity 0.6 -0.0040 / -0.0103; hotspots +0.0003 / +0.0003; gravity 1.0 +0.0033 / 0.0000; Abilene +0.0043 / -0.0009.
+The paper reports these three-run numbers; the primary interval excludes zero, the rank test does not.
+
