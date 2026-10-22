@@ -73,6 +73,9 @@ def table(lines, caption="", label=""):
     rows = [r + [""] * (ncol - len(r)) for r in rows]
     wide = ncol >= 7
     colspec = "l" * min(ncol, 3) + "c" * max(0, ncol - 3) if ncol > 3 else "l" * ncol
+    if str(label) == "1" and ncol == 5:
+        wide = True
+        colspec = "".join(">{\\raggedright\\arraybackslash}p{%.3f\\textwidth}" % w for w in (0.10, 0.20, 0.24, 0.22, 0.14))
     env = "table*" if wide else "table"
     body = []
     for i, r in enumerate(rows):
@@ -209,6 +212,7 @@ ack = ack_f.read_text(encoding="utf-8") if ack_f.exists() else ""
 head = r"""\documentclass[journal]{IEEEtran}
 \usepackage{graphicx}
 \usepackage{adjustbox}
+\usepackage{array}
 \usepackage{amsmath,amssymb}
 \usepackage{url}
 \usepackage[T1]{fontenc}
