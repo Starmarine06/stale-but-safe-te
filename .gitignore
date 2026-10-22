@@ -14,3 +14,4 @@ paper/tnsm/*.log
 paper/tnsm/*.out
 paper/tnsm/*.toc
 data/topologies/zoo_raw/
+external/

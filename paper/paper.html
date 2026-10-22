@@ -480,8 +480,79 @@ interval's upper end to be below 5%; a lower end below 5% gives "insufficient ev
 and static LP -38.6% (traffic is not stationary). Hence: (a) with per-network history a DOTE-style model beats the
 zero-shot GNN, and fine-tuning recovers most of the difference on Abilene but little on GEANT; (b) robustness to
 telemetry is a property of any policy that does not rely on fresh counters, not specific to our GNN; (c) what the
-zero-shot policy offers is no need for per-network training data.
-Ablations (24 Zoo graphs; one seed for the history and age ablations, and four training seeds each for the full model, the per-link MLP and the no-fluid-feature model): removing history costs +0.003 at ideal telemetry only; removing the age
+zero-shot policy offers is no need for per-network training data.</p>
+<p><strong>DOTE with the released architecture.</strong> We also ran DOTE with the architecture and loss of the authors' released code [1] (history of 12 demand estimates, four hidden layers of 128 units, sigmoid path weights, exact max-utilisation loss; a unit test checks that our loss equals the release's), trained per network on the first 70% of each trace and evaluated on the same held-out windows, seeds and telemetry profiles (Table 7). It differs from the release in four candidate paths instead of eight, impaired demand estimates as input and mini-batches of 64. On Abilene it gains 50% to 51% in every profile, against 26% for the zero-shot policy and 24% to 33% for the re-tuned heuristic. On GEANT it gains 12.5% to 13.1%, below the zero-shot policy (15.0% to 16.5%); the heuristic gains 20.3%, 12.4% and 0.6% at ideal, SNMP and degraded telemetry. Its gain barely moves with telemetry quality (Abilene 51.0% to 50.5%, GEANT 13.0% to 12.6%, ideal to degraded). With per-network history DOTE is therefore far ahead on the stationary network and behind the zero-shot policy on the non-stationary one; it needs the network's own history, which the zero-shot policy does not.</p>
+<p><strong>Table 7.</strong> Gain over ECMP (%) on held-out trace windows, mean over loads 0.6, 0.8 and 1.0 (10 evaluation seeds each), by telemetry profile. DOTE uses the released architecture and loss, trained on the first 70% of the network's trace with ideal or degraded telemetry; the zero-shot policy is the mean of four training seeds; the heuristic is re-tuned per profile.</p>
+<table>
+<thead>
+<tr>
+<th>network</th>
+<th>profile</th>
+<th>ECMP</th>
+<th>re-tuned heuristic</th>
+<th>DOTE (ideal-trained)</th>
+<th>DOTE (degraded-trained)</th>
+<th>zero-shot GNN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>abilene</td>
+<td>ideal</td>
+<td>0.0</td>
+<td>33.0</td>
+<td>51.0</td>
+<td>50.4</td>
+<td>26.3</td>
+</tr>
+<tr>
+<td>abilene</td>
+<td>snmp</td>
+<td>0.0</td>
+<td>26.0</td>
+<td>50.8</td>
+<td>50.2</td>
+<td>26.0</td>
+</tr>
+<tr>
+<td>abilene</td>
+<td>degraded</td>
+<td>0.0</td>
+<td>24.4</td>
+<td>50.5</td>
+<td>49.9</td>
+<td>25.8</td>
+</tr>
+<tr>
+<td>geant</td>
+<td>ideal</td>
+<td>0.0</td>
+<td>20.3</td>
+<td>13.0</td>
+<td>12.6</td>
+<td>16.5</td>
+</tr>
+<tr>
+<td>geant</td>
+<td>snmp</td>
+<td>0.0</td>
+<td>12.4</td>
+<td>13.1</td>
+<td>12.6</td>
+<td>16.0</td>
+</tr>
+<tr>
+<td>geant</td>
+<td>degraded</td>
+<td>0.0</td>
+<td>0.6</td>
+<td>12.6</td>
+<td>12.5</td>
+<td>15.0</td>
+</tr>
+</tbody>
+</table>
+<p>Ablations (24 Zoo graphs; one seed for the history and age ablations, and four training seeds each for the full model, the per-link MLP and the no-fluid-feature model): removing history costs +0.003 at ideal telemetry only; removing the age
 input is ~0. <strong>Matched-seed GNN vs MLP:</strong> the per-link MLP (no message passing) has mean dScore -0.068 (ideal) / -0.063 (degraded)
 against -0.065 / -0.061 for the full graph model; seed-averaged paired difference -0.0031 [-0.0054, -0.0011] and -0.0020
 [-0.0040, -0.0002], the MLP better on 14 of 24 graphs in both profiles. Its p99 regret is slightly worse under degraded telemetry
@@ -492,8 +563,8 @@ features, not the graph architecture, carry the result.
 Training with randomised telemetry versus ideal-only: the mean differences are within seed noise (~0.002), but the
 randomised model has a lower p99 regret under degraded telemetry (0.019 vs 0.027 over four seeds).</p>
 <h3>6.4 Where it fails: overload</h3>
-<p>Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table 7). Of these, 27 are typical and 3 are overloaded.</p>
-<p><strong>Table 7.</strong> Typical and overloaded Abilene windows at load 0.8 (30 windows). Gain over ECMP in %: median and worst window.</p>
+<p>Real-trace windows in which ECMP's own mean max-utilisation exceeds 2 are traffic surges far above the requested load, and they lie outside the training range (loads 0.5 to 1.1). We compared the methods on 30 Abilene windows at load 0.8 (Table 8). Of these, 27 are typical and 3 are overloaded.</p>
+<p><strong>Table 8.</strong> Typical and overloaded Abilene windows at load 0.8 (30 windows). Gain over ECMP in %: median and worst window.</p>
 <table>
 <thead>
 <tr>
@@ -549,8 +620,8 @@ randomised model has a lower p99 regret under degraded telemetry (0.019 vs 0.027
 <h3>6.5 Guard</h3>
 <p>Definitions (per interval, using the true demand, simulator only): <em>beneficial</em> proposal = true max-util below 0.99 x ECMP's,
 <em>harmful</em> = above 1.01 x; false rejection = beneficial proposals among fallbacks; harm caught = harmful proposals replaced.
-Table 8 reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.</p>
-<p><strong>Table 8.</strong> Guard behaviour on 10 Zoo graphs. Fallback is the share of intervals replaced by ECMP; false rejection is the share of fallbacks where the proposal was beneficial; harm caught is the share of harmful proposals replaced; gain kept compares the guarded with the unguarded gain.</p>
+Table 9 reports the headline guard (layer 2 only, eps = -0.06) on 10 Zoo graphs with at most 25 nodes.</p>
+<p><strong>Table 9.</strong> Guard behaviour on 10 Zoo graphs. Fallback is the share of intervals replaced by ECMP; false rejection is the share of fallbacks where the proposal was beneficial; harm caught is the share of harmful proposals replaced; gain kept compares the guarded with the unguarded gain.</p>
 <table>
 <thead>
 <tr>
@@ -603,8 +674,8 @@ already &lt;= 0); its value on real traces appears in overloaded windows (Sectio
 at degraded telemetry (average of per-graph p99), while the pooled p99 above falls only from +0.065 to +0.057: the guard cuts
 the typical tail but misses harmful proposals concentrated in a few graphs. The guard is most effective under link failures.
 It falls back often (71% to 80%) yet keeps 74% to 91% of the gain because fallback occurs mostly in low-gain intervals. On real traces the validation-chosen guard barely affects the learned policy (0.0 to 0.8 points of gain).</p>
-<p>Table 9 applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.</p>
-<p><strong>Table 9.</strong> Guard applied to the learned policy and to the re-tuned heuristic (24 Zoo graphs, layer 2 only, eps = -0.06). Each cell gives mean dScore and mean per-graph p99 regret.</p>
+<p>Table 10 applies the same guard to the learned policy and to the re-tuned heuristic on all 24 Zoo graphs.</p>
+<p><strong>Table 10.</strong> Guard applied to the learned policy and to the re-tuned heuristic (24 Zoo graphs, layer 2 only, eps = -0.06). Each cell gives mean dScore and mean per-graph p99 regret.</p>
 <table>
 <thead>
 <tr>
@@ -662,8 +733,8 @@ of demands per interval without a limiter; thresholds of 5%, 10% and 20% cut thi
 update threshold (28 runs). Simulator and emulator agree: across the 24
 runs at the default 5% threshold the correlation between emulated and simulated mean max-utilisation is 0.99, the mean
 absolute difference 0.017 and the bias +0.010; per-run time-series correlation is 0.83-0.98; the policy ranking agrees
-(Kendall tau 0.47-0.73 per scenario). Table 10 gives means over the four scenarios.</p>
-<p><strong>Table 10.</strong> Emulation results, means over four scenarios: emulated max-utilisation, flow-mods per minute and controller loop time.</p>
+(Kendall tau 0.47-0.73 per scenario). Table 11 gives means over the four scenarios.</p>
+<p><strong>Table 11.</strong> Emulation results, means over four scenarios: emulated max-utilisation, flow-mods per minute and controller loop time.</p>
 <table>
 <thead>
 <tr>
@@ -744,7 +815,7 @@ a stationary network (Abilene) and disastrous on a non-stationary one (GEANT). T
 <li>The heuristic's tuning budget is 80 trials per tuner seed on four synthetic graphs. Tuner-seed spread reaches about 0.02 dScore on Zoo graphs and about 12 points of gain in the delay grid, so single-run comparisons are fragile. We did not test tuning the heuristic on a network's own history, which the fine-tuned learned variants receive.</li>
 <li>Germany50, Brain and the history-based comparison (Table 6) use a single-run heuristic (Appendix A) and were not repeated with the re-tuned heuristic.</li>
 <li>The DOTE-style and fine-tuned models need per-network history, and only Abilene and GEANT have enough. Germany17 and Germany50 have one day of data, and their windows overlap.</li>
-<li>We do not compare with Teal or other published systems: Teal treats staleness only as solver run time and is not a like-for-like baseline for telemetry impairments. Our DOTE-style model is a re-implementation of the idea, not the authors' code.</li>
+<li>We benchmark against DOTE with the released architecture and loss, run in our own pipeline (Table 7), not against the authors' full pipeline, and not against FIGRET, Teal or LOGGIA: Teal treats staleness only as solver run time and is not a like-for-like baseline for telemetry impairments.</li>
 <li>We do not claim a general performance win, being first to show degradation under delay (LOGGIA), or production readiness.</li>
 </ul>
 <h2>9 Conclusion</h2>

@@ -104,6 +104,7 @@ Each paper table is produced by one script and one result file under `experiment
 | Guard in the TCP emulation (Section 6.6, prose) | `runs/emu_tcp4.sh` (guard with 20% threshold), `runs/emu_tcp5.sh` (instrumented `guard_trace` runs), `experiments/emu_analyze_guard_hyst.py`, `experiments/emu_guard_decompose.py`, `experiments/emu_guard_trace.py`, `experiments/guard_regret_sim_vs_emu.py` (simulator replay vs emulation, mean and tail) | printed tables; raw runs not committed |
 | Abilene 48-window rerun (Fig. 3 middle; Section 6.2a prose) | `experiments/abilene_more_windows.py` | `abilene_more.json` |
 | Table 6 | `experiments/finetune_real.py`, `experiments/dote_baseline.py` | `table_ft.md`, `table_dote.md` |
+| Table 7 (DOTE, released architecture) | `experiments/dote_official_bench.py <network>`, `experiments/analyze_dote_official.py`; model in `src/stale_but_safe/baselines/dote_official.py`; `tests/test_dote_official.py` checks the loss against the release when it is cloned into `external/DOTE` (https://github.com/PredWanTE/DOTE, not redistributed) | `table_dote_official.md`, `dote_official_*.json` |
 | Load-scaling sensitivity (Section 6.2b prose) | `experiments/scaling_sensitivity.py configs/tuned_heuristic_v2.yaml` | `table_scaling_v2.md` |
 | GNN versus MLP, ablations | `experiments/analyze_gnn_vs_mlp.py`, `experiments/analyze_ablations.py` | `table_gnn_vs_mlp.md`, `table_ablations.md` |
 | Loss-weight sensitivity | `experiments/sensitivity_lossweight.py experiments/final/results_v2_zoo.json` | `table_lossweight_v2.md` |
