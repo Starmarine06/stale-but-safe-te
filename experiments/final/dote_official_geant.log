@@ -1,0 +1,22 @@
+geant: train 8021 intervals, test 3439 intervals
+  dote-official[ideal] epoch 0 mean max-util 1.9654
+  dote-official[ideal] epoch 5 mean max-util 1.7359
+  dote-official[ideal] epoch 10 mean max-util 1.5162
+  dote-official[ideal] epoch 15 mean max-util 1.4778
+  dote-official[ideal] epoch 20 mean max-util 1.4152
+  dote-official[ideal] epoch 24 mean max-util 1.4195
+  dote-official[degraded] epoch 0 mean max-util 1.9141
+  dote-official[degraded] epoch 5 mean max-util 1.9808
+  dote-official[degraded] epoch 10 mean max-util 1.9664
+  dote-official[degraded] epoch 15 mean max-util 1.6354
+  dote-official[degraded] epoch 20 mean max-util 1.5298
+  dote-official[degraded] epoch 24 mean max-util 1.5349
+geant load=0.6 ideal    done t=159s
+geant load=0.6 snmp     done t=320s
+geant load=0.6 degraded done t=480s
+geant load=0.8 ideal    done t=638s
+geant load=0.8 snmp     done t=812s
+geant load=0.8 degraded done t=994s
+geant load=1.0 ideal    done t=1157s
+geant load=1.0 snmp     done t=1317s
+geant load=1.0 degraded done t=1476s

@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
-title: "The Cost of Stale Telemetry in Traffic Engineering: Zero-Shot Learned Policies versus Re-Tuned Heuristics"
+title: "The Cost of Stale Telemetry in Traffic Engineering"
 authors:
   - family-names: Nambiar
     given-names: Dev
-    affiliation: Vellore Institute of Technology, Vellore, India
+    affiliation: School of Computer Science and Engineering, Vellore Institute of Technology, Vellore, India
 license: MIT
 repository-code: "https://github.com/Starmarine06/stale-but-safe-te"

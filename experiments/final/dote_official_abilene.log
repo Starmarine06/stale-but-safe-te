@@ -1,0 +1,22 @@
+abilene: train 33667 intervals, test 14429 intervals
+  dote-official[ideal] epoch 0 mean max-util 0.8326
+  dote-official[ideal] epoch 5 mean max-util 0.5773
+  dote-official[ideal] epoch 10 mean max-util 0.5693
+  dote-official[ideal] epoch 15 mean max-util 0.5591
+  dote-official[ideal] epoch 20 mean max-util 0.5558
+  dote-official[ideal] epoch 24 mean max-util 0.5547
+  dote-official[degraded] epoch 0 mean max-util 0.8423
+  dote-official[degraded] epoch 5 mean max-util 0.5758
+  dote-official[degraded] epoch 10 mean max-util 0.5722
+  dote-official[degraded] epoch 15 mean max-util 0.5665
+  dote-official[degraded] epoch 20 mean max-util 0.5609
+  dote-official[degraded] epoch 24 mean max-util 0.5593
+abilene load=0.6 ideal    done t=59s
+abilene load=0.6 snmp     done t=113s
+abilene load=0.6 degraded done t=172s
+abilene load=0.8 ideal    done t=227s
+abilene load=0.8 snmp     done t=285s
+abilene load=0.8 degraded done t=341s
+abilene load=1.0 ideal    done t=401s
+abilene load=1.0 snmp     done t=456s
+abilene load=1.0 degraded done t=515s
