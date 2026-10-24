@@ -27,3 +27,12 @@ This check found and fixed one stale artefact: the committed `table_dote.md` lac
 
 Still not re-run from scratch: simulations behind the raw result files (hours on CPU), the delay grid, the guard audit, the emulation runs (Docker, needs an otherwise idle machine) and the real-trace preparation. The clone was made from the local repository because the commit had not been pushed; repeat the two commands above against the GitHub URL after pushing.
 
+
+# Third check (2026-10-24): fresh clone from the public GitHub URL
+
+Procedure: `git clone https://github.com/Starmarine06/stale-but-safe-te.git` at commit 8f81cb7 into an empty directory, new virtual environment (Python 3.13, Windows 11), CPU torch wheel, `pip install -e ".[dev]"`.
+
+| Check | Result |
+|---|---|
+| `python -m pytest -q` | 42 passed, 2 skipped (the skips need prepared real traces or the external DOTE clone) |
+| `python experiments/reproduce_tables.py` | all nine tables identical to the committed copies |
